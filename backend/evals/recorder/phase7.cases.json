@@ -1,0 +1,1619 @@
+{
+ "suite": "recorder-phase7",
+ "prompt_dir": "backend/prompts/recorder",
+ "schema_file": "backend/prompts/recorder/output_schema.json",
+ "description": "Recorder in Fase 7: dopo 'Completa lezione' produce record, termini e schede dai tentativi. Una chiamata (più una riparazione). Misura la regola cardine 'coverage non è learning' (zero output senza esercizi superati), le prove (lessons.md §6.3), la supersession e la qualità delle schede. Nota: in produzione il backend può saltare la chiamata quando nessun tentativo è superato; il caso `explained_only_zero_records` verifica comunque che il modello da solo non inventi.",
+ "defaults": {
+  "runs_per_case": 3,
+  "deterministic": {
+   "schema_valid": true,
+   "backend_validator_pass_first_try": true,
+   "backend_validator_pass_within_2": true,
+   "max_records": 5,
+   "max_terms": 8,
+   "max_cards": 10,
+   "lengths": {
+    "title": [
+     1,
+     120
+    ],
+    "body": [
+     1,
+     600
+    ],
+    "evidence": [
+     1,
+     400
+    ],
+    "term": [
+     1,
+     80
+    ],
+    "definition": [
+     1,
+     400
+    ],
+    "front": [
+     1,
+     300
+    ],
+    "back": [
+     1,
+     600
+    ],
+    "avoid_each": [
+     1,
+     120
+    ],
+    "avoid_count": [
+     0,
+     3
+    ]
+   },
+   "evidence_blocks_must_exist_with_attempts": true,
+   "demonstrated_needs_passed_attempt": true,
+   "misconception_needs_first_fail_and_a_pass": true,
+   "terms_need_passed_attempt": true,
+   "supersedes_must_be_active_records": true,
+   "each_card_links_exactly_one": true,
+   "term_keys_format": "^[a-z0-9_]{1,40}$",
+   "term_key_equals_lesson_glossary_key_when_same_term": true,
+   "no_markdown_beyond_inline": true,
+   "no_double_brackets_in_definitions": true,
+   "body_must_not_match": [
+    "(?i)\\b(bravo|ottimo|finalmente|sei migliorato|complimenti)\\b"
+   ],
+   "card_text_must_not_match": [
+    "(?i)\\b(sopra|sotto|nell'esempio|come visto|in questa lezione|nella lezione)\\b"
+   ],
+   "no_exclamation_marks": "ignorare `!` dentro `codice inline` e nei blocchi di codice (es. println!)",
+   "language": "it",
+   "body_and_evidence_second_person": "euristica: contengono una forma di seconda persona singolare (hai, sai, pensavi, sei, ti, tuo/a, prevedi, vedi) oppure sono impersonali; mai terza persona (ha, sa, pensava)",
+   "evidence_must_not_match": [
+    "\\b(q|fb|oa|fc|g)\\d+\\b"
+   ],
+   "no_ids_in_visible_text": "id di esercizi (evidence_blocks) assenti da title, body, evidence, definition, front, back",
+   "title_must_not_match": [
+    "(?i)\\b(pensava|credeva|pensi|credi)\\b che"
+   ],
+   "card_front_single_question": {
+    "description": "Il fronte non unisce due domande: segnala `\\b(e|and) (chi|che cosa|cosa|quale|come|dove|perché)\\b` dopo un `?`-less segmento, oppure due `?` in cui il secondo segmento non sia esattamente «Perché?» / «Perché no?» / «Perché non?». Il formato «Compila? Perché?» è ammesso (una previsione con la sua ragione).",
+    "severity": "error"
+   },
+   "card_front_chars_max": 170,
+   "card_front_chars_hard_max": 300,
+   "card_back_max_sentences": 3,
+   "card_back_chars_max": 250,
+   "card_back_chars_hard_max": 600,
+   "records_demonstrated_do_not_cite_failed_blocks_only": "un record demonstrated non può avere come sole evidence_blocks esercizi mai superati (già coperto da demonstrated_needs_passed_attempt); in più: ogni evidence_block di un demonstrated ha almeno un tentativo `correct`",
+   "unpassed_block_only_on_never_passed": true,
+   "unpassed_block_not_in_visible_text": true
+  },
+  "notes": "`expect` di un caso: intervalli [min,max] per il numero di records/terms/cards, record_kinds_include/exclude, term_keys_subset_of, supersedes_any, terms_must_not_include_keys. Il backend_validator è quello di lessons.md §6.3 (codice reale). Gli esiti `passed` sono quelli del campo `outcome` dei tentativi del caso. Fase 9: casi real_lesson_1_unproven_point e real_lesson_2_second_attempt_pass dalle lezioni reali (docs/design/samples). Per `body_must_not_match`/`evidence_must_not_match` di caso: regex vietate in title+body+evidence dei record `demonstrated`. `expect.cards_min_application`: numero minimo di schede di applicazione, verificate dalla rubrica. Issue #29: `unpassed_block_only_on_never_passed` (ogni valore non nullo è un esercizio con tentativi e nessun `correct`: mai su un esercizio superato né corretto al secondo tentativo), `unpassed_block_not_in_visible_text`; per caso `unpassed_block_includes_one_of` (almeno una scheda cita uno di quegli esercizi) e `unpassed_block_includes_all_of` (tutti quegli esercizi compaiono in qualche scheda)."
+ },
+ "pass_criteria": {
+  "expect_all_cases": "tutti i controlli `expect` in 3/3 run per i casi explained_only_zero_records, flashcard_only_weak_evidence, existing_term_and_record_not_duplicated (regole di sobrietà: devono essere stabili); 2/3 per gli altri",
+  "backend_validator_pass_first_try": ">= 85% delle run (ogni fallimento costa una riparazione)",
+  "rubric_mean": ">= 0.8",
+  "phase9": "real_lesson_1_unproven_point: 3/3 run senza alcuna affermazione su `clone` nei record demonstrated; real_lesson_2_second_attempt_pass: 3/3 run con un record misconception_corrected che cita q3; card_front_single_question e card_back_chars_max: >= 90% delle schede",
+  "issue29": "unpassed_block_includes_all_of (q2 e q4): real_lesson_1_unproven_point 3/3 run; unpassed_block_only_on_never_passed e unpassed_block_not_in_visible_text: 100% delle run su tutti i casi (in particolare misconception_corrected e real_lesson_2_second_attempt_pass, dove l'esercizio sbagliato è poi corretto: sempre null); nessuna regressione degli altri controlli rispetto alla misura v4"
+ },
+ "cases": [
+  {
+   "id": "explained_only_zero_records",
+   "description": "Coverage non è learning: la lezione ha spiegato move e Copy ma nessun esercizio è stato superato (un quiz sbagliato senza ritentare, una risposta aperta ancora pending, una scheda 'again'). Atteso: zero record, zero termini, zero schede.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission_why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+   "lesson": {
+    "number": 1,
+    "title": "Quando una variabile smette di essere valida",
+    "objective": "Saper prevedere se una variabile Rust è ancora utilizzabile dopo un assegnamento."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "move",
+      "key_point": "Assegnare una String sposta la proprietà."
+     },
+     {
+      "name": "copia dei tipi semplici",
+      "key_point": "I tipi come i32 si duplicano."
+     }
+    ],
+    "why_now": "Primo passo verso il criterio «leggere borrow of moved value»."
+   },
+   "lesson_glossary": [
+    {
+     "key": "ownership",
+     "term": "ownership",
+     "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+     "avoid": [
+      "proprietà intellettuale"
+     ]
+    },
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    },
+    {
+     "key": "copy_trait",
+     "term": "Copy",
+     "definition": "Trait dei tipi semplici che vengono duplicati bit per bit all'assegnamento invece di essere spostati.",
+     "avoid": []
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "id": "q1",
+     "type": "quiz_single",
+     "question": "Nel codice `let a = String::from(\"ciao\"); let b = a;`, cosa succede se usi `a` dopo la seconda riga?",
+     "options": [
+      {
+       "id": "a",
+       "text": "Stampa il testo due volte",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "Il programma non compila",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "Stampa una stringa vuota",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": "b",
+     "required": true
+    },
+    {
+     "id": "oa1",
+     "type": "open_answer",
+     "question": "Spiega in 2-3 frasi perché, dopo `let b = a;` con `a` di tipo `String`, non puoi più usare `a`.",
+     "max_chars": 600,
+     "rubric": "Punti chiave: valore spostato in `b`; un solo proprietario, quindi `a` non valida. Errore tipico: pensa che l'assegnamento copi.",
+     "required": true
+    },
+    {
+     "id": "fc1",
+     "type": "flashcard",
+     "front": "Quale trait hanno i tipi semplici come `i32` che li fa duplicare all'assegnamento?",
+     "back": "Copy.",
+     "required": false
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "q1",
+     "attempt_number": 1,
+     "answer": {
+      "option": "a"
+     },
+     "outcome": "incorrect"
+    },
+    {
+     "block_id": "oa1",
+     "attempt_number": 1,
+     "answer": {
+      "text": "Perché viene spostata."
+     },
+     "outcome": "pending"
+    },
+    {
+     "block_id": "fc1",
+     "attempt_number": 1,
+     "answer": {
+      "rating": "again"
+     },
+     "outcome": "incorrect"
+    }
+   ],
+   "active_records": [],
+   "topic_glossary": [],
+   "expect": {
+    "records": [
+     0,
+     0
+    ],
+    "terms": [
+     0,
+     0
+    ],
+    "cards": [
+     0,
+     0
+    ]
+   },
+   "rubric": [
+    {
+     "id": "all_empty",
+     "text": "Restituisce tre array vuoti.",
+     "weight": 5
+    }
+   ]
+  },
+  {
+   "id": "misconception_corrected",
+   "description": "Sbaglia al primo tentativo del quiz multiplo (partial), poi lo supera al secondo, e la risposta aperta correttamente. Atteso: un record misconception_corrected che cita q2 (e al più oa1), termine move con la stessa key della lezione, schede che mettono alla prova la distinzione move/copia.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission_why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+   "lesson": {
+    "number": 1,
+    "title": "Quando una variabile smette di essere valida",
+    "objective": "Saper prevedere se una variabile Rust è ancora utilizzabile dopo un assegnamento."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "move",
+      "key_point": "Assegnare una String sposta la proprietà."
+     },
+     {
+      "name": "copia dei tipi semplici",
+      "key_point": "I tipi come i32 si duplicano."
+     }
+    ],
+    "why_now": "Primo passo verso il criterio «leggere borrow of moved value»."
+   },
+   "lesson_glossary": [
+    {
+     "key": "ownership",
+     "term": "ownership",
+     "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+     "avoid": [
+      "proprietà intellettuale"
+     ]
+    },
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    },
+    {
+     "key": "copy_trait",
+     "term": "Copy",
+     "definition": "Trait dei tipi semplici che vengono duplicati bit per bit all'assegnamento invece di essere spostati.",
+     "avoid": []
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "id": "q1",
+     "type": "quiz_single",
+     "question": "Nel codice `let a = String::from(\"ciao\"); let b = a;`, cosa succede se usi `a` dopo la seconda riga?",
+     "options": [
+      {
+       "id": "a",
+       "text": "Stampa il testo due volte",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "Il programma non compila",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "Stampa una stringa vuota",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": "b",
+     "required": true
+    },
+    {
+     "id": "q2",
+     "type": "quiz_multi",
+     "question": "In quali casi `v` non è più utilizzabile dopo l'istruzione descritta?",
+     "options": [
+      {
+       "id": "a",
+       "text": "`v` è una `String` assegnata a `w`",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "`v` è un `i32` assegnato a `w`",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "`v` è una `String` passata a una funzione",
+       "feedback": "feedback"
+      },
+      {
+       "id": "d",
+       "text": "`v` è una `String` clonata in `w`",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": [
+      "a",
+      "c"
+     ],
+     "required": true
+    },
+    {
+     "id": "oa1",
+     "type": "open_answer",
+     "question": "Spiega in 2-3 frasi perché, dopo `let b = a;` con `a` di tipo `String`, non puoi più usare `a`.",
+     "max_chars": 600,
+     "rubric": "Punti chiave: valore spostato in `b`; un solo proprietario, quindi `a` non valida. Errore tipico: pensa che l'assegnamento copi.",
+     "required": true
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "q1",
+     "attempt_number": 1,
+     "answer": {
+      "option": "b"
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "q2",
+     "attempt_number": 1,
+     "answer": {
+      "options": [
+       "a"
+      ]
+     },
+     "outcome": "partial"
+    },
+    {
+     "block_id": "q2",
+     "attempt_number": 2,
+     "answer": {
+      "options": [
+       "a",
+       "c"
+      ]
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "oa1",
+     "attempt_number": 1,
+     "answer": {
+      "text": "Perché `let b = a;` sposta il valore in `b`: la stringa ha un solo proprietario e dopo il move è `b`, quindi `a` non si può più usare."
+     },
+     "outcome": "correct",
+     "grade": {
+      "verdict": "correct",
+      "feedback": "…",
+      "misconception": null
+     }
+    }
+   ],
+   "active_records": [],
+   "topic_glossary": [],
+   "expect": {
+    "records": [
+     1,
+     2
+    ],
+    "terms": [
+     1,
+     3
+    ],
+    "cards": [
+     2,
+     5
+    ],
+    "record_kinds_include": [
+     "misconception_corrected"
+    ],
+    "term_keys_subset_of": [
+     "ownership",
+     "move",
+     "copy_trait"
+    ]
+   },
+   "deterministic": {
+    "misconception_record_cites": [
+     "q2"
+    ]
+   },
+   "rubric": [
+    {
+     "id": "kind_right",
+     "text": "Esiste un record misconception_corrected sul fatto che passare una String a una funzione/assegnarla la sposta (la convinzione era che restasse utilizzabile); non lo chiama demonstrated.",
+     "weight": 3
+    },
+    {
+     "id": "evidence_concrete",
+     "text": "`evidence` racconta in modo concreto che ha sbagliato la domanda multipla e poi l'ha risolta, senza voti.",
+     "weight": 2
+    },
+    {
+     "id": "no_diary",
+     "text": "Nessun record è un diario della lezione («ha fatto 3 esercizi»).",
+     "weight": 2
+    },
+    {
+     "id": "cards_recall",
+     "text": "Le schede chiedono di richiamare (previsione o domanda a risposta breve), reggono da sole e non rimandano alla lezione.",
+     "weight": 3
+    },
+    {
+     "id": "term_definition",
+     "text": "Le definizioni dei termini dicono cosa il termine È, in 1-2 frasi.",
+     "weight": 2
+    },
+    {
+     "id": "second_person",
+     "text": "`body` ed `evidence` sono in seconda persona («All'inizio pensavi che…», «Hai spiegato…»), `title` è impersonale e dice l'idea giusta, senza id degli esercizi.",
+     "weight": 3
+    }
+   ]
+  },
+  {
+   "id": "supersession",
+   "description": "Esiste un record attivo (#2) che dice 'sa che i riferimenti sono solo in lettura'. Nella lezione sui riferimenti mutabili la persona dimostra di saper usare `&mut`: la comprensione si è approfondita e corregge il record #2. Atteso: un record nuovo con supersedes [2]; nessun record duplicato.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission_why": "Voglio capire i messaggi di errore del borrow checker.",
+   "lesson": {
+    "number": 3,
+    "title": "Modificare un valore prestato",
+    "objective": "Saper scrivere una funzione che modifica un valore ricevuto per riferimento."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "riferimento mutabile",
+      "key_point": "`&mut` presta il valore in scrittura, uno alla volta."
+     }
+    ],
+    "why_now": "Il record 2 dice che sa leggere tramite `&`; manca la scrittura."
+   },
+   "lesson_glossary": [
+    {
+     "key": "mutable_borrow",
+     "term": "riferimento mutabile",
+     "definition": "Un riferimento (`&mut`) che permette di modificare il valore prestato, uno alla volta.",
+     "avoid": []
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "id": "fb2",
+     "type": "fill_blank",
+     "text": "Per modificare il valore ricevuto la funzione prende `s: {{tipo}} String` e il chiamante passa `{{arg}} s`.",
+     "blanks": [
+      {
+       "id": "tipo",
+       "answers": [
+        "&mut"
+       ]
+      },
+      {
+       "id": "arg",
+       "answers": [
+        "&mut"
+       ]
+      }
+     ],
+     "feedback": {
+      "correct": "ok",
+      "incorrect": "no"
+     },
+     "required": true
+    },
+    {
+     "id": "oa2",
+     "type": "open_answer",
+     "question": "Scrivi una funzione `aggiungi(s: ...)` che aggiunge `\"!\"` alla stringa ricevuta e spiega in una frase perché serve `&mut`.",
+     "max_chars": 500,
+     "rubric": "Firma con `&mut String` e `push_str`; motivo: il riferimento normale è di sola lettura.",
+     "required": true
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "fb2",
+     "attempt_number": 1,
+     "answer": {
+      "blanks": {
+       "tipo": "&mut",
+       "arg": "&mut"
+      }
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "oa2",
+     "attempt_number": 1,
+     "answer": {
+      "text": "fn aggiungi(s: &mut String) { s.push_str(\"!\"); } serve &mut perché con & posso solo leggere."
+     },
+     "outcome": "correct",
+     "grade": {
+      "verdict": "correct",
+      "feedback": "…",
+      "misconception": null
+     }
+    }
+   ],
+   "active_records": [
+    {
+     "number": 2,
+     "kind": "demonstrated",
+     "lesson_number": 2,
+     "title": "I riferimenti `&` servono per leggere senza prendere la proprietà",
+     "body": "Sa che `&s` presta la stringa in sola lettura e che il proprietario non cambia."
+    }
+   ],
+   "topic_glossary": [
+    {
+     "key": "ownership",
+     "term": "ownership",
+     "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+     "avoid": [
+      "proprietà intellettuale"
+     ]
+    },
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    }
+   ],
+   "expect": {
+    "records": [
+     1,
+     1
+    ],
+    "terms": [
+     0,
+     1
+    ],
+    "cards": [
+     1,
+     4
+    ],
+    "supersedes_any": [
+     2
+    ]
+   },
+   "rubric": [
+    {
+     "id": "supersedes_2",
+     "text": "Il nuovo record ha supersedes [2] e il body dice come si è approfondito («Prima sapevi che…; ora sai anche che…») in seconda persona, senza copiare il vecchio testo.",
+     "weight": 4
+    },
+    {
+     "id": "no_duplicate",
+     "text": "Non crea anche un record separato che ripete il contenuto del #2.",
+     "weight": 2
+    },
+    {
+     "id": "kind",
+     "text": "Il record è `demonstrated` (non c'è stata una misconcezione).",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "id": "flashcard_only_weak_evidence",
+   "description": "Prova debole: solo una flashcard autovalutata 'good' e un quiz sul riconoscimento fallito. Atteso: zero record, zero termini, zero schede (la flashcard da sola non basta nemmeno per un termine).",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission_why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+   "lesson": {
+    "number": 1,
+    "title": "Move e Copy",
+    "objective": "Saper dire quali tipi si copiano e quali si spostano."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "move",
+      "key_point": "Assegnare una String sposta la proprietà."
+     },
+     {
+      "name": "copia dei tipi semplici",
+      "key_point": "I tipi come i32 si duplicano."
+     }
+    ],
+    "why_now": "Primo passo verso il criterio «leggere borrow of moved value»."
+   },
+   "lesson_glossary": [
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    },
+    {
+     "key": "copy_trait",
+     "term": "Copy",
+     "definition": "Trait dei tipi semplici che vengono duplicati bit per bit all'assegnamento invece di essere spostati.",
+     "avoid": []
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "id": "q1",
+     "type": "quiz_single",
+     "question": "Nel codice `let a = String::from(\"ciao\"); let b = a;`, cosa succede se usi `a` dopo la seconda riga?",
+     "options": [
+      {
+       "id": "a",
+       "text": "Stampa il testo due volte",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "Il programma non compila",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "Stampa una stringa vuota",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": "b",
+     "required": true
+    },
+    {
+     "id": "fc1",
+     "type": "flashcard",
+     "front": "Quale trait hanno i tipi semplici come `i32` che li fa duplicare all'assegnamento?",
+     "back": "Copy.",
+     "required": false
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "q1",
+     "attempt_number": 1,
+     "answer": {
+      "option": "c"
+     },
+     "outcome": "incorrect"
+    },
+    {
+     "block_id": "fc1",
+     "attempt_number": 1,
+     "answer": {
+      "rating": "good"
+     },
+     "outcome": "correct"
+    }
+   ],
+   "active_records": [],
+   "topic_glossary": [],
+   "expect": {
+    "records": [
+     0,
+     0
+    ],
+    "terms": [
+     0,
+     0
+    ],
+    "cards": [
+     0,
+     0
+    ]
+   },
+   "rubric": [
+    {
+     "id": "all_empty",
+     "text": "Restituisce tre array vuoti: una scheda autovalutata non è una prova sufficiente.",
+     "weight": 5
+    }
+   ]
+  },
+  {
+   "id": "existing_term_and_record_not_duplicated",
+   "description": "Il glossario del Topic ha già `move` (definizione corretta) e c'è un record attivo #1 che dice che sa prevedere il move su String. La lezione ripete l'abilità senza aggiungere nulla di nuovo. Atteso: nessun nuovo termine con key move, nessun record duplicato.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission_why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+   "lesson": {
+    "number": 2,
+    "title": "Move nelle chiamate di funzione",
+    "objective": "Saper prevedere se una String è ancora utilizzabile dopo averla passata a una funzione."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "move",
+      "key_point": "Assegnare una String sposta la proprietà."
+     },
+     {
+      "name": "copia dei tipi semplici",
+      "key_point": "I tipi come i32 si duplicano."
+     }
+    ],
+    "why_now": "Primo passo verso il criterio «leggere borrow of moved value»."
+   },
+   "lesson_glossary": [
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "id": "q1",
+     "type": "quiz_single",
+     "question": "Nel codice `let a = String::from(\"ciao\"); let b = a;`, cosa succede se usi `a` dopo la seconda riga?",
+     "options": [
+      {
+       "id": "a",
+       "text": "Stampa il testo due volte",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "Il programma non compila",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "Stampa una stringa vuota",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": "b",
+     "required": true
+    },
+    {
+     "id": "q2",
+     "type": "quiz_multi",
+     "question": "In quali casi `v` non è più utilizzabile dopo l'istruzione descritta?",
+     "options": [
+      {
+       "id": "a",
+       "text": "`v` è una `String` assegnata a `w`",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "`v` è un `i32` assegnato a `w`",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "`v` è una `String` passata a una funzione",
+       "feedback": "feedback"
+      },
+      {
+       "id": "d",
+       "text": "`v` è una `String` clonata in `w`",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": [
+      "a",
+      "c"
+     ],
+     "required": true
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "q1",
+     "attempt_number": 1,
+     "answer": {
+      "option": "b"
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "q2",
+     "attempt_number": 1,
+     "answer": {
+      "options": [
+       "a",
+       "c"
+      ]
+     },
+     "outcome": "correct"
+    }
+   ],
+   "active_records": [
+    {
+     "number": 1,
+     "kind": "demonstrated",
+     "lesson_number": 1,
+     "title": "Dopo un move la variabile di partenza non è più utilizzabile",
+     "body": "Sa prevedere che dopo `let b = a;` con una `String` la variabile `a` non è più utilizzabile."
+    }
+   ],
+   "topic_glossary": [
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    },
+    {
+     "key": "ownership",
+     "term": "ownership",
+     "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+     "avoid": [
+      "proprietà intellettuale"
+     ]
+    }
+   ],
+   "expect": {
+    "records": [
+     0,
+     1
+    ],
+    "terms": [
+     0,
+     0
+    ],
+    "cards": [
+     0,
+     2
+    ]
+   },
+   "deterministic": {
+    "terms_must_not_include_keys": [
+     "move",
+     "ownership"
+    ]
+   },
+   "rubric": [
+    {
+     "id": "no_dup_term",
+     "text": "Non ripropone `move` né `ownership` come termini nuovi o rivisti senza una definizione davvero migliore.",
+     "weight": 3
+    },
+    {
+     "id": "no_dup_record",
+     "text": "Non crea un record che ripete il #1; se ne crea uno, aggiunge qualcosa di nuovo (chiamate di funzione) e lo dichiara in `body`.",
+     "weight": 3
+    }
+   ]
+  },
+  {
+   "id": "rich_lesson_limits",
+   "description": "Lezione ricca, 7 esercizi tutti superati, 6 termini nella lezione. Misura i limiti (5 record, 8 termini, 10 schede), la sobrietà (di norma molto meno) e la qualità delle schede.",
+   "topic": {
+    "title": "Git: staging area e commit"
+   },
+   "mission_why": "Voglio fare commit puliti.",
+   "lesson": {
+    "number": 1,
+    "title": "Cosa finisce in un commit",
+    "objective": "Saper dire quali modifiche finiranno nel prossimo commit."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "staging area",
+      "key_point": "Il commit contiene solo ciò che è in staging."
+     }
+    ],
+    "why_now": "Primo criterio della mission."
+   },
+   "lesson_glossary": [
+    {
+     "key": "staging_area",
+     "term": "staging area",
+     "definition": "L'insieme delle modifiche preparate con `git add` che entreranno nel prossimo commit.",
+     "avoid": [
+      "cache"
+     ]
+    },
+    {
+     "key": "working_tree",
+     "term": "working tree",
+     "definition": "I file nella cartella di lavoro, comprese le modifiche non ancora preparate.",
+     "avoid": []
+    },
+    {
+     "key": "commit",
+     "term": "commit",
+     "definition": "Un'istantanea della staging area salvata nella cronologia del repository.",
+     "avoid": [
+      "salvataggio"
+     ]
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "id": "g1",
+     "type": "quiz_single",
+     "question": "Hai modificato `a.txt` e `b.txt` ma hai eseguito `git add a.txt`. Quali modifiche contiene `git commit`?",
+     "options": [
+      {
+       "id": "a",
+       "text": "Solo quelle di `a.txt`",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "Quelle di entrambi i file",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "Nessuna delle due",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": "a",
+     "required": true
+    },
+    {
+     "id": "g2",
+     "type": "order_steps",
+     "prompt": "Metti in ordine i comandi per committare solo `a.txt`.",
+     "steps": [
+      {
+       "id": "s1",
+       "text": "Modificare `a.txt` e `b.txt`"
+      },
+      {
+       "id": "s2",
+       "text": "Eseguire `git add a.txt`"
+      },
+      {
+       "id": "s3",
+       "text": "Eseguire `git commit -m \"msg\"`"
+      }
+     ],
+     "feedback": {
+      "correct": "ok",
+      "incorrect": "no"
+     },
+     "required": true
+    },
+    {
+     "id": "g3",
+     "type": "fill_blank",
+     "text": "Il comando `git {{cmd}} a.txt` prepara il file per il commit.",
+     "blanks": [
+      {
+       "id": "cmd",
+       "answers": [
+        "add"
+       ]
+      }
+     ],
+     "feedback": {
+      "correct": "ok",
+      "incorrect": "no"
+     },
+     "required": true
+    },
+    {
+     "id": "g4",
+     "type": "quiz_single",
+     "question": "Dopo `git add a.txt` modifichi di nuovo `a.txt`. Cosa contiene il commit?",
+     "options": [
+      {
+       "id": "a",
+       "text": "La versione di prima della modifica",
+       "feedback": "feedback"
+      },
+      {
+       "id": "b",
+       "text": "La versione modificata dopo",
+       "feedback": "feedback"
+      },
+      {
+       "id": "c",
+       "text": "Entrambe le versioni insieme",
+       "feedback": "feedback"
+      }
+     ],
+     "correct": "a",
+     "required": true
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "g1",
+     "attempt_number": 1,
+     "answer": {
+      "option": "a"
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "g2",
+     "attempt_number": 1,
+     "answer": {
+      "steps": [
+       "s1",
+       "s2",
+       "s3"
+      ]
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "g3",
+     "attempt_number": 1,
+     "answer": {
+      "blanks": {
+       "cmd": "add"
+      }
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "g4",
+     "attempt_number": 1,
+     "answer": {
+      "option": "a"
+     },
+     "outcome": "correct"
+    }
+   ],
+   "active_records": [],
+   "topic_glossary": [],
+   "expect": {
+    "records": [
+     0,
+     3
+    ],
+    "terms": [
+     1,
+     5
+    ],
+    "cards": [
+     2,
+     6
+    ]
+   },
+   "deterministic": {
+    "card_text_must_not_match": [
+     "(?i)\\b(sopra|sotto|nell'esempio|come visto|in questa lezione|nella lezione|l'esercizio)\\b"
+    ]
+   },
+   "rubric": [
+    {
+     "id": "sober",
+     "text": "Non gonfia: ogni record e ogni termine ha una prova e non ripete un altro elemento.",
+     "weight": 3
+    },
+    {
+     "id": "cards_standalone",
+     "text": "Ogni scheda ha senso da sola, chiede di richiamare e il suo fronte non contiene la risposta.",
+     "weight": 3
+    },
+    {
+     "id": "term_keys",
+     "text": "I termini usano le stesse key dei termini della lezione.",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "id": "real_lesson_1_unproven_point",
+   "description": "Dalla lezione reale 1 (docs/design/samples): q1 fill_blank corretto, q2 quiz_single SBAGLIATO (nessun secondo tentativo), q3 open_answer corretto, q4 open_answer partial (sceglie clone «perché è più semplice»). Nella prova reale il record dichiarava «`clone()` serve solo se la funzione deve possedere il dato», che nessuna evidenza mostrava. Atteso: un record demonstrated limitato a ciò che q3 (e q1) dimostrano, senza alcuna affermazione sul criterio di scelta clone/riferimento; il punto di q4 e l'errore di q2 non entrano nei record e al più ispirano una scheda; schede con una sola domanda e retro breve, almeno una di applicazione.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission_why": "Lavoro su un backend in Rust e voglio capire gli errori del compilatore e gestire gli errori senza unwrap.",
+   "lesson": {
+    "number": 1,
+    "title": "Ownership: move e prestito di una String",
+    "objective": "Saper prevedere se un frammento che passa una String a una funzione compila, e correggere l'errore di move con un riferimento."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "move",
+      "key_point": "Passare una String per valore sposta la proprietà."
+     },
+     {
+      "name": "prestito",
+      "key_point": "`&String` presta il valore e il chiamante resta proprietario."
+     }
+    ],
+    "why_now": "Primo passo verso il criterio «leggere borrow of moved value»."
+   },
+   "lesson_glossary": [
+    {
+     "avoid": [
+      "copia del valore come in Go",
+      "clone"
+     ],
+     "definition": "Il trasferimento della proprietà di un valore a un'altra variabile o a una funzione. Dopo il move la variabile di origine non è più utilizzabile.",
+     "key": "move_semantics",
+     "term": "move"
+    },
+    {
+     "avoid": [
+      "puntatore con garbage collector",
+      "move"
+     ],
+     "definition": "Un riferimento (`&T`) che permette di leggere un valore senza prenderne la proprietà. Il proprietario originale può continuare a usarlo.",
+     "key": "borrow",
+     "term": "borrow"
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "blanks": [
+      {
+       "answers": [
+        "a"
+       ],
+       "case_sensitive": true,
+       "id": "var"
+      },
+      {
+       "answers": [
+        "b"
+       ],
+       "case_sensitive": true,
+       "id": "owner"
+      }
+     ],
+     "feedback": {
+      "correct": "Esatto: dopo il move vale un solo proprietario, quindi `a` non può più essere letta.",
+      "incorrect": "Rileggi la riga 2: `let b = a;` trasferisce la proprietà. Il nuovo proprietario è `b`, e `a` non è più usabile."
+     },
+     "id": "q1",
+     "required": true,
+     "text": "Nel codice sopra, la riga 2 sposta il valore: da quel punto la variabile {{var}} non è più utilizzabile, perché il proprietario è diventato {{owner}}.",
+     "type": "fill_blank"
+    },
+    {
+     "correct": "b",
+     "id": "q2",
+     "options": [
+      {
+       "feedback": "Sembra giusto perché `log` non prende la proprietà, ma il move è già avvenuto in `invia(corpo)`: a quel punto `corpo` non esiste più per il chiamante.",
+       "id": "a",
+       "text": "Compila: `log` prende solo un riferimento"
+      },
+      {
+       "feedback": "Corretto: `invia` prende `String` per valore, quindi `corpo` è spostato e l'uso successivo in `log` è un errore E0382.",
+       "id": "b",
+       "text": "Non compila: `invia(corpo)` sposta il valore"
+      },
+      {
+       "feedback": "Sembra plausibile perché l'errore compare su quella riga, ma il riferimento è lecito; il problema è il move precedente.",
+       "id": "c",
+       "text": "Non compila: `log(&corpo)` non è consentito"
+      },
+      {
+       "feedback": "In Go è così, ma `String` in Rust non è copiato implicitamente: la chiamata trasferisce la proprietà.",
+       "id": "d",
+       "text": "Compila: `corpo` viene copiato come in Go"
+      }
+     ],
+     "question": "Un handler fa `let corpo = String::from(\"ok\");`, poi `invia(corpo);`, poi `log(&corpo);` con `fn invia(s: String)` e `fn log(s: &String)`. Che cosa succede?",
+     "required": true,
+     "type": "quiz_single"
+    },
+    {
+     "id": "q3",
+     "max_chars": 500,
+     "question": "Il compilatore segnala E0382 su `println!(\"{}\", titolo);` e indica che `titolo` è stato spostato nella chiamata `costruisci(titolo)`, con `fn costruisci(t: String) -> String`. Spiega in 2-3 frasi dove avviene il move e proponi la correzione minima.",
+     "required": true,
+     "type": "open_answer",
+     "rubric": "Punti essenziali: il move avviene nella chiamata `costruisci(titolo)` (la funzione prende la String per valore); correzione con riferimento o clone."
+    },
+    {
+     "id": "q4",
+     "max_chars": 600,
+     "question": "Una funzione costruisce il corpo di una risposta a partire da un `String` con il nome utente, e subito dopo lo stesso nome va scritto in un log. Scegli tra passaggio per valore, per riferimento e `clone`, e motiva la scelta in 2-3 frasi.",
+     "required": true,
+     "type": "open_answer",
+     "rubric": "Essenziali: sceglie `&String` se la funzione deve solo leggere, con il criterio leggere/possedere. `clone` accettabile solo se motivato. Parziale: scelta senza criterio."
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "q1",
+     "attempt_number": 1,
+     "answer": {
+      "blanks": {
+       "owner": "b",
+       "var": "a"
+      }
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "q2",
+     "attempt_number": 1,
+     "answer": {
+      "option": "a"
+     },
+     "outcome": "incorrect"
+    },
+    {
+     "block_id": "q3",
+     "attempt_number": 1,
+     "answer": {
+      "text": "Il move avviene nella chiamata costruisci(titolo): la funzione prende la String per valore e ne diventa proprietaria, quindi dopo titolo non è più valida. La correzione minima è cambiare la firma in fn costruisci(t: &String) e chiamarla con costruisci(&titolo)."
+     },
+     "outcome": "correct",
+     "grade": {
+      "verdict": "correct",
+      "feedback": "Hai spiegato con precisione il punto chiave: il move avviene nella chiamata `costruisci(titolo)`, perché la funzione prende la `String` per valore e ne diventa proprietaria. Hai anche proposto una correzione valida, cambiare la firma in `&String` e chiamare `costruisci(&titolo)`, che presta il valore senza spostarlo. Nota che la `println!` non è la causa: compare solo dopo il move. Questo conta perché il compilatore segnala l'uso successivo, ma il punto in cui la proprietà passa è sempre la chiamata.",
+      "misconception": null
+     }
+    },
+    {
+     "block_id": "q4",
+     "attempt_number": 1,
+     "answer": {
+      "text": "Uso clone, così è più semplice e non ci sono problemi con il compilatore."
+     },
+     "outcome": "partial",
+     "grade": {
+      "verdict": "partial",
+      "feedback": "Hai scelto il clone, che è una strada valida quando la funzione deve possedere il dato. Manca però il motivo: se la scelta dipende solo dal fatto che il compilatore non si lamenta, non dice nulla sul bisogno della funzione. Il clone ha anche un costo di allocazione, che va considerato. Chiediti prima se la funzione deve solo leggere il nome: in quel caso un riferimento `&String` lascia il chiamante proprietario, così il log può avvenire dopo la chiamata. Un punto da chiarire: il clone non è sbagliato, ma va giustificato con il bisogno di possesso e con il suo costo.",
+      "misconception": "Pensa che clonare sia la via più semplice per evitare errori del compilatore, senza valutare se la funzione deve davvero possedere il dato o il costo dell'allocazione."
+     }
+    }
+   ],
+   "active_records": [],
+   "topic_glossary": [],
+   "expect": {
+    "records": [
+     1,
+     2
+    ],
+    "terms": [
+     0,
+     2
+    ],
+    "cards": [
+     2,
+     4
+    ],
+    "record_kinds_include": [
+     "demonstrated"
+    ],
+    "cards_min_application": 1
+   },
+   "deterministic": {
+    "demonstrated_text_must_not_match": [
+     "(?i)clone"
+    ],
+    "demonstrated_evidence_blocks_subset_of": [
+     "q1",
+     "q3"
+    ],
+    "unpassed_block_includes_one_of": [
+     "q2",
+     "q4"
+    ],
+    "unpassed_block_includes_all_of": [
+     "q2",
+     "q4"
+    ]
+   },
+   "rubric": [
+    {
+     "id": "claims_only_proven",
+     "text": "Nessun record afferma qualcosa che l'evidenza citata non mostra: in particolare nessuna regola su quando usare `clone` o su come scegliere tra valore, riferimento e clone (q4 era partial).",
+     "weight": 4
+    },
+    {
+     "id": "gap_as_card_or_nothing",
+     "text": "Il punto di q4 (criterio di scelta) e l'errore di q2 compaiono al più come scheda di consolidamento, mai come record o come fatto dimostrato.",
+     "weight": 3
+    },
+    {
+     "id": "one_question_cards",
+     "text": "Ogni scheda ha una sola domanda nel fronte (nessun «… e …?» che ne unisce due) e un retro di 1-3 frasi.",
+     "weight": 3
+    },
+    {
+     "id": "application_card",
+     "text": "Almeno una scheda è di applicazione: un frammento breve o un caso da prevedere («compila? perché?»), non la definizione di un termine.",
+     "weight": 3
+    },
+    {
+     "id": "error_card",
+     "text": "Esiste una scheda che mette alla prova il punto sbagliato in q2 (previsione su una funzione che prende String per valore e poi usa la variabile).",
+     "weight": 2
+    },
+    {
+     "id": "cards_standalone",
+     "text": "Le schede reggono da sole, senza rimandi alla lezione.",
+     "weight": 2
+    },
+    {
+     "id": "unpassed_block_scope",
+     "text": "Il campo `unpassed_block` è non nullo solo nelle schede che mettono alla prova il punto di q2 (sbagliato) o di q4 (partial), con quell'id; le schede su q1 e q3 (superati) lo hanno `null`.",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "id": "real_lesson_2_second_attempt_pass",
+   "description": "Dalla lezione reale 2: q3 quiz_multi partial al primo tentativo, corretto al secondo; q1 e q4 corretti. Nella prova reale non fu creato alcun misconception_corrected (solo un demonstrated). Atteso: un record misconception_corrected che cita q3 (primo tentativo parziale, secondo corretto); eventualmente un demonstrated su q4; termine `question_mark_operator` o `result_type` con la key della lezione; scheda di applicazione sull'operatore `?` e una sulla distinzione che era sbagliata.",
+   "topic": {
+    "title": "Gestione degli errori in Rust"
+   },
+   "mission_why": "Lavoro su un backend in Rust e voglio capire gli errori del compilatore e gestire gli errori senza unwrap.",
+   "lesson": {
+    "number": 2,
+    "title": "Result e operatore ?: propagare gli errori come in Go, ma col compilatore",
+    "objective": "Saper prevedere se una funzione con l'operatore ? compila e correggerla cambiando il tipo di ritorno in Result."
+   },
+   "plan": {
+    "concepts": [
+     {
+      "name": "Result",
+      "key_point": "Una funzione fallibile restituisce Result."
+     },
+     {
+      "name": "operatore ?",
+      "key_point": "`?` esce con l'Err solo se il tipo di ritorno è un Result."
+     }
+    ],
+    "why_now": "Il criterio «scrivo una funzione che propaga un errore con ?»."
+   },
+   "lesson_glossary": [
+    {
+     "avoid": [
+      "copia del valore come in Go",
+      "clone"
+     ],
+     "definition": "Il trasferimento della proprietà di un valore a un'altra variabile o a una funzione. Dopo il move la variabile di origine non è più utilizzabile.",
+     "key": "move_semantics",
+     "term": "move"
+    },
+    {
+     "avoid": [
+      "tupla (valore, err) come in Go",
+      "eccezione"
+     ],
+     "definition": "Il tipo con due varianti che una funzione restituisce quando può fallire: `Ok(valore)` per il successo, `Err(errore)` per il fallimento.",
+     "key": "result_type",
+     "term": "Result"
+    },
+    {
+     "avoid": [
+      "operatore ternario di altri linguaggi"
+     ],
+     "definition": "Operatore posto dopo un'espressione di tipo Result: se è `Ok` ne estrae il valore, se è `Err` termina subito la funzione restituendo quell'errore.",
+     "key": "question_mark_operator",
+     "term": "operatore ?"
+    }
+   ],
+   "exercise_blocks": [
+    {
+     "blanks": [
+      {
+       "answers": [
+        "2",
+        "riga 2"
+       ],
+       "id": "riga_move"
+      }
+     ],
+     "feedback": {
+      "correct": "`leggi(testo)` alla riga 2 prende la `String` per valore: da lì `testo` non è più valido. Il compilatore indica la riga 3 perché è lì che lo usi di nuovo.",
+      "incorrect": "Cerca dove `testo` viene passato per valore a una funzione: è lì che la proprietà si sposta. Il compilatore segnala invece il primo uso successivo, non il move."
+     },
+     "id": "q1",
+     "required": false,
+     "text": "Il compilatore segnala E0382 sull'uso di `testo` alla riga 3. Il [[move_semantics|move]] che causa l'errore avviene invece alla riga {{riga_move}}.",
+     "type": "fill_blank"
+    },
+    {
+     "blanks": [
+      {
+       "answers": [
+        "Result"
+       ],
+       "case_sensitive": true,
+       "id": "ret"
+      },
+      {
+       "answers": [
+        "?"
+       ],
+       "id": "q1"
+      },
+      {
+       "answers": [
+        "?"
+       ],
+       "id": "q2"
+      },
+      {
+       "answers": [
+        "?"
+       ],
+       "id": "q3"
+      }
+     ],
+     "feedback": {
+      "correct": "Ogni `?` rimpiazza un blocco `if err != nil { return 0, err }`, e `Ok(s)` rimpiazza `return s, nil`.",
+      "incorrect": "Ogni controllo di Go diventa un simbolo dopo la chiamata, e il valore di ritorno è un `Result`. L'ultima riga avvolge il valore in `Ok`, come `return s, nil`."
+     },
+     "id": "q2",
+     "required": false,
+     "text": "Nella versione Rust il tipo di ritorno diventa {{ret}}, che sostituisce la coppia `(i32, error)`. Le tre chiamate `leggi(x)`, `leggi(y)` e `salva(a + b)` ricevono lo stesso simbolo: {{q1}} dopo la prima, {{q2}} dopo la seconda, {{q3}} dopo la terza. L'ultima riga restituisce `Ok(s)`.",
+     "type": "fill_blank"
+    },
+    {
+     "correct": [
+      "c",
+      "d"
+     ],
+     "id": "q3",
+     "options": [
+      {
+       "feedback": "Sembra a posto perché `n` riceve un valore valido. Ma la funzione restituisce `()` e il simbolo non può uscire con un errore, quindi non compila.",
+       "id": "a",
+       "text": "`fn f() { let n = \"7\".parse::<i32>()?; }`"
+      },
+      {
+       "feedback": "Il tipo di ritorno è presente, quindi sembra legittimo. Ma `i32` non può contenere un errore: serve `Result` e il risultato va avvolto in `Ok`.",
+       "id": "b",
+       "text": "`fn f() -> i32 { \"7\".parse::<i32>()? + 1 }`"
+      },
+      {
+       "feedback": "Compila: la funzione restituisce `Result`, quindi il simbolo può uscire con l'errore. In caso di successo l'ultima riga restituisce `Ok(())`.",
+       "id": "c",
+       "text": "`fn f() -> Result<(), E> { \"7\".parse::<i32>()?; Ok(()) }`"
+      },
+      {
+       "feedback": "Compila: il simbolo estrae l'`i32` in caso di `Ok` ed esce con l'errore altrimenti. Il risultato dell'addizione viene avvolto in `Ok`.",
+       "id": "d",
+       "text": "`fn f() -> Result<i32, E> { Ok(\"7\".parse::<i32>()? + 1) }`"
+      },
+      {
+       "feedback": "Un test è una funzione come le altre e qui restituisce `()`. Che sia un test non cambia la regola: serve un tipo di ritorno `Result`.",
+       "id": "e",
+       "text": "`#[test] fn t() { let n = \"7\".parse::<i32>()?; }`"
+      }
+     ],
+     "question": "`\"7\".parse::<i32>()` restituisce `Result<i32, E>` ed `E` è già importato. Quali funzioni compilano? Le risposte giuste possono essere più di una.",
+     "required": true,
+     "type": "quiz_multi"
+    },
+    {
+     "id": "q4",
+     "max_chars": 600,
+     "question": "La funzione qui sotto non compila. Riscrivila cambiando il tipo di ritorno in `Result` con `ParseIntError`. Poi spiega in 2-3 frasi perché il compilatore segnala l'errore.",
+     "required": true,
+     "type": "open_answer",
+     "rubric": "Essenziali: il tipo di ritorno è `Result<u32, ParseIntError>` con la somma in `Ok`; `?` può far uscire l'errore solo se la funzione restituisce un Result.",
+     "code": {
+      "language": "rust",
+      "code": "fn somma(a: &str, b: &str) -> u32 {\n    a.parse::<u32>()? + b.parse::<u32>()?\n}"
+     }
+    }
+   ],
+   "attempts": [
+    {
+     "block_id": "q1",
+     "attempt_number": 1,
+     "answer": {
+      "blanks": {
+       "riga_move": "2"
+      }
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "q3",
+     "attempt_number": 1,
+     "answer": {
+      "options": [
+       "a",
+       "c"
+      ]
+     },
+     "outcome": "partial"
+    },
+    {
+     "block_id": "q3",
+     "attempt_number": 2,
+     "answer": {
+      "options": [
+       "c",
+       "d"
+      ]
+     },
+     "outcome": "correct"
+    },
+    {
+     "block_id": "q4",
+     "attempt_number": 1,
+     "answer": {
+      "text": "La funzione restituisce u32 e non un Result, quindi l operatore non puo far uscire l errore di parse. Correggo cambiando il ritorno in Result con u32 e ParseIntError e avvolgendo la somma in Ok."
+     },
+     "outcome": "correct",
+     "grade": {
+      "verdict": "correct",
+      "feedback": "Hai spiegato il punto chiave: `?` può far uscire un `Err` solo se la funzione restituisce un `Result`, e qui il ritorno è `u32`, quindi l'errore di `parse` non ha dove andare. Hai anche ricordato di avvolgere la somma in `Ok`, un passo che spesso si dimentica. Nota che il compilatore guarda la firma della funzione e non la riga con il `?`, quindi il problema si risolve cambiando il tipo di ritorno. Per completezza, scrivi la firma intera: `-> Result<u32, ParseIntError>`.",
+      "misconception": null
+     }
+    }
+   ],
+   "active_records": [],
+   "topic_glossary": [],
+   "expect": {
+    "records": [
+     1,
+     3
+    ],
+    "terms": [
+     1,
+     3
+    ],
+    "cards": [
+     2,
+     5
+    ],
+    "record_kinds_include": [
+     "misconception_corrected"
+    ],
+    "term_keys_subset_of": [
+     "move_semantics",
+     "result_type",
+     "question_mark_operator"
+    ],
+    "cards_min_application": 1
+   },
+   "deterministic": {
+    "misconception_record_cites": [
+     "q3"
+    ]
+   },
+   "rubric": [
+    {
+     "id": "kind_right",
+     "text": "L'errore corretto al secondo tentativo di q3 (non tutte le funzioni con `?` compilano: serve il tipo di ritorno Result) è registrato come misconception_corrected, non come demonstrated.",
+     "weight": 4
+    },
+    {
+     "id": "evidence_concrete",
+     "text": "`evidence` dice in modo concreto che al primo tentativo la scelta era parziale e che al secondo è stata corretta, senza punteggi.",
+     "weight": 2
+    },
+    {
+     "id": "one_question_cards",
+     "text": "Ogni scheda ha una sola domanda nel fronte e un retro di 1-3 frasi.",
+     "weight": 3
+    },
+    {
+     "id": "application_card",
+     "text": "Almeno una scheda chiede di prevedere se un frammento breve con `?` compila e perché (applicazione dell'obiettivo).",
+     "weight": 3
+    },
+    {
+     "id": "error_card",
+     "text": "Una scheda mette alla prova la distinzione che era sbagliata nel primo tentativo di q3.",
+     "weight": 3
+    },
+    {
+     "id": "no_overclaim",
+     "text": "Nessun record afferma più di ciò che q1, q3 e q4 dimostrano.",
+     "weight": 2
+    }
+   ]
+  }
+ ]
+}

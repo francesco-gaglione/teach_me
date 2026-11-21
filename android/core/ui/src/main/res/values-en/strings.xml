@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+<string name="ui_error_network_title">Can\'t reach the backend</string>
+    <string name="ui_error_network_retry_hint">Try again once you\'re back online.</string>
+    <string name="ui_error_unexpected_title">Something went wrong</string>
+    <string name="ui_error_unexpected_retry_hint">Try again in a moment.</string>
+    <string name="ui_error_open_settings">Settings</string>
+    <string name="ui_too_long_server" tools:ignore="PluralsCandidate">At most %1$d characters.</string>
+    <string name="ui_too_long_live" tools:ignore="PluralsCandidate">At most %1$d characters: it\'s now %2$d.</string>
+    <string name="ui_cancel">Cancel</string>
+
+    <string name="ui_load_network_title">Can\'t reach the backend</string>
+    <string name="ui_load_network_body">Check that the device is online and the backend is running.</string>
+    <string name="ui_load_server_title">The backend ran into a problem</string>
+    <string name="ui_load_server_body">Try again in a moment. If it keeps happening, check the backend logs.</string>
+    <string name="ui_load_retry">Try again</string>
+    <string name="ui_load_open_settings">Open settings</string>
+    <string name="ui_load_dismiss">Close</string>
+    <string name="ui_still_loading">Still loading…</string>
+    <string name="ui_loading_state">Loading</string>
+
+    <string name="ui_topic_count_none">No topics</string>
+    <plurals name="ui_topic_count">
+        <item quantity="one">%1$d topic</item>
+        <item quantity="other">%1$d topics</item>
+    </plurals>
+
+    <string name="ui_state_prefix">status: %1$s</string>
+    <string name="ui_state_define_mission">Let\'s define the mission</string>
+    <string name="ui_state_confirm_mission">Confirm the mission</string>
+    <string name="ui_state_mission_confirmed">Mission confirmed</string>
+    <string name="ui_state_researching">Looking for sources…</string>
+    <string name="ui_state_research_retry">Research needs a retry</string>
+    <string name="ui_state_ready">Ready for lessons</string>
+    <string name="ui_state_unknown">Unrecognized status</string>
+
+    <string name="ui_action_rename">Rename</string>
+    <string name="ui_action_delete">Delete</string>
+    <string name="ui_more_actions_for">More actions for %1$s</string>
+    <string name="ui_actions_for">Actions for %1$s</string>
+
+    <plurals name="ui_interval_minutes">
+        <item quantity="one">in %1$d minute</item>
+        <item quantity="other">in %1$d minutes</item>
+    </plurals>
+    <plurals name="ui_interval_hours">
+        <item quantity="one">in %1$d hour</item>
+        <item quantity="other">in %1$d hours</item>
+    </plurals>
+    <plurals name="ui_interval_days">
+        <item quantity="one">in %1$d day</item>
+        <item quantity="other">in %1$d days</item>
+    </plurals>
+    <plurals name="ui_interval_months">
+        <item quantity="one">in %1$d month</item>
+        <item quantity="other">in %1$d months</item>
+    </plurals>
+    <plurals name="ui_interval_years">
+        <item quantity="one">in %1$d year</item>
+        <item quantity="other">in %1$d years</item>
+    </plurals>
+    <string name="ui_next_due_today">The next card is due today at %1$s.</string>
+    <string name="ui_next_due_tomorrow">The next card is due tomorrow.</string>
+    <string name="ui_next_due_on">The next card is due %1$s.</string>
+    <string name="ui_next_due_date">on %1$s</string>
+
+    <!-- LlmKeyNotice (llm-key.md) -->
+    <string name="llmkey_button_missing">Add your key</string>
+    <string name="llmkey_button_rejected">Replace your key</string>
+    <string name="llmkey_button_missing_desc">Add your key in Settings</string>
+    <string name="llmkey_button_rejected_desc">Replace your key in Settings</string>
+    <string name="llmkey_retry">Try again</string>
+    <string name="llmkey_title_missing">Your LLM key is missing</string>
+    <string name="llmkey_title_rejected">The service doesn\'t accept your key</string>
+    <string name="llmkey_request_missing">To %1$s I need your LLM service key, and you haven\'t saved one yet. %2$s Add it in Settings: it takes a minute.</string>
+    <string name="llmkey_request_rejected">To %1$s I used your key, but the service rejected it: it may be wrong, expired or not enabled for this use. %2$s Replace it in Settings.</string>
+    <string name="llmkey_failure_missing">The key was removed while I was working, so I couldn\'t %1$s. %2$s Save one in Settings and try again.</string>
+    <string name="llmkey_failure_rejected">I tried to %1$s, but the service rejected your key: it may be wrong, expired or not enabled for this use. %2$s Replace it in Settings and try again.</string>
+    <string name="llm_credit_title">LLM service credit used up</string>
+    <string name="llm_credit_body_request">To %1$s I used your key: the service accepted it, but the credit is used up. %2$s Top it up with your provider and try again.</string>
+    <string name="llm_credit_body_failure">I tried to %1$s, but the LLM service credit is used up: your key is fine. %2$s Top it up with your provider and try again.</string>
+    <string name="llm_credit_retry">Try again</string>
+    <string name="llm_credit_retrying">Trying again…</string>
+    <string name="llm_credit_retry_cd">Try again: %1$s</string>
+    <string name="llm_credit_announce_again">Credit still used up.</string>
+    <string name="llmkey_fixed_title">Key saved</string>
+    <string name="llmkey_fixed_body">You can try again now.</string>
+
+    <string name="llmkey_ctx_chat_action">talk to the Tutor</string>
+    <string name="llmkey_ctx_chat_reassure">Your message is still in the field.</string>
+    <string name="llmkey_ctx_mission_action">confirm the mission and look for sources</string>
+    <string name="llmkey_ctx_mission_reassure">The mission wasn\'t confirmed: the proposal is still there.</string>
+    <string name="llmkey_ctx_research_action">look for sources</string>
+    <string name="llmkey_ctx_research_reassure">The sources you have stay as they are.</string>
+    <string name="llmkey_ctx_research_reassure_empty">The mission is safe.</string>
+    <string name="llmkey_ctx_generate_action">write the lesson</string>
+    <string name="llmkey_ctx_generate_reassure">You haven\'t lost anything.</string>
+    <string name="llmkey_ctx_complete_action">close the lesson and update the record</string>
+    <string name="llmkey_ctx_complete_reassure">The lesson wasn\'t closed and your answers are safe.</string>
+
+    <string name="llmkey_fail_reply_action_missing">reply</string>
+    <string name="llmkey_fail_reply_action_rejected">reply to your message</string>
+    <string name="llmkey_fail_reply_reassure">Your message is safe.</string>
+    <string name="llmkey_fail_reply_reassure_partial">Your message is safe. Above is the part that arrived before the interruption.</string>
+    <string name="llmkey_fail_research_action">look for sources</string>
+    <string name="llmkey_fail_research_reassure">The mission is safe.</string>
+    <string name="llmkey_fail_generate_action">write the lesson</string>
+    <string name="llmkey_fail_generate_reassure">You haven\'t lost anything.</string>
+    <string name="llmkey_fail_complete_action">close the lesson</string>
+    <string name="llmkey_fail_complete_reassure">The lesson is complete and your answers are safe.</string>
+
+    <string name="llmkey_hint_home_missing_title">The key for lessons is missing</string>
+    <string name="llmkey_hint_home_missing_body">You can already create folders and topics and review cards. To talk to the Tutor, write lessons and grade open answers, you need your LLM service key.</string>
+    <string name="llmkey_hint_home_rejected_body">You can keep reviewing and rereading lessons. Everything else needs a valid key.</string>
+    <string name="llmkey_hint_chat_missing_title">Before you write: the LLM key is missing</string>
+    <string name="llmkey_hint_chat_missing_body">The Tutor replies using your LLM service key. Add it in Settings, then come back: what you\'re writing stays in the field.</string>
+    <string name="llmkey_hint_chat_rejected_body">The Tutor can\'t reply until you replace it. What you write stays in the field.</string>
+    <string name="llmkey_hint_complete_missing_title">Closing the lesson needs the LLM key</string>
+    <string name="llmkey_hint_complete_missing_body">Your answers are safe. The record is updated with your LLM service key: add it in Settings, then come back to close the lesson.</string>
+    <string name="llmkey_hint_complete_rejected_body">Your answers are safe. Replace it in Settings, then come back to close the lesson.</string>
+
+    <!-- Queued data of the user (login.md, settings.md) -->
+    <plurals name="ui_pending_reviews">
+        <item quantity="one">%1$d review grade</item>
+        <item quantity="other">%1$d review grades</item>
+    </plurals>
+    <plurals name="ui_pending_answers">
+        <item quantity="one">%1$d lesson answer</item>
+        <item quantity="other">%1$d lesson answers</item>
+    </plurals>
+    <plurals name="ui_pending_highlights">
+        <item quantity="one">the highlights from %1$d lesson</item>
+        <item quantity="other">the highlights from %1$d lessons</item>
+    </plurals>
+    <plurals name="ui_pending_strokes">
+        <item quantity="one">the handwritten notes from %1$d lesson</item>
+        <item quantity="other">the handwritten notes from %1$d lessons</item>
+    </plurals>
+    <string name="ui_pending_both">%1$s and %2$s</string>
+</resources>

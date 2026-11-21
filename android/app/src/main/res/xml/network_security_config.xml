@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext HTTP is allowed on purpose.
+
+  The backend runs on a homelab and is reached over Tailscale or the LAN, usually at an address like
+  http://100.x.y.z:8080 or http://host.tailnet.ts.net:8080 without TLS. Tailscale already encrypts the
+  traffic (WireGuard), and the backend is not exposed to the public internet (see ADR 0001).
+
+  A domain-config cannot match "any private IP / MagicDNS name", so the whole app allows cleartext.
+  If the backend is ever exposed publicly, remove this and require https:// in Settings.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration" />
+</network-security-config>

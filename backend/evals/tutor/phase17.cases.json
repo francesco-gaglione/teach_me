@@ -1,0 +1,184 @@
+{
+  "suite": "tutor-phase17",
+  "prompt_dir": "backend/prompts/tutor",
+  "tools_file": "backend/prompts/tutor/tools.json",
+  "description": "Tutor, issue 17: request_lesson. Chiamato su richiesta esplicita con topic ready; non chiamato per un argomento scelto dalla persona né con ricerca in corso. Stesso formato di `phase12`. ",
+  "defaults": {
+    "runs_per_case": 3,
+    "deterministic": {
+      "max_words": 150,
+      "max_question_marks": 2,
+      "language": "it",
+      "must_not_match": [
+        "(?i)\\b(ti preparo|preparer[òo]|creer[òo]|cercher[òo]|ti far[òo] una lezione)\\b",
+        "(?i)ottima domanda|ottimo!|fantastico!",
+        "(?i)\\bBravo\\b"
+      ],
+      "no_headings": true,
+      "no_tables": true,
+      "no_blockquotes": true,
+      "no_html_or_images": true,
+      "no_bare_urls": true,
+      "max_bold_spans": 3,
+      "max_list_items": 5,
+      "code_blocks_need_language": true,
+      "max_code_line_chars": 60,
+      "no_exclamation_marks": true
+    },
+    "tool_input": {
+      "criteria_must_not_match": [
+        "^(capire|capisco|conoscere|conosco|imparare|imparo|comprendere|studiare|approfondire|finire|completare)\\b"
+      ],
+      "why_min_words": 6,
+      "fields_within_schema_limits": true,
+      "preference_text_must_not_match": "(?i)^(l'utente|la persona)"
+    }
+  },
+  "cases": [
+    {
+      "id": "explicit_request_calls_tool",
+      "description": "Topic ready, la persona chiede la prossima lezione: chiama request_lesson una volta, senza tool di mission, con al più una riga prima.",
+      "topic": {
+        "title": "Rust",
+        "state": "ready",
+        "mission": {
+          "current": {
+            "version": 1,
+            "why": "Mantenere il servizio di pagamenti in Rust che erediterò nel nuovo lavoro.",
+            "success_criteria": [
+              "Leggo e modifico un servizio axum esistente senza aiuto"
+            ],
+            "starting_point": "Programmo in Kotlin da tre anni; Rust mai scritto.",
+            "constraints": [
+              "30 minuti al giorno"
+            ],
+            "out_of_scope": []
+          }
+        }
+      },
+      "steps": [
+        {
+          "user": "Ok, fammi la prossima lezione.",
+          "expect": {
+            "tools": {
+              "called": [
+                "request_lesson"
+              ],
+              "max_calls": 1,
+              "not_called": [
+                "save_mission_draft",
+                "propose_mission_change",
+                "save_preference"
+              ]
+            },
+            "rubric": [
+              {
+                "id": "one_line",
+                "weight": 2,
+                "criterion": "Il testo complessivo scritto alla persona è una sola riga breve (una frase), senza contraddizioni."
+              },
+              {
+                "id": "no_promises",
+                "weight": 3,
+                "criterion": "Non promette tempi e non descrive il contenuto della lezione."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "specific_topic_is_not_requested",
+      "description": "La persona chiede una lezione su un argomento preciso: il Tutor non chiama request_lesson e dice che la prossima la sceglie il sistema in base alla mission.",
+      "topic": {
+        "title": "Rust",
+        "state": "ready",
+        "mission": {
+          "current": {
+            "version": 1,
+            "why": "Mantenere il servizio di pagamenti in Rust che erediterò nel nuovo lavoro.",
+            "success_criteria": [
+              "Leggo e modifico un servizio axum esistente senza aiuto"
+            ],
+            "starting_point": "Programmo in Kotlin da tre anni; Rust mai scritto.",
+            "constraints": [
+              "30 minuti al giorno"
+            ],
+            "out_of_scope": []
+          }
+        }
+      },
+      "steps": [
+        {
+          "user": "Fammi una lezione sui lifetime.",
+          "expect": {
+            "tools": {
+              "not_called": [
+                "request_lesson",
+                "save_mission_draft",
+                "propose_mission_change",
+                "save_preference"
+              ]
+            },
+            "rubric": [
+              {
+                "id": "explains",
+                "weight": 3,
+                "criterion": "Dice in una frase che la prossima lezione la sceglie il sistema in base alla mission, senza promettere la lezione sui lifetime."
+              },
+              {
+                "id": "no_content",
+                "weight": 2,
+                "criterion": "Non insegna il contenuto richiesto (lifetime) in questo messaggio."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "not_ready_does_not_call",
+      "description": "Ricerca ancora in corso (stato researching): non chiama request_lesson e dice che si potrà chiedere appena finita.",
+      "topic": {
+        "title": "Rust",
+        "state": "researching",
+        "mission": {
+          "current": {
+            "version": 1,
+            "why": "Mantenere il servizio di pagamenti in Rust che erediterò nel nuovo lavoro.",
+            "success_criteria": [
+              "Leggo e modifico un servizio axum esistente senza aiuto"
+            ],
+            "starting_point": "Programmo in Kotlin da tre anni; Rust mai scritto.",
+            "constraints": [
+              "30 minuti al giorno"
+            ],
+            "out_of_scope": []
+          }
+        }
+      },
+      "steps": [
+        {
+          "user": "Fammi la prima lezione.",
+          "expect": {
+            "tools": {
+              "not_called": [
+                "request_lesson",
+                "save_mission_draft",
+                "propose_mission_change",
+                "save_preference"
+              ]
+            },
+            "rubric": [
+              {
+                "id": "says_wait",
+                "weight": 3,
+                "criterion": "Dice che la ricerca delle fonti è in corso e che la lezione si potrà chiedere appena finita, senza promettere date. Va bene anche in due frasi brevi, purché non sia lungo né ripetitivo."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

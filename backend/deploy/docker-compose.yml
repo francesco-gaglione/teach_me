@@ -1,0 +1,76 @@
+# Run from this directory: `docker compose up -d --build`.
+# TEACH_ME_DEPLOY_DIR (default: this directory) is where the private .env lives
+# (for example /srv/teach_me). Pass the same file to compose with
+# `--env-file "$TEACH_ME_DEPLOY_DIR/.env"` so ${BIND_IP} is substituted.
+# The fixed project name keeps compose commands and deploy.sh on the same container.
+name: teach_me
+
+services:
+  teach-me:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: ${TEACH_ME_IMAGE:-teach-me:local}
+    container_name: teach-me
+    restart: unless-stopped
+    env_file: ${TEACH_ME_DEPLOY_DIR:-.}/.env
+    ports:
+      # Tailscale address: the way in from outside the house (encrypted tunnel).
+      - "${BIND_IP:?set BIND_IP in .env}:${TEACH_ME_PORT:-8080}:8080"
+      # Optional second address, for devices on the home LAN without Tailscale (plain HTTP:
+      # ADR 0001, update of 2026-11-11). Unset, it is the loopback: nothing new is exposed.
+      - "${LAN_BIND_IP:-127.0.0.1}:${TEACH_ME_PORT:-8080}:8080"
+    volumes:
+      # Explicit volume name below: the database does not depend on the project name.
+      - teach_me_data:/data
+      # Read-aloud clips (ADR 0013). A rebuildable cache: backup.sh deliberately leaves this
+      # volume out, a lost one is simply generated again.
+      - teach_me_audio:/audio
+    environment:
+      # Overrides TEACH_ME_TTS_URL from .env (env_file): without this, an unset value would
+      # leave the feature off. Set TEACH_ME_TTS_URL= (empty) in .env to switch it off.
+      TEACH_ME_TTS_URL: ${TEACH_ME_TTS_URL-http://tts:8080}
+      # Traces to Jaeger over OTLP/HTTP. Same rule: set OTEL_EXPORTER_OTLP_ENDPOINT= (empty)
+      # in .env to switch the export off.
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT-http://jaeger:4318}
+    # No depends_on: the engine needs minutes (first start: the model download) and the
+    # backend works without it. The audio worker backs off while the engine is down.
+
+  # Speech engine (ADR 0013). No published ports: only the compose network reaches it.
+  tts:
+    build:
+      context: ./tts
+    image: teach-me-tts:local
+    container_name: teach-me-tts
+    restart: unless-stopped
+    volumes:
+      - teach_me_tts_models:/models
+    # Measured peak ~2.8 GB with the 1.7B model (1200-character paragraph); the limit leaves room.
+    mem_limit: 5g
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # First start downloads ~4.5 GB: do not count failures until it is done.
+      start_period: 30m
+
+  # Trace viewer. OTLP ingest (4318) is reachable only on the compose network; the UI is
+  # published on loopback by default (set JAEGER_UI_BIND_IP to open it elsewhere).
+  # In-memory storage capped at 5000 traces: nothing is persisted, a restart clears it.
+  jaeger:
+    image: jaegertracing/jaeger:2.23.0
+    container_name: teach-me-jaeger
+    restart: unless-stopped
+    command: ["--set=extensions.jaeger_storage.backends.some_storage.memory.max_traces=5000"]
+    ports:
+      - "${JAEGER_UI_BIND_IP:-127.0.0.1}:16686:16686"
+    mem_limit: 512m
+
+volumes:
+  teach_me_data:
+    name: teach_me_data
+  teach_me_audio:
+    name: teach_me_audio
+  teach_me_tts_models:
+    name: teach_me_tts_models

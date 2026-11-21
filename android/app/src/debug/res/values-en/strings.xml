@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="debug_lessons_title">Sample lessons</string>
+    <string name="debug_lessons_body">Debug builds only: opens the sample lessons from the SDUI contract, without a backend.</string>
+    <string name="debug_lessons_open">Open sample lesson %1$s (%2$s)</string>
+</resources>

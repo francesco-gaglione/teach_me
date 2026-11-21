@@ -1,0 +1,7 @@
+/target
+*.db
+*.db-shm
+*.db-wal
+# Local config may contain the API token.
+/config/teach_me.toml
+/evals/results/

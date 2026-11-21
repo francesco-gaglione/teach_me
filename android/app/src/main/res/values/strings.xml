@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">teach_me</string>
+    <string name="library_pick_folder">Scegli una cartella per vedere i suoi argomenti.</string>
+    <string name="home_open_settings">Impostazioni</string>
+    <string name="review_channel_name">Ripassi</string>
+    <string name="review_channel_description">Avvisi quando ci sono schede di ripasso in scadenza.</string>
+    <plurals name="review_notification_title">
+        <item quantity="one">Hai %d scheda da ripassare</item>
+        <item quantity="other">Hai %d schede da ripassare</item>
+    </plurals>
+    <plurals name="review_notification_minutes">
+        <item quantity="one">Circa %d minuto</item>
+        <item quantity="other">Circa %d minuti</item>
+    </plurals>
+</resources>

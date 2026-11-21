@@ -1,0 +1,244 @@
+{
+  "catalog_version": 1,
+  "title": "Il metodo scientifico",
+  "objective": "Saper riconoscere in un esperimento l'ipotesi, le variabili e il passo che viene dopo.",
+  "estimated_minutes": 6,
+  "glossary": [
+    {
+      "key": "ipotesi",
+      "term": "ipotesi",
+      "definition": "Una risposta provvisoria a una domanda, formulata in modo che un esperimento possa smentirla.",
+      "avoid": [
+        "opinione"
+      ]
+    },
+    {
+      "key": "variabile_indipendente",
+      "term": "variabile indipendente",
+      "definition": "Ciò che chi sperimenta cambia di proposito per vedere che cosa succede."
+    }
+  ],
+  "sources": [
+    {
+      "key": "ucmp_how_science_works",
+      "resource_id": null,
+      "title": "Understanding Science, How science works",
+      "url": "https://undsci.berkeley.edu/understanding-science-101/how-science-works/"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "h1",
+      "type": "heading",
+      "level": 1,
+      "text": "Il metodo scientifico"
+    },
+    {
+      "id": "intro",
+      "type": "paragraph",
+      "text": "Una pianta sul davanzale cresce più in fretta di quella in corridoio. È la luce, l'acqua o il caso? Il metodo scientifico è il modo per rispondere senza tirare a indovinare[^ucmp_how_science_works]."
+    },
+    {
+      "id": "s1",
+      "type": "heading",
+      "level": 2,
+      "text": "Un giro che ricomincia"
+    },
+    {
+      "id": "s1_p1",
+      "type": "paragraph",
+      "text": "Si parte da un'osservazione, si formula un'[[ipotesi]], la si mette alla prova e si guarda il risultato. Il risultato fa nascere nuove domande, e il giro riparte."
+    },
+    {
+      "id": "fig_cycle",
+      "type": "diagram",
+      "layout": "cycle",
+      "title": "Il ciclo del metodo scientifico",
+      "nodes": [
+        {
+          "id": "osserva",
+          "label": "Osservazione",
+          "detail": "qualcosa che non torna"
+        },
+        {
+          "id": "ipotesi",
+          "label": "Ipotesi",
+          "detail": "una risposta che si può smentire"
+        },
+        {
+          "id": "esperimento",
+          "label": "Esperimento"
+        },
+        {
+          "id": "analisi",
+          "label": "Analisi dei dati"
+        }
+      ],
+      "caption": "Dopo l'analisi non c'è un traguardo: i dati portano a una **nuova osservazione**.",
+      "alt": "Quattro tappe disposte in cerchio, collegate da frecce nello stesso verso: osservazione, ipotesi, esperimento, analisi dei dati. Dall'analisi dei dati una freccia torna all'osservazione."
+    },
+    {
+      "id": "s2",
+      "type": "heading",
+      "level": 2,
+      "text": "Che cosa cambia e che cosa no"
+    },
+    {
+      "id": "s2_p1",
+      "type": "paragraph",
+      "text": "In un esperimento ben fatto cambi **una cosa sola**, la [[variabile_indipendente]], e misuri l'effetto. Tutto il resto deve restare uguale, altrimenti non sai a che cosa attribuire il risultato."
+    },
+    {
+      "id": "fig_tree",
+      "type": "diagram",
+      "layout": "tree",
+      "title": "Le variabili di un esperimento",
+      "nodes": [
+        {
+          "id": "variabili",
+          "label": "Variabili"
+        },
+        {
+          "id": "indipendente",
+          "label": "Indipendente",
+          "detail": "la cambi tu: ore di luce"
+        },
+        {
+          "id": "dipendente",
+          "label": "Dipendente",
+          "detail": "la misuri: altezza della pianta"
+        },
+        {
+          "id": "controllo",
+          "label": "Di controllo",
+          "detail": "restano uguali: acqua, vaso"
+        }
+      ],
+      "edges": [
+        {
+          "from": "variabili",
+          "to": "indipendente"
+        },
+        {
+          "from": "variabili",
+          "to": "dipendente"
+        },
+        {
+          "from": "variabili",
+          "to": "controllo"
+        }
+      ],
+      "caption": "Nell'esempio della pianta cambiano solo le ore di luce; acqua e vaso sono identici.",
+      "alt": "Un albero con la radice 'Variabili' e tre rami: indipendente (la cambi tu, ad esempio le ore di luce), dipendente (la misuri, ad esempio l'altezza della pianta), di controllo (restano uguali, ad esempio acqua e vaso)."
+    },
+    {
+      "id": "fb1",
+      "type": "fill_blank",
+      "text": "Se dai più acqua a una pianta e meno all'altra per vedere quale cresce di più, la quantità d'acqua è la variabile {{tipo}}.",
+      "blanks": [
+        {
+          "id": "tipo",
+          "answers": [
+            "indipendente"
+          ]
+        }
+      ],
+      "feedback": {
+        "correct": "Esatto: è ciò che cambi di proposito.",
+        "incorrect": "È la variabile che cambi tu di proposito: quella indipendente. La crescita, che misuri, è la dipendente."
+      }
+    },
+    {
+      "id": "s3",
+      "type": "heading",
+      "level": 2,
+      "text": "E se l'ipotesi è sbagliata?"
+    },
+    {
+      "id": "fig_flow",
+      "type": "diagram",
+      "layout": "flow",
+      "nodes": [
+        {
+          "id": "dati",
+          "label": "Dati raccolti"
+        },
+        {
+          "id": "confronto",
+          "label": "Confronto con l'ipotesi"
+        },
+        {
+          "id": "regge",
+          "label": "L'ipotesi regge",
+          "detail": "si ripete e si estende"
+        },
+        {
+          "id": "smentita",
+          "label": "L'ipotesi è smentita",
+          "detail": "se ne formula un'altra"
+        }
+      ],
+      "edges": [
+        {
+          "from": "dati",
+          "to": "confronto"
+        },
+        {
+          "from": "confronto",
+          "to": "regge",
+          "label": "d'accordo"
+        },
+        {
+          "from": "confronto",
+          "to": "smentita",
+          "label": "in disaccordo"
+        },
+        {
+          "from": "smentita",
+          "to": "dati",
+          "label": "si riparte"
+        }
+      ],
+      "caption": "Un'ipotesi smentita non è un fallimento: restringe il campo delle risposte possibili.",
+      "alt": "Un percorso da sinistra a destra: dai dati raccolti si passa al confronto con l'ipotesi, che si divide in due esiti. Se i dati sono d'accordo, l'ipotesi regge e l'esperimento si ripete e si estende. Se sono in disaccordo, l'ipotesi è smentita e se ne formula un'altra."
+    },
+    {
+      "id": "os1",
+      "type": "order_steps",
+      "prompt": "Metti in ordine i passi per scoprire se è la luce a far crescere di più la pianta.",
+      "steps": [
+        {
+          "id": "oss",
+          "text": "Noti che la pianta sul davanzale è più alta"
+        },
+        {
+          "id": "ipo",
+          "text": "Supponi che la causa sia la luce"
+        },
+        {
+          "id": "exp",
+          "text": "Coltivi due piante uguali con ore di luce diverse"
+        },
+        {
+          "id": "ana",
+          "text": "Confronti le altezze dopo tre settimane"
+        }
+      ],
+      "feedback": {
+        "correct": "Giusto: osservazione, ipotesi, esperimento, analisi.",
+        "incorrect": "Prima si osserva e si formula l'ipotesi; l'esperimento serve a metterla alla prova, e l'analisi viene per ultima."
+      }
+    },
+    {
+      "id": "src",
+      "type": "primary_source",
+      "source": "ucmp_how_science_works",
+      "why": "Mostra con esempi reali che la scienza procede a giri successivi e non in linea retta."
+    },
+    {
+      "id": "ask",
+      "type": "ask_agent",
+      "prompt_hint": "Come faccio a capire se un'ipotesi si può davvero smentire?"
+    }
+  ]
+}

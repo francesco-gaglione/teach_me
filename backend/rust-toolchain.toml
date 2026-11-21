@@ -1,0 +1,7 @@
+# Pinned so local builds, CI and the Docker image use the same compiler and clippy:
+# a new stable release can add lints that fail `clippy -D warnings`.
+# To upgrade: bump the version here and in Dockerfile, then fix any new lints.
+[toolchain]
+channel = "1.100.0"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

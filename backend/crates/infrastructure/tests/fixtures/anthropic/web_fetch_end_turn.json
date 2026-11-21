@@ -1,0 +1,50 @@
+{
+  "id": "msg_01Fetch",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-sonnet-5-5",
+  "content": [
+    {"type": "text", "text": "Leggo le fonti."},
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_01F1",
+      "name": "web_fetch",
+      "input": {"url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"}
+    },
+    {
+      "type": "web_fetch_tool_result",
+      "tool_use_id": "srvtoolu_01F1",
+      "content": {
+        "type": "web_fetch_result",
+        "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+        "retrieved_at": "2026-11-11T10:00:00Z",
+        "content": {
+          "type": "document",
+          "title": "What Is Ownership?",
+          "source": {"type": "text", "media_type": "text/plain", "data": "Ownership is a set of rules."}
+        }
+      }
+    },
+    {
+      "type": "server_tool_use",
+      "id": "srvtoolu_01F2",
+      "name": "web_fetch",
+      "input": {"url": "https://blocked.example/page"}
+    },
+    {
+      "type": "web_fetch_tool_result",
+      "tool_use_id": "srvtoolu_01F2",
+      "content": {"type": "web_fetch_tool_result_error", "error_code": "url_not_allowed"}
+    },
+    {"type": "text", "text": "{\"title\": \"Ownership\"}"}
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 9100,
+    "output_tokens": 640,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "server_tool_use": {"web_fetch_requests": 2}
+  }
+}

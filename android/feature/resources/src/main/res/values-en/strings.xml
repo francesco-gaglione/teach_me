@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Empty state (mission not confirmed) -->
+    <string name="res_empty_title">Sources arrive after the mission</string>
+    <string name="res_empty_body">Sources are the books, documentation and reliable articles I draw what I teach you from. I look for them once you\'ve confirmed the mission, so I can pick them for your goal.</string>
+    <string name="res_empty_action">Define the mission</string>
+    <string name="res_empty_action_proposal">Go to the proposal</string>
+
+    <!-- Loading and load errors -->
+    <string name="res_loading">Loading</string>
+
+    <!-- Progress -->
+    <string name="res_progress_title">Looking for sources</string>
+    <string name="res_progress_title_refresh">Updating sources</string>
+    <string name="res_progress_mission">For your mission: “%1$s”</string>
+    <string name="res_phase_planning">Preparing search queries</string>
+    <string name="res_phase_searching">Searching the web</string>
+    <string name="res_phase_reading">Reading the best pages</string>
+    <string name="res_phase_evaluating">Checking reliability and writing notes</string>
+    <string name="res_phase_saving">Saving the sources</string>
+    <string name="res_phase_generic">Looking for sources…</string>
+    <string name="res_phase_queued">Queued…</string>
+    <string name="res_phase_done">done</string>
+    <string name="res_phase_current">in progress</string>
+    <string name="res_phase_todo">to do</string>
+    <string name="res_progress_footer">It usually takes a few minutes. You can leave: the search continues on the server.</string>
+    <string name="res_progress_footer_slow">This is taking longer than usual. You can leave the app: the search continues on the server.</string>
+    <string name="res_progress_previous">Meanwhile, the sources from the previous search (mission version %1$d).</string>
+    <string name="res_progress_previous_unknown">Meanwhile, the sources from the previous search.</string>
+    <string name="res_announce_phase">Search: %1$s.</string>
+    <plurals name="res_announce_ready">
+        <item quantity="one">Sources ready, %1$d found.</item>
+        <item quantity="other">Sources ready, %1$d found.</item>
+    </plurals>
+
+    <!-- Failure -->
+    <string name="res_failed_title_upstream">Search interrupted</string>
+    <string name="res_failed_body_upstream">The search service didn\'t respond. Your mission is safe: you can try again.</string>
+    <string name="res_failed_title_rate">Too many requests</string>
+    <string name="res_failed_body_rate">The search service is busy. Wait a minute and try again.</string>
+    <string name="res_failed_title_timeout">The search took too long</string>
+    <string name="res_failed_body_timeout">I couldn\'t finish in time. You can try again: that\'s often enough.</string>
+    <string name="res_failed_title_generic">Search interrupted</string>
+    <string name="res_failed_body_generic">Something went wrong on the server. Try again.</string>
+    <string name="res_failed_title_refresh">Update failed</string>
+    <string name="res_failed_body_refresh">The sources you see are from the previous search. You can try again whenever you like.</string>
+    <string name="res_failed_network">I couldn\'t reach the backend. Check your connection.</string>
+    <string name="res_failed_server">The server had a problem. Try again shortly.</string>
+    <string name="res_retry">Try again</string>
+    <string name="res_retrying">Trying again…</string>
+    <string name="res_details">Details</string>
+
+    <!-- Results -->
+    <string name="res_group_knowledge">Knowledge · %1$d</string>
+    <plurals name="res_group_knowledge_description">
+        <item quantity="one">Knowledge, %1$d source</item>
+        <item quantity="other">Knowledge, %1$d sources</item>
+    </plurals>
+    <string name="res_group_knowledge_hint">This is where I draw what I teach you from.</string>
+    <string name="res_group_community">Community · %1$d</string>
+    <plurals name="res_group_community_description">
+        <item quantity="one">Community, %1$d source</item>
+        <item quantity="other">Community, %1$d sources</item>
+    </plurals>
+    <string name="res_group_community_hint">Where you find the hands-on experience of people who do it.</string>
+    <string name="res_communities_skipped">I didn\'t look for communities: if you want some, ask me in the chat and then update the sources.</string>
+
+    <string name="res_none_title">I didn\'t find reliable sources</string>
+    <string name="res_none_body">I searched, but nothing was solid enough for your mission, and I\'d rather not include doubtful sources. Below you\'ll find what was missing.</string>
+    <string name="res_none_action">Search again</string>
+    <string name="res_none_action_busy">Searching…</string>
+
+    <string name="res_refresh">Update sources</string>
+    <string name="res_refresh_busy">Starting…</string>
+
+    <!-- Summary (side column or top row) -->
+    <string name="res_side_title">The search</string>
+    <string name="res_side_when">Searched on %1$s.</string>
+    <string name="res_side_mission">For the mission, version %1$d.</string>
+    <string name="res_side_count_split">%1$s: knowledge %2$d, community %3$d.</string>
+    <string name="res_side_count_knowledge_only">%1$s of knowledge.</string>
+    <string name="res_row_summary">%1$s · searched on %2$s for mission v%3$d.</string>
+    <string name="res_row_summary_no_date">%1$s · for mission v%2$d.</string>
+    <plurals name="res_count">
+        <item quantity="one">%1$d source</item>
+        <item quantity="other">%1$d sources</item>
+    </plurals>
+
+    <!-- Banner: the mission changed -->
+    <string name="res_stale_title">The mission changed after the search</string>
+    <string name="res_stale_body">The sources were chosen for version %1$d. If the goal changed significantly, update them: it takes a few minutes. If only a detail changed, you can leave them.</string>
+
+    <!-- Gaps -->
+    <string name="res_gaps_title">What I didn\'t find</string>
+    <string name="res_gaps_intro">For these points of your mission I didn\'t find reliable enough sources, so I didn\'t include any. Take lessons on these topics with more caution.</string>
+    <string name="res_gap_description">Not found: %1$s</string>
+    <string name="res_gaps_more">Show the other %1$d</string>
+    <string name="res_gaps_less">Show less</string>
+
+    <!-- Source row -->
+    <string name="res_new">New</string>
+    <string name="res_use_for">Use it for:</string>
+    <string name="res_row_description">%1$s: %2$s, %3$s. %4$s. Use it for: %5$s.</string>
+    <string name="res_row_description_no_domain">%1$s: %2$s. %3$s. Use it for: %4$s.</string>
+    <string name="res_row_external">External link.</string>
+    <string name="res_row_new">New.</string>
+    <string name="res_row_open">Open in browser</string>
+    <string name="res_row_copy">Copy link</string>
+    <string name="res_row_menu">Actions for %1$s</string>
+    <string name="res_link_copied">Link copied</string>
+    <string name="res_external_link">External link</string>
+    <string name="res_type_book">Book</string>
+    <string name="res_type_paper">Paper</string>
+    <string name="res_type_article">Article</string>
+    <string name="res_type_documentation">Documentation</string>
+    <string name="res_type_video">Video</string>
+    <string name="res_type_course">Course</string>
+    <string name="res_type_standard">Standard</string>
+    <string name="res_type_pdf">PDF</string>
+    <string name="res_type_forum">Forum</string>
+    <string name="res_type_community">Community</string>
+    <string name="res_type_live">Live course</string>
+    <string name="res_type_local">Local group</string>
+    <string name="res_type_other">Source</string>
+
+    <!-- Toasts (shown by the Topic screen) -->
+    <plurals name="res_toast_found">
+        <item quantity="one">I found %1$d source.</item>
+        <item quantity="other">I found %1$d sources.</item>
+    </plurals>
+    <plurals name="res_toast_updated">
+        <item quantity="one">Sources updated: %1$d source.</item>
+        <item quantity="other">Sources updated: %1$d sources.</item>
+    </plurals>
+    <string name="res_toast_failed">The source search failed.</string>
+    <string name="res_toast_see">View</string>
+
+    <!-- Documents: "I tuoi documenti" (resources.md section 13) -->
+    <string name="doc_title">Your documents</string>
+    <string name="doc_title_count">Your documents · %1$d</string>
+    <string name="doc_subtitle">Lessons follow these PDFs, together with web sources.</string>
+    <string name="doc_pending_mission">Once you confirm the mission, I\'ll also look for web sources that complement your PDF.</string>
+    <string name="doc_load_failed_title">I can\'t load your documents</string>
+    <string name="doc_loading">Loading documents</string>
+
+    <string name="doc_empty_title">Study from your PDF</string>
+    <string name="doc_empty_body">Upload a book, handout or your notes as a PDF. Lessons will follow its pages and cite them, together with the sources I find on the web.</string>
+    <string name="doc_empty_note_text">PDFs need selectable text: I can\'t read scans.</string>
+    <string name="doc_empty_note_limits">Up to 5 documents, 50 MB each.</string>
+    <string name="doc_empty_note_privacy">The file stays on your device; I keep the text, and the pages we use in a lesson are sent to the model that writes it.</string>
+    <string name="doc_upload">Upload a PDF</string>
+    <string name="doc_limit_reached">You\'ve reached the limit of 5 documents. Remove one to upload another.</string>
+    <string name="doc_busy">I\'m reading a document: you\'ll be able to upload another shortly.</string>
+
+    <plurals name="doc_pages">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+    <string name="doc_in_language">in %1$s</string>
+    <string name="doc_row_description">Document: %1$s.</string>
+    <string name="doc_row_description_meta">Document: %1$s, %2$s.</string>
+    <plurals name="doc_index_title">
+        <item quantity="one">Contents · %1$d section</item>
+        <item quantity="other">Contents · %1$d sections</item>
+    </plurals>
+    <string name="doc_index_hint">In the chat you can tell me which parts you want to study.</string>
+    <string name="doc_pages_range">pp. %1$d-%2$d</string>
+    <string name="doc_pages_single">p. %1$d</string>
+    <string name="doc_remove_a11y">Remove “%1$s”</string>
+    <string name="doc_remove">Remove</string>
+    <string name="doc_removing">Removing…</string>
+
+    <string name="doc_phase_uploading">Uploading the file…</string>
+    <string name="doc_phase_queued">Waiting to start…</string>
+    <string name="doc_phase_reading">Opening the file…</string>
+    <string name="doc_phase_extracting">Reading the text…</string>
+    <string name="doc_phase_extracting_pages">Reading the text · page %1$d of %2$d</string>
+    <string name="doc_phase_sectioning">Finding the document structure…</string>
+    <string name="doc_phase_saving">Saving the text…</string>
+    <string name="doc_phase_unknown">Processing the document…</string>
+    <string name="doc_progress_footer">You can leave the app: I\'ll continue on the server.</string>
+    <string name="doc_cancel">Cancel</string>
+    <string name="doc_importing_description">Document being processed: %1$s</string>
+
+    <string name="doc_failed_no_text_title">This PDF is a scan</string>
+    <string name="doc_failed_no_text_body">The pages are images and contain no text I can read. Look for a version with selectable text (try selecting a word with your finger) and upload it.</string>
+    <string name="doc_failed_encrypted_title">The PDF is password-protected</string>
+    <string name="doc_failed_encrypted_body">I can\'t open it. Remove the password in your PDF reader, save an unprotected copy and upload it again.</string>
+    <string name="doc_failed_pages_title">The PDF is too long</string>
+    <string name="doc_failed_pages_body">It has more than 1,500 pages. Split it into parts, for example by chapter, and upload the one you want to study.</string>
+    <string name="doc_failed_invalid_title">I can\'t open the file</string>
+    <string name="doc_failed_invalid_body">It seems damaged or isn\'t a PDF. Try opening it on your device: if it opens, save it again as a PDF and try again.</string>
+    <string name="doc_failed_other_title">I couldn\'t read the PDF</string>
+    <string name="doc_failed_other_body">It\'s a problem on my side, not the file\'s. You can try again.</string>
+    <string name="doc_failed_other_body_no_retry">It\'s a problem on my side, not the file\'s. If it persists, remove it and upload it again.</string>
+    <string name="doc_details">Details</string>
+    <string name="doc_retry">Try again</string>
+    <string name="doc_retrying">Trying again…</string>
+
+    <string name="doc_upload_too_large_title">The file is too large</string>
+    <string name="doc_upload_too_large_body">The limit is 50 MB. Try compressing the PDF or splitting it into parts.</string>
+    <string name="doc_upload_not_pdf_title">This isn\'t a PDF</string>
+    <string name="doc_upload_not_pdf_body">For now I only read PDF files.</string>
+    <string name="doc_upload_network_title">I couldn\'t upload the file</string>
+    <string name="doc_upload_network_body">Check your connection and try again. The file wasn\'t changed.</string>
+    <string name="doc_close">Close</string>
+
+    <string name="doc_delete_title">Remove the document?</string>
+    <string name="doc_delete_body">“%1$s” will no longer be a source for upcoming lessons. Lessons you\'ve already done stay as they are, with their citations. The file on your device isn\'t touched.</string>
+    <string name="doc_delete_cancel">Cancel</string>
+    <string name="doc_delete_error_title">I couldn\'t remove it</string>
+    <string name="doc_delete_error_network">Check your connection and try again.</string>
+    <string name="doc_delete_error_busy">I\'m still reading the document. Try again shortly.</string>
+    <string name="doc_delete_error_other">Something went wrong on the server. Try again shortly.</string>
+
+    <plurals name="doc_banner_title">
+        <item quantity="one">I read your PDF</item>
+        <item quantity="other">I read your PDFs</item>
+    </plurals>
+    <string name="doc_banner_body">The web sources were chosen earlier, without knowing it. If you like, I\'ll look for more sources that complement it: it takes a few minutes. Lessons will use the PDF either way.</string>
+    <string name="doc_banner_not_now">Not now</string>
+    <string name="res_stale_title_pdf">Sources can be updated</string>
+    <string name="res_stale_body_pdf">The sources were chosen for version %1$d. If the goal changed significantly, update them: it takes a few minutes. If only a detail changed, you can leave them. You also added a PDF after the last search.</string>
+
+    <string name="doc_toast_removed">Document removed.</string>
+    <string name="doc_toast_retry_failed">I couldn\'t try again. Check your connection.</string>
+    <plurals name="doc_toast_read">
+        <item quantity="one">I read “%1$s”: %2$d page.</item>
+        <item quantity="other">I read “%1$s”: %2$d pages.</item>
+    </plurals>
+    <string name="doc_toast_read_no_pages">I read “%1$s”.</string>
+    <plurals name="doc_announce_read">
+        <item quantity="one">I read “%1$s”, %2$d page.</item>
+        <item quantity="other">I read “%1$s”, %2$d pages.</item>
+    </plurals>
+    <string name="doc_announce_read_no_pages">I read “%1$s”.</string>
+</resources>

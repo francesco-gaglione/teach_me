@@ -1,0 +1,157 @@
+{
+  "suite": "grader/issue30-en",
+  "prompt_dir": "backend/prompts/grader",
+  "schema_file": "backend/prompts/grader/output_schema.json",
+  "description": "Issue #30 (ADR 0019): English versions of two phase7 cases.",
+  "defaults": {
+    "runs_per_case": 1,
+    "deterministic": {
+      "schema_valid": true,
+      "feedback_chars": [
+        1,
+        800
+      ],
+      "misconception_chars": [
+        1,
+        300
+      ],
+      "no_exclamation_marks": "ignorare `!` dentro `codice inline` (println!)",
+      "language": "en",
+      "no_newline_in_feedback": true,
+      "no_numeric_grade": true,
+      "must_not_match": [
+        "(?i)\\b(well done|great job|excellent|perfect|congratulations|oops|unfortunately|wrong|you didn't understand|you failed|insufficient|you should)\\b",
+        "(?i)\\bin the rubric|according to the rubric|expected key points\\b",
+        "\\[\\[|\\[\\^",
+        "https?://",
+        "(?i)\\b\\d+\\s?/\\s?10\\b|\\b\\d+\\s?%",
+        "(?i)\\b(once again|as always|next time)\\b"
+      ],
+      "misconception_third_person": "(?i)^(thinks|believes|assumes|expects|confuses|considers|takes|supposes|treats|reasons)\\b",
+      "feedback_sentences": [
+        2,
+        4
+      ],
+      "feedback_chars_typical": [
+        100,
+        350
+      ],
+      "feedback_chars_max_by_verdict": {
+        "correct": 300,
+        "partial": 350,
+        "incorrect": 350,
+        "note": "Fase 9: soglie indicative; 0 violazioni in >= 90% delle run, mai oltre 450. Baseline reale: 475, 505, 572 caratteri."
+      },
+      "partial_single_gap": "rubrica one_gap_only: un partial indica una sola lacuna"
+    },
+    "notes": "expect.verdict è l'insieme dei verdetti accettabili; expect.misconception è null (il campo deve essere null) o present (stringa non vuota). Il Context Assembler reale produce {{question}} in testo semplice e neutralizza i delimitatori in {{answer}}. Latenza da registrare: il tetto in produzione è 20 s."
+  },
+  "cases": [
+    {
+      "id": "correct_own_words_en",
+      "description": "English version of correct_own_words: correct answer in own words, a typo and an informal register. Risk: demanding the rubric wording or downgrading to partial.",
+      "input": {
+        "lesson_title": "When a variable stops being valid",
+        "lesson_objective": "Be able to predict whether a Rust variable is still usable after an assignment.",
+        "question": "Explain in 2-3 sentences why, after `let b = a;` with `a` of type `String`, you can no longer use `a`.",
+        "rubric": "Expected key points (essential: 1 and 2):\n1. The String value was moved into `b`: ownership passes to `b`.\n2. Every value has a single owner, so `a` is no longer valid/usable after the move.\n3. (secondary) The compiler reports it at compile time, or for Copy types like i32 the variable stays valid instead.\nTypical mistakes: \"the string is copied and `a` stays valid\" (thinks assignment always copies); \"`a` is deleted/zeroed\" (thinks of an emptied value).\nPartial answer: says the value moves into `b` but does not explain why `a` is no longer usable (the single owner is missing), or the reverse.\nTone of the feedback: support, say what is missing, never judge.",
+        "max_chars": 600,
+        "answer": "Cause with that line the value of the string goes to `b`, i mean b becomes the owner. In rust theres only one owner at a time so `a` isnt valid anymore and the compiler gives me an error."
+      },
+      "expect": {
+        "verdict": [
+          "correct"
+        ],
+        "misconception": "null"
+      },
+      "rubric": [
+        {
+          "id": "names_what_is_right",
+          "text": "The feedback says concretely what the answer shows (the value goes to `b`, a single owner).",
+          "weight": 3
+        },
+        {
+          "id": "no_fake_gap",
+          "text": "It does not invent gaps or demand details the rubric does not ask for.",
+          "weight": 2
+        },
+        {
+          "id": "tone",
+          "text": "No explicit praise and no grade.",
+          "weight": 1
+        },
+        {
+          "id": "in_english",
+          "text": "The feedback is in English.",
+          "weight": 1
+        }
+      ],
+      "content_language": "en",
+      "deterministic": {
+        "language": "en"
+      }
+    },
+    {
+      "id": "incorrect_with_misconception_en",
+      "description": "English version: a precise wrong belief (assignment copies the string). Must grade `incorrect` and name the misconception in the third person.",
+      "input": {
+        "lesson_title": "When a variable stops being valid",
+        "lesson_objective": "Be able to predict whether a Rust variable is still usable after an assignment.",
+        "question": "Explain in 2-3 sentences why, after `let b = a;` with `a` of type `String`, you can no longer use `a`.",
+        "rubric": "Expected key points (essential: 1 and 2):\n1. The String value was moved into `b`: ownership passes to `b`.\n2. Every value has a single owner, so `a` is no longer valid/usable after the move.\n3. (secondary) The compiler reports it at compile time, or for Copy types like i32 the variable stays valid instead.\nTypical mistakes: \"the string is copied and `a` stays valid\" (thinks assignment always copies); \"`a` is deleted/zeroed\" (thinks of an emptied value).\nPartial answer: says the value moves into `b` but does not explain why `a` is no longer usable (the single owner is missing), or the reverse.\nTone of the feedback: support, say what is missing, never judge.",
+        "max_chars": 600,
+        "answer": "Actually `a` can still be used, because `let b = a;` makes a copy of the string, so there are two identical strings."
+      },
+      "expect": {
+        "verdict": [
+          "incorrect"
+        ],
+        "misconception": "present"
+      },
+      "rubric": [
+        {
+          "id": "names_misconception",
+          "text": "`misconception` says the person thinks assignment copies the String (third person, one sentence).",
+          "weight": 3
+        },
+        {
+          "id": "starts_from_why_plausible",
+          "text": "The feedback acknowledges, anywhere, why the belief seems reasonable (in other languages/types it works that way) and explains the move.",
+          "weight": 3
+        },
+        {
+          "id": "gives_correct_idea",
+          "text": "The feedback gives the correct idea (move, single owner, `a` no longer valid).",
+          "weight": 2
+        },
+        {
+          "id": "no_blame",
+          "text": "It does not judge the person.",
+          "weight": 1
+        },
+        {
+          "id": "misconception_in_feedback_2nd_person",
+          "text": "The feedback speaks directly to the person (\"you\", \"you expected\", \"It seems you think...\") with a supportive tone, not in an impersonal form.",
+          "weight": 2
+        },
+        {
+          "id": "in_english",
+          "text": "`feedback` and `misconception` are in English.",
+          "weight": 1
+        }
+      ],
+      "content_language": "en",
+      "deterministic": {
+        "language": "en"
+      }
+    }
+  ],
+  "pass_criteria": {
+    "verdict_agreement": ">= 5/6 casi con verdetto atteso in 3/3 run; prompt_injection e incorrect_with_misconception in 3/3 (casi sensibili)",
+    "deterministic": "100% dei controlli (nessun «Bravo», nessun punto esclamativo, 1-800 caratteri)",
+    "rubric_mean": ">= 0.8",
+    "latency": "p95 < 12 s con il modello di default (margine sul tetto di 20 s)",
+    "model_comparison": "prima di fissare Haiku 5.5: confrontarlo con Sonnet 5.5 sugli stessi 6 casi x 3 run; passare a Sonnet solo se l'accordo di verdetto di Haiku è inferiore",
+    "phase9_feedback_length": "feedback_chars_max_by_verdict rispettato in >= 90% delle run, mediana <= 300 caratteri; rubrica one_gap_only >= 0.8 sui casi partial; nessuna regressione di verdict_agreement"
+  }
+}

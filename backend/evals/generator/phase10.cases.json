@@ -1,0 +1,544 @@
+{
+  "suite": "generator-phase10",
+  "prompt_dir": "backend/prompts/generator",
+  "description": "Fase 10 (PDF da studiare): la lezione segue un documento caricato. Piano fisso, documento finto con i difetti dell'estrazione reale (ADR 0007).",
+  "defaults": {
+    "runs_per_case": 3,
+    "streaming": true,
+    "deterministic": {
+      "validator_pass_first_try": true,
+      "validator_pass_within_3": true,
+      "sources_copied_exactly": true,
+      "document_sources": true,
+      "pdf_anchor_opening": true,
+      "pages_mentioned_within_excerpt": true,
+      "no_page_exercises": true,
+      "code_indentation_rebuilt": [
+        "rust"
+      ],
+      "code_lines_in_excerpt": {
+        "min_share": 0.4,
+        "languages": [
+          "rust"
+        ],
+        "severity": "warn"
+      },
+      "topic_glossary_copied_exactly": true,
+      "no_exclamation_in_feedback": true,
+      "language": "it",
+      "prose_words": [
+        1200,
+        2200
+      ],
+      "sections": [
+        3,
+        6
+      ],
+      "forbidden_phrases": [
+        "(?i)\\b(bravo|ottimo lavoro|semplicemente|ovviamente|banale)\\b",
+        "(?i)\\bcome abbiamo visto\\b"
+      ],
+      "objective_not_repeated_in_paragraph": true,
+      "quiz_correct_position_varies": true,
+      "quiz_option_char_ratio_max": 1.3,
+      "fill_blank_answer_not_in_adjacent_text": {
+        "severity": "error"
+      },
+      "closing_active": {
+        "last_section_has_checklist": true,
+        "checklist_items": [
+          2,
+          3
+        ],
+        "closing_summary_words_max": 60
+      },
+      "glossary_entries_max": 12,
+      "output_tokens": {
+        "warn_above": 14000
+      },
+      "must_include_block_types": [
+        "code",
+        "primary_source",
+        "ask_agent"
+      ],
+      "min_exercises": 3,
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+      }
+    },
+    "notes": "Fase 10. Il piano è fisso, il documento è finto (libro di fantasia) e il suo testo è quello che il Context Assembler passa come `{{excerpts_section}}`; il runner lo rilegge dalla richiesta per controllare le pagine citate. Controlli nuovi: `document_sources` (url null se e solo se la fonte è un PDF, pagine nel title tra quelle mostrate e non omesse, al massimo 3 voci, title <= 200), `pdf_anchor_opening` (il blocco dopo il titolo è un paragrafo di <= 45 parole che cita il PDF e nomina le pagine), `pages_mentioned_within_excerpt` (nessun numero di pagina nel testo fuori da ciò che l'estratto mostra), `no_page_exercises` (nessun esercizio su pagine, capitoli o listati), `code_indentation_rebuilt` (nessun `{` seguito da una riga a colonna 0: il testo del PDF perde i rientri), `code_lines_in_excerpt` (avviso: quota delle righe di codice che vengono dall'estratto, senza spazi). Fase 12: piani fissi portati alla forma nuova (concetti con `example`, `steps`, `pitfall`, `document_sections: []`); soglie di lunghezza della Fase 12 (`prose_words` 1200-2200, `sections` 3-6, `closing_summary_words_max` 60, `glossary_entries_max` 12, `output_tokens` 14000); i controlli sul PDF sono invariati e restano il confronto con la Fase 10. Dal 2026-11-11 i piani fissi hanno 4 concetti (decisione del proprietario): i concetti aggiunti usano solo ciò che le pagine mostrate dell'estratto sostengono; i controlli sul PDF e le rubriche su citazioni e pagine omesse sono invariati. `estimated_minutes` lo calcola il backend."
+  },
+  "pass_criteria": {
+    "validator_pass_within_3": "100% delle run",
+    "deterministic_pdf": "`document_sources`, `pdf_anchor_opening`, `pages_mentioned_within_excerpt`, `no_page_exercises`, `code_indentation_rebuilt`: 3/3 run",
+    "rubric_mean": ">= 0.8",
+    "omitted_pages": "`pdf_excerpt_cut_by_the_limit` / `omitted_pages` in 3/3 run"
+  },
+  "cases": [
+    {
+      "id": "pdf_chapter_moves_with_flat_code",
+      "description": "La lezione segue la sezione 3.2 (pp. 51-54) di un libro caricato. L'estratto è in inglese, il codice senza rientri, con una lettera iniziale mancante e legature perse («o ers», «speci cation»). Rischi: fatti non presenti nell'estratto, pagine inventate, url non null, codice senza rientri, ancora mancante, esercizi su listati o pagine.",
+      "topic": {
+        "title": "Rust per il servizio al lavoro"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Tra sei settimane devo mantenere un servizio Rust al lavoro e voglio capire il codice che erediterò senza chiedere aiuto ai colleghi.",
+        "success": [
+          "Leggo una funzione con riferimenti e dico chi possiede cosa",
+          "Correggo da solo un errore del borrow checker nel servizio"
+        ],
+        "starting_point": "Vengo da Go e C++.",
+        "constraints": [
+          "Studio dal libro «Systems Programming with Rust» che ho caricato, capitoli 3-5, nell'ordine del libro",
+          "30 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "Concorrenza e async",
+          "unsafe"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Quando una variabile smette di essere valida",
+        "objective": "Saper prevedere se una variabile è ancora utilizzabile dopo un assegnamento o una chiamata di funzione.",
+        "why_now": "Il criterio «leggo una funzione e dico chi possiede cosa» richiede prima di sapere che cosa sposta un valore; il libro lo tratta nella sezione 3.2.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa che una String tiene i byte sull'heap",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "Il move di una String",
+            "key_point": "Assegnare una String a un'altra variabile sposta la proprietà: la variabile di partenza non è più utilizzabile.",
+            "example": "`let a = String::from(\"ferris\"); let b = a;` e poi un `println!` che usa `a` non compila: errore E0382, `a` è stata spostata in `b`.",
+            "steps": [
+              "`a` possiede i byte sull'heap.",
+              "`let b = a;` copia in `b` i tre campi della String ma non i byte sull'heap, e `a` risulta spostata.",
+              "Un uso successivo di `a` è l'errore E0382, segnalato alla riga dell'uso."
+            ],
+            "pitfall": "Pensare che l'errore riguardi l'assegnamento e non l'uso successivo della variabile spostata."
+          },
+          {
+            "name": "Passare e restituire la proprietà",
+            "key_point": "Passare un valore a una funzione lo sposta nel parametro; restituirlo lo riporta al chiamante.",
+            "example": "`let name = String::from(\"ferris\"); let name = shout(name);` con `shout` che prende e restituisce una String: il vecchio `name` passa nel parametro, il nuovo prende il suo posto.",
+            "steps": [
+              "Chiama la funzione passando la variabile: il valore passa nel parametro.",
+              "Dopo la chiamata la variabile originale non è più utilizzabile.",
+              "La funzione restituisce il valore: torna al chiamante e si lega a un nuovo `let`.",
+              "Per tenere due valori indipendenti serve `clone`, che costa un'allocazione e una copia."
+            ],
+            "pitfall": "Pensare che passare una String a una funzione la copi e lasci valida la variabile del chiamante."
+          },
+          {
+            "name": "duplicare con clone",
+            "key_point": "`clone` crea una copia esplicita del valore: dopo averla fatta, originale e copia sono valide, ma la copia costa un'allocazione e una copia del testo.",
+            "example": "`let a = String::from(\"ferris\"); let b = a.clone(); println!(\"{} {}\", a, b);` compila perché `b` possiede una copia dei byte sull'heap.",
+            "steps": [
+              "`a.clone()` crea una nuova String con una copia dei byte.",
+              "`b` possiede la copia: `a` non è stata spostata.",
+              "Entrambe le variabili sono utilizzabili, al prezzo di un'allocazione e di una copia."
+            ],
+            "pitfall": "Pensare che `clone` sia gratuito e vada messo ovunque per far tacere il compilatore."
+          },
+          {
+            "name": "correggere un errore di valore spostato",
+            "key_point": "Davanti a un errore di valore spostato si guarda dove il valore si è spostato e si sceglie il rimedio: restituire la proprietà o fare un `clone`.",
+            "example": "`let s = String::from(\"ferris\"); shout(s); println!(\"{}\", s);` dà E0382: il compilatore indica la riga di `shout(s)` come punto dello spostamento.",
+            "steps": [
+              "Leggi l'errore: dice che `s` è stata spostata alla riga della chiamata.",
+              "Chiediti se dopo la chiamata serve ancora il valore.",
+              "Se serve, o la funzione lo restituisce e lo si lega a un nuovo `let`, o si passa `s.clone()`."
+            ],
+            "pitfall": "Pensare che aggiungere `clone` ovunque sia sempre la correzione giusta."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "move",
+              "term": "move",
+              "hint": "trasferimento della proprietà di un valore"
+            },
+            {
+              "key": "clone",
+              "term": "clone",
+              "hint": "copia esplicita di un valore"
+            }
+          ],
+          "reuse": []
+        },
+        "primary_source_id": "0193e100-0000-7000-8000-000000000001",
+        "other_source_ids": [
+          "0193a100-0000-7000-8000-000000000001"
+        ],
+        "document_sections": [
+          {
+            "document_id": "0193d100-0000-7000-8000-000000000001",
+            "section_ids": [
+              "s5"
+            ]
+          }
+        ],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere quale riga causa l'errore di valore spostato",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "prevedere se `a` è utilizzabile dopo una chiamata di funzione",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "prevedere quali variabili restano utilizzabili dopo un assegnamento e dopo un `clone`",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "scegliere tra `clone` e restituzione della proprietà per correggere un frammento che non compila e motivare il costo della scelta",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a100-0000-7000-8000-000000000001",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "The Rust Programming Language, 4 Understanding Ownership",
+          "url": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html",
+          "language": "en",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust, scritto dai manutentori del linguaggio: ownership, move, riferimenti e slice, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        }
+      ],
+      "documents": [
+        {
+          "document_id": "0193d100-0000-7000-8000-000000000001",
+          "resource_id": "0193e100-0000-7000-8000-000000000001",
+          "title": "Systems Programming with Rust",
+          "language": "en",
+          "page_count": 206,
+          "sections": [
+            {
+              "id": "s3",
+              "title": "3 Ownership",
+              "level": 1,
+              "page_start": 41,
+              "page_end": 70
+            },
+            {
+              "id": "s4",
+              "title": "3.1 Stack, heap and values",
+              "level": 2,
+              "page_start": 41,
+              "page_end": 50
+            },
+            {
+              "id": "s5",
+              "title": "3.2 Moves",
+              "level": 2,
+              "page_start": 51,
+              "page_end": 54
+            },
+            {
+              "id": "s6",
+              "title": "3.3 Copy and Clone",
+              "level": 2,
+              "page_start": 55,
+              "page_end": 70
+            }
+          ],
+          "pages": {
+            "51": "3.2 Moves\n\nhe previous section ended with a promise: every value in a Rust program has exactly one owner, and when that owner goes out of scope the value is dropped. This section looks at what that rule does to code you already know how to write. Consider the following listing.\n\nListing 3.4: Assigning a String to a second variable\nfn main() {\nlet a = String::from(\"ferris\");\nlet b = a;\nprintln!(\"{}\", b);\n}\n\nThe String type is a small struct on the stack: a pointer to the bytes on the heap, a length and a capacity. On a 64-bit target these three fields take 24 bytes. When we write let b = a, the compiler copies those 24 bytes into b, but it does not copy the heap bytes. If both a and b were still valid, both would try to free the same heap allocation when they went out of scope, a bug known as a double free. Rust prevents it by declaring that a has been moved into b.",
+            "52": "After a move, the original variable can no longer be used. The compiler enforces this at compile time, so there is no run-time cost and no run-time check. Listing 3.5 tries to use a after the move.\n\nListing 3.5: Using a moved value\nfn main() {\nlet a = String::from(\"ferris\");\nlet b = a;\nprintln!(\"{} {}\", a, b);\n}\n\nThis program does not compile. The compiler reports error E0382, borrow of moved value: a, and points at the line where the value moved. Notice that the error is about the use of a, not about the assignment itself: the assignment on its own is perfectly legal.\n\nMoves are not limited to assignments. Passing a value to a function moves it into the function's parameter, and returning a value moves it out to the caller. Listing 3.6 shows a function that takes ownership and gives it back.\n\nListing 3.6: Taking and returning ownership\nfn shout(s: String) -> String {\nlet mut t = s;\nt.push_str(\"!\");\nt\n}\nfn main() {\nlet name = String::from(\"ferris\");\nlet name = shout(name);\nprintln!(\"{}\", name);\n}",
+            "53": "The second let name in Listing 3.6 shadows the first. This is allowed, and it is what makes the pattern comfortable: the old name was moved into shout, so nothing can use it by mistake, and the new name takes its place.\n\nGiving ownership to every function and getting it back in the return value works, but it quickly becomes tedious. Chapter 4 introduces references, which let a function use a value without owning it. For now the important point is that a move is the default behaviour for types that own heap memory: String, Vec<T>, Box<T> and the like.\n\nWhen you really want two independent copies, you ask for one explicitly with the clone method. Listing 3.7 clones a before assigning.\n\nListing 3.7: Cloning instead of moving\nfn main() {\nlet a = String::from(\"ferris\");\nlet b = a.clone();\nprintln!(\"{} {}\", a, b);\n}\n\nThis compiles, because b owns its own copy of the heap bytes. The price is an allocation and a copy of the text, which is why the language makes you write clone rather than doing it silently. The compiler's error message o ers this very suggestion (\"consider cloning the value\"), but the speci cation of what to clone, and whether you need a copy at all, is up to you.",
+            "54": "Summary\n\n- Each value has one owner.\n- Assigning or passing a String to a function moves it; the source variable cannot be used afterwards.\n- The error is reported at the use of the moved variable (E0382).\n- clone makes an explicit deep copy.\n\nIn the next section we look at the types for which none of this applies, because their values are copied bit by bit: integers, ﬂoating-point numbers, booleans and chars."
+          }
+        }
+      ],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {},
+      "rubric": [
+        {
+          "id": "fidelity",
+          "weight": 4,
+          "text": "Ogni affermazione di contenuto sul linguaggio si ritrova negli estratti del PDF (o nella fonte web, citata come tale): non compaiono fatti, tipi, API o regole che gli estratti non contengono (per esempio `Rc`, il trait `Drop` spiegato, le regole del borrowing, `Copy` spiegato oltre l'accenno finale)."
+        },
+        {
+          "id": "anchor",
+          "weight": 2,
+          "text": "Il primo paragrafo dopo il titolo dice dove siamo nel libro (sezione e pagine) in una frase, senza ripetere titolo o obiettivo."
+        },
+        {
+          "id": "citations_match",
+          "weight": 3,
+          "text": "Le affermazioni con citazione del PDF si ritrovano nelle pagine indicate nel title della fonte; le voci del PDF hanno url null."
+        },
+        {
+          "id": "code_faithful",
+          "weight": 2,
+          "text": "Il codice mostrato riprende i listati dell'estratto (stesse righe, stessi nomi) con rientri corretti, oppure è un esempio nuovo minimo che usa solo costrutti dell'estratto; non cambia il senso del libro."
+        },
+        {
+          "id": "primary_source_why",
+          "weight": 2,
+          "text": "Il `why` della fonte primaria dice cosa rileggere nel PDF con le pagine, non «apri il PDF», e non sceglie un passaggio già riassunto parola per parola."
+        },
+        {
+          "id": "exercises_from_content",
+          "weight": 2,
+          "text": "Gli esercizi chiedono di usare l'idea su un caso diverso dai listati; nessuno chiede numeri di pagina, listati o titoli."
+        },
+        {
+          "id": "no_copying",
+          "weight": 1,
+          "text": "La lezione parafrasa invece di ricopiare il libro; citazioni testuali brevi (al massimo 25 parole) o assenti."
+        }
+      ]
+    },
+    {
+      "id": "pdf_excerpt_cut_by_the_limit",
+      "description": "La sezione 7.1 (pp. 161-166) supera il limite di 24.000 caratteri: due pagine di listato lunghissimo fanno omettere le pagine 164-166 (il contesto lo dice in una nota). Il piano punta a thread::spawn e `move`. Rischi: citare l'intervallo 161-166 o le pagine omesse, parlare dei channel come coperti dal libro, ricopiare il listato.",
+      "topic": {
+        "title": "Concorrenza in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Il servizio che mantengo lancia thread e voglio capire il codice e le sue regole senza rompere nulla.",
+        "success": [
+          "Leggo il codice che avvia thread nel servizio e dico quali dati prende la closure"
+        ],
+        "starting_point": "Vengo da Go.",
+        "constraints": [
+          "Studio dal libro «Systems Programming with Rust» che ho caricato"
+        ],
+        "out_of_scope": [
+          "async"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Perché la closure di un thread vuole `move`",
+        "objective": "Saper dire perché la closure passata a `thread::spawn` richiede `move` quando usa una variabile del chiamante.",
+        "why_now": "Il libro sulla concorrenza parte dai thread: il primo ostacolo che si incontra nel servizio è l'errore sulla closure che prende in prestito un dato del chiamante.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Conosce il move di un valore",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "Avviare e attendere un thread",
+            "key_point": "spawn avvia il thread con una closure e join attende la sua fine.",
+            "example": "`let handle = thread::spawn(|| { println!(\"hello from the new thread\"); }); handle.join().unwrap();` stampa il saluto; senza `join` il processo potrebbe finire prima.",
+            "steps": [
+              "Chiama `thread::spawn` con una closure: il thread parte subito.",
+              "Tieni il `JoinHandle` restituito.",
+              "Chiama `join` per aspettare la fine del thread.",
+              "Senza `join`, se `main` termina il thread si ferma dove si trova."
+            ],
+            "pitfall": "Pensare che il thread avviato con `spawn` venga atteso da solo prima della fine di `main`."
+          },
+          {
+            "name": "il valore restituito da join",
+            "key_point": "`join` restituisce un `Result`: `Ok` con il valore della closure, oppure `Err` se il thread è andato in panic.",
+            "example": "`let h = thread::spawn(|| 2 + 3); let r = h.join().unwrap();` dà `r` uguale a 5; se la closure facesse panic, `join` darebbe `Err`.",
+            "steps": [
+              "La closure restituisce 5 e il thread finisce.",
+              "`join` attende il thread e restituisce `Ok(5)`.",
+              "Se il thread fosse andato in panic, `join` darebbe `Err` e `unwrap` farebbe fermare anche `main`."
+            ],
+            "pitfall": "Pensare che `join` restituisca direttamente il valore della closure e non un `Result`."
+          },
+          {
+            "name": "perché il compilatore rifiuta il prestito",
+            "key_point": "Una closure che usa un dato del chiamante senza `move` lo prende in prestito, ma il thread può vivere più a lungo del chiamante: il compilatore dà E0373.",
+            "example": "`let nome = String::from(\"ferris\"); thread::spawn(|| println!(\"{}\", nome));` non compila: la closure prende in prestito `nome` ma potrebbe sopravvivere a `main`.",
+            "steps": [
+              "La closure usa `nome`, che appartiene al chiamante, e lo prende in prestito.",
+              "Il compilatore non sa quanto vivrà il thread e non può provare che `nome` esisterà ancora.",
+              "Per questo segnala E0373: la closure potrebbe sopravvivere alla funzione corrente."
+            ],
+            "pitfall": "Pensare che basti che `nome` esista al momento di `spawn` perché la closure possa prenderlo in prestito."
+          },
+          {
+            "name": "move e ciò che resta al chiamante",
+            "key_point": "Con `move` la closure prende la proprietà dei dati che usa; dopo, il chiamante non può più usarli e, se gli servono, deve farne un `clone` prima.",
+            "example": "`let v = vec![1, 2, 3]; let h = thread::spawn(move || println!(\"{:?}\", v)); println!(\"{:?}\", v);` non compila: `v` è passata al thread.",
+            "steps": [
+              "`move` fa prendere alla closure la proprietà di `v`.",
+              "Dopo `spawn`, `v` appartiene al thread e per `main` è spostata.",
+              "L'uso di `v` in `main` è un errore di valore spostato; con un `clone` fatto prima sarebbe lecito."
+            ],
+            "pitfall": "Pensare che `move` copi i dati nel thread e lasci `v` valida in `main`."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "join_handle",
+              "term": "JoinHandle",
+              "hint": "valore restituito da spawn con cui si attende il thread"
+            }
+          ],
+          "reuse": []
+        },
+        "primary_source_id": "0193e100-0000-7000-8000-000000000001",
+        "other_source_ids": [
+          "0193a100-0000-7000-8000-000000000004"
+        ],
+        "document_sections": [
+          {
+            "document_id": "0193d100-0000-7000-8000-000000000001",
+            "section_ids": [
+              "s20"
+            ]
+          }
+        ],
+        "exercises": [
+          {
+            "type": "order_steps",
+            "purpose": "ordinare gli eventi: `spawn`, il thread parte, `main` prosegue, `join` attende",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere che cosa restituisce `join` per un thread che va in panic",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare la closure di spawn perché compili",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché il compilatore non può sapere quanto vive il thread, perché serve `move` e che cosa cambia per `main`",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a100-0000-7000-8000-000000000004",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "The Rust Programming Language, 16 Fearless Concurrency",
+          "url": "https://doc.rust-lang.org/book/ch16-00-concurrency.html",
+          "language": "en",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust su thread, channel e stato condiviso, con esempi.",
+          "use_for": "creare thread, passare dati con move e comunicare con i channel"
+        }
+      ],
+      "documents": [
+        {
+          "document_id": "0193d100-0000-7000-8000-000000000001",
+          "resource_id": "0193e100-0000-7000-8000-000000000001",
+          "title": "Systems Programming with Rust",
+          "language": "en",
+          "page_count": 206,
+          "sections": [
+            {
+              "id": "s15",
+              "title": "6 Error handling",
+              "level": 1,
+              "page_start": 131,
+              "page_end": 160
+            },
+            {
+              "id": "s16",
+              "title": "7 Concurrency",
+              "level": 1,
+              "page_start": 161,
+              "page_end": 200
+            },
+            {
+              "id": "s20",
+              "title": "7.1 Threads",
+              "level": 2,
+              "page_start": 161,
+              "page_end": 166
+            },
+            {
+              "id": "s21",
+              "title": "7.2 Channels",
+              "level": 2,
+              "page_start": 167,
+              "page_end": 180
+            }
+          ],
+          "pages": {
+            "161": "7.1 Threads\n\nhe simplest way to run code concurrently is to start an operating system thread. The standard library does it with std::thread::spawn, which takes a closure and returns a JoinHandle. The new thread starts running the closure at once, while the thread that called spawn carries on with the next line. Nothing is shared between the two unless you arrange it.\n\nListing 7.1: A first thread\nuse std::thread;\nfn main() {\nlet handle = thread::spawn(|| {\nprintln!(\"hello from the new thread\");\n});\nhandle.join().unwrap();\n}\n\nThe call to join blocks the calling thread until the spawned thread has finished, and it returns a Result: Ok with the value the closure returned, or Err if the thread panicked. If main returned without joining, the process would end and the spawned thread would be stopped wherever it happened to be, so the greeting might never be printed.",
+            "162": "Most useful threads work on data that the parent owns. Listing 7.2 tries to print a vector from a thread.\n\nListing 7.2: Borrowing from a thread (does not compile)\nuse std::thread;\nfn main() {\nlet v = vec![1, 2, 3];\nlet handle = thread::spawn(|| {\nprintln!(\"{:?}\", v);\n});\nhandle.join().unwrap();\n}\n\nThe compiler refuses, with error E0373: the closure may outlive the current function, but it borrows v. The compiler cannot know how long the new thread will run, so it cannot prove that v will still be there. The fix is the move keyword before the closure, which makes the closure take ownership of the variables it uses.\n\nListing 7.3: Moving the vector into the thread\nuse std::thread;\nfn main() {\nlet v = vec![1, 2, 3];\nlet handle = thread::spawn(move || {\nprintln!(\"{:?}\", v);\n});\nhandle.join().unwrap();\n}\n\nAfter this change v belongs to the thread, and main can no longer use it. This is the same move we met in chapter 3, applied to a closure's captured variables. If main needs the data afterwards, the options are to clone it before the move or to share it through one of the types of section 7.3.",
+            "163": "Listing 7.4 puts the pieces together in a word-count pipeline with several workers. It is long, and the listing continues on the next page; the points to look at are the worker functions and the way main starts them.\n\nListing 7.4: A word-count pipeline\nuse std::sync::mpsc::{channel, Receiver, Sender};\nuse std::thread;\n\nfn worker_1(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((1, total)).unwrap();\n}\n\nfn worker_2(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((2, total)).unwrap();\n}\n\nfn worker_3(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((3, total)).unwrap();\n}\n\nfn worker_4(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((4, total)).unwrap();\n}\n\nfn worker_5(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((5, total)).unwrap();\n}\n\nfn worker_6(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((6, total)).unwrap();\n}\n\nfn worker_7(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((7, total)).unwrap();\n}\n\nfn worker_8(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((8, total)).unwrap();\n}\n\nfn worker_9(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((9, total)).unwrap();\n}\n\nfn worker_10(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((10, total)).unwrap();\n}\n\nfn worker_11(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((11, total)).unwrap();\n}\n\nfn worker_12(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((12, total)).unwrap();\n}\n\nfn worker_13(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((13, total)).unwrap();\n}\n\nfn worker_14(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((14, total)).unwrap();\n}\n\nfn worker_15(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((15, total)).unwrap();\n}\n\nfn worker_16(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((16, total)).unwrap();\n}\n\nfn worker_17(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((17, total)).unwrap();\n}\n\nfn worker_18(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((18, total)).unwrap();\n}\n\nfn worker_19(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((19, total)).unwrap();\n}\n\nfn worker_20(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((20, total)).unwrap();\n}\n\nfn worker_21(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((21, total)).unwrap();\n}\n\nfn worker_22(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((22, total)).unwrap();\n}\n\nfn worker_23(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((23, total)).unwrap();\n}\n\nfn worker_24(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((24, total)).unwrap();\n}\n\nfn worker_25(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((25, total)).unwrap();\n}\n\nfn worker_26(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((26, total)).unwrap();\n}\n\nfn worker_27(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((27, total)).unwrap();\n}\n\nfn worker_28(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((28, total)).unwrap();\n}\n\nfn worker_29(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((29, total)).unwrap();\n}\n\nfn worker_30(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((30, total)).unwrap();\n}\n\nfn worker_31(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((31, total)).unwrap();\n}\n\nfn worker_32(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((32, total)).unwrap();\n}\n\nfn worker_33(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((33, total)).unwrap();\n}\n\nfn worker_34(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((34, total)).unwrap();\n}\n\nfn worker_35(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((35, total)).unwrap();\n}\n\nfn worker_36(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((36, total)).unwrap();\n}\n\nfn worker_37(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((37, total)).unwrap();\n}\n\nfn worker_38(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((38, total)).unwrap();\n}\n\nfn worker_39(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((39, total)).unwrap();\n}\n\nfn worker_40(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((40, total)).unwrap();\n}\n\nfn worker_41(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((41, total)).unwrap();\n}\n\nfn worker_42(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((42, total)).unwrap();\n}\n\nfn worker_43(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((43, total)).unwrap();\n}\n\nfn worker_44(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((44, total)).unwrap();\n}\n\nfn worker_45(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((45, total)).unwrap();\n}\n\nfn worker_46(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((46, total)).unwrap();\n}\n\nfn worker_47(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((47, total)).unwrap();\n}\n\nfn worker_48(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((48, total)).unwrap();\n}\n\nfn worker_49(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((49, total)).unwrap();\n}\n\nfn worker_50(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((50, total)).unwrap();\n}\n\nfn worker_51(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((51, total)).unwrap();\n}\n\nfn worker_52(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((52, total)).unwrap();\n}\n\nfn worker_53(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((53, total)).unwrap();\n}\n",
+            "164": "fn worker_54(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((54, total)).unwrap();\n}\n\nfn worker_55(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((55, total)).unwrap();\n}\n\nfn worker_56(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((56, total)).unwrap();\n}\n\nfn worker_57(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((57, total)).unwrap();\n}\n\nfn worker_58(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((58, total)).unwrap();\n}\n\nfn worker_59(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((59, total)).unwrap();\n}\n\nfn worker_60(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((60, total)).unwrap();\n}\n\nfn worker_61(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((61, total)).unwrap();\n}\n\nfn worker_62(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((62, total)).unwrap();\n}\n\nfn worker_63(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((63, total)).unwrap();\n}\n\nfn worker_64(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((64, total)).unwrap();\n}\n\nfn worker_65(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((65, total)).unwrap();\n}\n\nfn worker_66(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((66, total)).unwrap();\n}\n\nfn worker_67(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((67, total)).unwrap();\n}\n\nfn worker_68(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((68, total)).unwrap();\n}\n\nfn worker_69(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((69, total)).unwrap();\n}\n\nfn worker_70(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((70, total)).unwrap();\n}\n\nfn worker_71(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((71, total)).unwrap();\n}\n\nfn worker_72(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((72, total)).unwrap();\n}\n\nfn worker_73(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((73, total)).unwrap();\n}\n\nfn worker_74(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((74, total)).unwrap();\n}\n\nfn worker_75(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((75, total)).unwrap();\n}\n\nfn worker_76(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((76, total)).unwrap();\n}\n\nfn worker_77(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((77, total)).unwrap();\n}\n\nfn worker_78(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((78, total)).unwrap();\n}\n\nfn worker_79(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((79, total)).unwrap();\n}\n\nfn worker_80(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((80, total)).unwrap();\n}\n\nfn worker_81(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((81, total)).unwrap();\n}\n\nfn worker_82(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((82, total)).unwrap();\n}\n\nfn worker_83(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((83, total)).unwrap();\n}\n\nfn worker_84(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((84, total)).unwrap();\n}\n\nfn worker_85(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((85, total)).unwrap();\n}\n\nfn worker_86(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((86, total)).unwrap();\n}\n\nfn worker_87(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((87, total)).unwrap();\n}\n\nfn worker_88(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((88, total)).unwrap();\n}\n\nfn worker_89(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((89, total)).unwrap();\n}\n\nfn worker_90(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((90, total)).unwrap();\n}\n\nfn worker_91(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((91, total)).unwrap();\n}\n\nfn worker_92(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((92, total)).unwrap();\n}\n\nfn worker_93(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((93, total)).unwrap();\n}\n\nfn worker_94(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((94, total)).unwrap();\n}\n\nfn worker_95(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((95, total)).unwrap();\n}\n\nfn worker_96(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((96, total)).unwrap();\n}\n\nfn worker_97(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((97, total)).unwrap();\n}\n\nfn worker_98(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((98, total)).unwrap();\n}\n\nfn worker_99(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((99, total)).unwrap();\n}\n\nfn worker_100(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((100, total)).unwrap();\n}\n\nfn worker_101(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((101, total)).unwrap();\n}\n\nfn worker_102(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((102, total)).unwrap();\n}\n\nfn worker_103(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((103, total)).unwrap();\n}\n\nfn worker_104(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((104, total)).unwrap();\n}\n\nfn worker_105(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((105, total)).unwrap();\n}\n\nfn worker_106(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((106, total)).unwrap();\n}\n\nfn worker_107(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((107, total)).unwrap();\n}\n\nfn worker_108(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((108, total)).unwrap();\n}\n\nfn worker_109(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((109, total)).unwrap();\n}\n\nfn worker_110(rx: Receiver<String>, tx: Sender<(usize, usize)>) {\nlet mut total = 0;\nfor line in rx {\nlet words = line.split_whitespace().count();\ntotal += words;\n}\ntx.send((110, total)).unwrap();\n}\n\nfn main() {\nlet (tx, rx) = channel();\nlet mut handles = Vec::new();\nfor i in 1..=110 {\nlet tx = tx.clone();\nhandles.push(thread::spawn(move || run_worker(i, tx)));\n}\nfor h in handles {\nh.join().unwrap();\n}\n}",
+            "165": "Channels\n\nIn the pipeline above the workers do not share memory: they send messages. A channel has a sending end and a receiving end; the standard library provides mpsc, multiple producer, single consumer. Section 7.2 explains why the receiving end cannot be cloned and what happens to a receiver when every sender has been dropped: the iteration over it ends. This is the mechanism that lets the loop in each worker finish by itself.",
+            "166": "Choosing between threads and channels\n\nA channel is the natural tool when work flows in one direction, from producers to a consumer. Shared state, covered in section 7.3, fits better when many threads need to read and occasionally update the same value."
+          }
+        }
+      ],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "sections": [
+          5,
+          5
+        ],
+        "code_lines_in_excerpt": {
+          "min_share": 0.3,
+          "languages": [
+            "rust"
+          ],
+          "severity": "warn"
+        }
+      },
+      "rubric": [
+        {
+          "id": "omitted_pages",
+          "weight": 4,
+          "text": "La lezione non descrive né cita le pagine che l'estratto ha omesso (164-166: seguito del listato, channel, scelta tra thread e channel) e non dice che il libro le tratta o che sono state coperte; i title delle fonti PDF citano solo pagine mostrate (161-163)."
+        },
+        {
+          "id": "fidelity",
+          "weight": 3,
+          "text": "Ogni affermazione sul PDF si ritrova nelle pagine 161-162 (spawn, join, move, errore E0373); non compaiono fatti che l'estratto non contiene."
+        },
+        {
+          "id": "no_listing_copy",
+          "weight": 2,
+          "text": "Il lungo listato 7.4 non è ricopiato: al massimo un frammento breve (fino a 12 righe), con rientri corretti."
+        },
+        {
+          "id": "exercises_from_content",
+          "weight": 2,
+          "text": "Gli esercizi chiedono di usare l'idea di `move` su un caso diverso dai listati, senza domande su pagine, listati o capitoli."
+        },
+        {
+          "id": "primary_source_why",
+          "weight": 1,
+          "text": "La fonte primaria dice cosa rileggere con le pagine realmente mostrate (o indica la fonte web) e non rimanda a pagine omesse."
+        }
+      ]
+    }
+  ]
+}

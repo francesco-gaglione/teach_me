@@ -1,0 +1,31 @@
+[package]
+name = "evals"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Eval runner: drives the real use cases of each role against a configured model."
+
+[lints]
+workspace = true
+
+# Like `api`, a composition-level crate: it wires the real use cases to a
+# provider and an in-memory database (ADR 0002). Nothing depends on it.
+[dependencies]
+domain = { workspace = true }
+application = { workspace = true }
+infrastructure = { workspace = true }
+api = { path = "../api" }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sqlx = { workspace = true }
+time = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }
+
+[[bin]]
+name = "run-evals"
+path = "src/main.rs"

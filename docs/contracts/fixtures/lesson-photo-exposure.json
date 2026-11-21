@@ -1,0 +1,162 @@
+{
+  "catalog_version": 1,
+  "title": "Esposizione: diaframma, tempo e ISO",
+  "objective": "Saper scegliere quale leva tra diaframma, tempo di scatto e ISO cambiare per correggere una foto troppo scura.",
+  "estimated_minutes": 10,
+  "glossary": [
+    {
+      "key": "stop",
+      "term": "stop",
+      "definition": "Unità di misura della luce in fotografia: uno stop in più raddoppia la luce che arriva al sensore, uno in meno la dimezza.",
+      "avoid": ["fermare lo scatto"]
+    },
+    {
+      "key": "diaframma",
+      "term": "diaframma (aperture)",
+      "definition": "L'apertura regolabile dell'obiettivo, indicata con il numero f: numero più piccolo significa foro più grande e più luce.",
+      "avoid": ["otturatore"]
+    },
+    {
+      "key": "tempo_scatto",
+      "term": "tempo di scatto (shutter speed)",
+      "definition": "Per quanto tempo l'otturatore resta aperto, per esempio 1/250 s. Tempi lunghi raccolgono più luce ma rendono mosso ciò che si muove."
+    },
+    {
+      "key": "iso",
+      "term": "ISO",
+      "definition": "L'amplificazione del segnale del sensore. Alzarla schiarisce l'immagine senza cambiare la luce raccolta, ma aggiunge rumore digitale.",
+      "avoid": ["formato del file", "sensibilità della pellicola come oggetto fisico"]
+    }
+  ],
+  "sources": [
+    {
+      "key": "wiki_exposure",
+      "resource_id": null,
+      "title": "Wikipedia, Exposure (photography)",
+      "url": "https://en.wikipedia.org/wiki/Exposure_(photography)"
+    },
+    {
+      "key": "wiki_f_number",
+      "resource_id": null,
+      "title": "Wikipedia, F-number",
+      "url": "https://en.wikipedia.org/wiki/F-number"
+    }
+  ],
+  "blocks": [
+    { "id": "h1", "type": "heading", "level": 1, "text": "Esposizione: diaframma, tempo e ISO" },
+    {
+      "id": "intro",
+      "type": "paragraph",
+      "text": "Una foto troppo scura non si sistema \"alzando la luminosità\" a caso: la fotocamera ti dà tre leve, e ognuna ha un effetto collaterale diverso. Alla fine di questa lezione saprai quale muovere, e di quanto."
+    },
+    { "id": "g_stop", "type": "glossary_term", "key": "stop" },
+
+    { "id": "s1", "type": "heading", "level": 2, "text": "Tre leve per la stessa luce" },
+    {
+      "id": "s1_p1",
+      "type": "paragraph",
+      "text": "L'esposizione è la quantità di luce che raggiunge il sensore. La regoli con tre leve: il [[diaframma]], il [[tempo_scatto|tempo di scatto]] e la sensibilità [[iso|ISO]][^wiki_exposure]. Ogni leva si misura in [[stop]]: uno stop in più raddoppia la luce, uno in meno la dimezza."
+    },
+    {
+      "id": "s1_info",
+      "type": "callout",
+      "variant": "info",
+      "title": "Ogni leva ha un prezzo",
+      "text": "Aprire il diaframma riduce la profondità di campo, allungare il tempo rende mosso ciò che si muove, alzare gli ISO aggiunge rumore. Scegliere la leva significa scegliere quale effetto collaterale accetti."
+    },
+    {
+      "id": "s1_p2",
+      "type": "paragraph",
+      "text": "Il diaframma si indica con il numero f, ed è qui che quasi tutti inciampano: **più il numero è piccolo, più il foro è grande**. Passare da f/8 a f/5.6 apre di uno stop e raddoppia la luce[^wiki_f_number]. Per il tempo è più intuitivo: da 1/250 s a 1/125 s l'otturatore resta aperto il doppio."
+    },
+    {
+      "id": "q1",
+      "type": "quiz_single",
+      "question": "Una foto a f/8, 1/250 s, ISO 100 di un paesaggio immobile è scura di uno stop. Quale impostazione la corregge **senza** aggiungere rumore?",
+      "options": [
+        {
+          "id": "a",
+          "text": "f/11, 1/250 s, ISO 100",
+          "feedback": "f/11 sembra \"di più\" perché il numero cresce, ma è un foro più piccolo: toglie uno stop e la foto diventa ancora più scura."
+        },
+        {
+          "id": "b",
+          "text": "f/8, 1/500 s, ISO 100",
+          "feedback": "1/500 s è un tempo più breve: l'otturatore resta aperto la metà e la foto perde un altro stop."
+        },
+        {
+          "id": "c",
+          "text": "f/8, 1/250 s, ISO 200",
+          "feedback": "L'esposizione torna giusta, ma raddoppiare gli ISO aggiunge rumore: proprio il prezzo che la domanda chiedeva di evitare."
+        },
+        {
+          "id": "d",
+          "text": "f/5.6, 1/250 s, ISO 100",
+          "feedback": "Esatto: da f/8 a f/5.6 il foro si allarga di uno stop. Con un paesaggio immobile la profondità di campo un po' minore è un prezzo accettabile."
+        }
+      ],
+      "correct": "d"
+    },
+
+    { "id": "s2", "type": "heading", "level": 2, "text": "Scambiare stop tra le leve" },
+    {
+      "id": "mc_sim",
+      "type": "missing_component",
+      "wanted": "exposure_simulator",
+      "purpose": "Tre cursori (diaframma, tempo, ISO) con un'anteprima che si schiarisce o si scurisce, per sentire che uno stop tolto a una leva si compensa con uno stop dato a un'altra.",
+      "fallback": [
+        {
+          "id": "mc_sim_p",
+          "type": "paragraph",
+          "text": "Le quattro combinazioni qui sotto danno **la stessa esposizione**. Leggile riga per riga: ogni passaggio toglie uno stop a una leva e lo restituisce a un'altra."
+        },
+        {
+          "id": "mc_sim_code",
+          "type": "code",
+          "language": "text",
+          "code": "f/4    1/500 s   ISO 100\nf/5.6  1/250 s   ISO 100\nf/8    1/125 s   ISO 100\nf/8    1/250 s   ISO 200",
+          "caption": "Stessa luce, effetti diversi: sfocatura dello sfondo, rischio di mosso, rumore."
+        }
+      ]
+    },
+    {
+      "id": "oa1",
+      "type": "open_answer",
+      "question": "Fotografi un bambino che corre in una stanza poco illuminata, a f/8, 1/30 s, ISO 400, e la foto viene mossa. Quale leva cambi per prima, in che direzione, come compensi la luce e quale prezzo accetti? Rispondi in due o tre frasi.",
+      "max_chars": 600,
+      "rubric": "Risposta completa: (1) accorcia il tempo di scatto (per esempio da 1/30 a 1/250 s, tre stop) per congelare il movimento; (2) compensa la luce persa con gli stessi stop, aprendo il diaframma (verso f/2.8-f/4) e/o alzando gli ISO (verso 1600-3200); (3) nomina il prezzo: meno profondità di campo con il diaframma aperto, più rumore con ISO alti. Errori da segnalare: allungare il tempo; chiudere il diaframma pensando che un numero f più alto dia più luce; alzare gli ISO senza citare il rumore. Parziale se indica il tempo ma non la compensazione, o la compensazione senza quantificarla in stop."
+    },
+
+    { "id": "s3", "type": "heading", "level": 2, "text": "Ripasso e pratica" },
+    {
+      "id": "fc1",
+      "type": "flashcard",
+      "front": "Da f/8 a f/5.6: la luce raddoppia o si dimezza?",
+      "back": "Raddoppia: f/5.6 è un foro più grande, uno stop in più. Numero f più piccolo, più luce."
+    },
+    {
+      "id": "cl1",
+      "type": "checklist",
+      "title": "Prova con la tua fotocamera",
+      "items": [
+        { "id": "ref", "text": "Imposta la modalità manuale (M) e scatta una foto di riferimento ben esposta." },
+        { "id": "swap", "text": "Apri il diaframma di uno stop e accorcia il tempo di uno stop: l'esposizione resta uguale?" },
+        { "id": "iso", "text": "Ripeti alzando gli ISO di due stop e confronta il rumore a schermo intero." }
+      ]
+    },
+
+    { "id": "s4", "type": "heading", "level": 2, "text": "Per approfondire" },
+    {
+      "id": "src",
+      "type": "primary_source",
+      "source": "wiki_exposure",
+      "why": "Una panoramica completa dell'esposizione, con la scala degli stop e il concetto di exposure value (EV) che riassume le tre leve in un numero."
+    },
+    {
+      "id": "ask",
+      "type": "ask_agent",
+      "label": "Dubbi sull'esposizione? Chiedi al Tutor",
+      "prompt_hint": "Come scelgo tra diaframma, tempo e ISO quando la luce è poca e il soggetto si muove?"
+    }
+  ]
+}

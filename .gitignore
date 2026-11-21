@@ -1,0 +1,23 @@
+
+# artefatti di build (migrazione)
+/target/
+node_modules/
+dist/
+/build/
+.gradle/
+local.properties
+__pycache__/
+.venv/
+*.pyc
+
+# understand-anything: file temporanei (il grafo in .ua/ resta versionabile)
+.ua/.trash-*/
+.ua/intermediate/
+.ua/tmp/
+
+# strumenti locali di analisi del codice: restano sul disco, non nel repository
+graphify-out/
+.ua/
+
+# impostazioni locali di Claude Code (percorsi della macchina)
+.claude/settings.local.json

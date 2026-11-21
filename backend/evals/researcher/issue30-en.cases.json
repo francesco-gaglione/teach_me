@@ -1,0 +1,228 @@
+{
+  "suite": "researcher/issue30-en",
+  "prompt_dir": "backend/prompts/researcher",
+  "schema_file": "backend/prompts/researcher/output_schema.json",
+  "description": "Issue #30 (ADR 0019): English versions of two phase4 cases. annotation_language follows the case language.",
+  "defaults": {
+    "runs_per_case": 1,
+    "search_budget": 6,
+    "deterministic": {
+      "schema_valid": true,
+      "resources_count": [
+        5,
+        12
+      ],
+      "urls_must_be_https": true,
+      "urls_must_be_in_search_results": true,
+      "no_duplicate_urls": true,
+      "max_web_searches": "search_budget",
+      "annotation_language": "it",
+      "annotation_words": [
+        12,
+        50
+      ],
+      "use_for_words": [
+        4,
+        40
+      ],
+      "annotation_must_not_match": [
+        "(?i)\\b(excellent|fantastic|must-read|comprehensive|the best|unmissable)\\b"
+      ],
+      "use_for_must_not_match": [
+        "(?i)^\\s*(use it to\\s+)?(learn|study|explore|understand)\\.?\\s*$",
+        "(?i)^\\s*use it (to|for)\\b"
+      ],
+      "community_url_must_not_match": [
+        "/comments/",
+        "/t/[^/]+/\\d+",
+        "/thread",
+        "/question[s]?/\\d+"
+      ],
+      "no_community_when_skipped": true,
+      "knowledge_before_community": true,
+      "gap_note_chars": [
+        1,
+        400
+      ],
+      "gap_note_must_not_match": [
+        "(?i)\\b(should|recommend|advisable|worth searching|search separately|ought to)\\b"
+      ],
+      "gap_note_max_words": 25
+    },
+    "notes": "urls_must_be_in_search_results: un URL è accettato se compare tra i risultati di ricerca della run OPPURE tra le existing_resources del caso (stessa regola del Validator, resources.md). Per OpenRouter in streaming i blocchi web_search_tool_result mancano: il runner usa la richiesta non in streaming o unisce gli URL delle citazioni. communities_skipped=true implica zero risorse community. Una ricerca riuscita sostituisce in blocco: l'output e l'elenco completo."
+  },
+  "cases": [
+    {
+      "id": "tech_rust_cli_en",
+      "description": "English version of tech_rust_cli: technical mission with obvious primary sources (official documentation); no community preference, so zero communities and communities_skipped=true. Starting point declared (programs already, new to Rust): sources are not introductions to programming.",
+      "topic": {
+        "title": "Ownership and borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "I want to stop fighting the borrow checker in the personal CLI I am writing to track my expenses.",
+        "success": [
+          "I write a CLI on my own that reads a CSV without needless clone() calls",
+          "I explain ownership and borrowing to a colleague with an example of mine"
+        ],
+        "starting_point": "I have programmed in Python for five years and written a few programs in C; of Rust I have only read the first chapters of the official book, never written a program.",
+        "constraints": [
+          "About 4 hours a week",
+          "I read English well"
+        ],
+        "out_of_scope": [
+          "async",
+          "unsafe",
+          "macros"
+        ]
+      },
+      "preferences": [],
+      "existing_resources": [],
+      "deterministic": {
+        "min_per_kind": {
+          "knowledge": 3
+        },
+        "must_include_url_matching": [
+          "(?i)doc\\.rust-lang\\.org"
+        ],
+        "must_not_include_url_matching": [
+          "(?i)(medium\\.com|dev\\.to|geeksforgeeks|w3schools|udemy|skillshare)"
+        ],
+        "communities_skipped": true,
+        "max_per_kind": {
+          "community": 0
+        }
+      },
+      "rubric": [
+        {
+          "id": "primary_first",
+          "weight": 3,
+          "criterion": "It includes at least one primary or official source (official documentation or book of the language) and treats it as the main reference."
+        },
+        {
+          "id": "mission_fit",
+          "weight": 3,
+          "criterion": "Every use_for links to a concrete goal of the mission (CLI over CSV, avoiding clone, explaining ownership) and not to a generic 'learning Rust'. No source is mainly about async, unsafe or macros."
+        },
+        {
+          "id": "trust_reason",
+          "weight": 2,
+          "criterion": "Every annotation says what the source is and why it is reliable (author, organisation, review, moderation) without generic adjectives."
+        },
+        {
+          "id": "no_redundancy",
+          "weight": 2,
+          "criterion": "No two resources cover the same thing in the same way (e.g. identical chapters from different mirrors of the same book)."
+        },
+        {
+          "id": "honest_gaps",
+          "weight": 2,
+          "criterion": "The declared gaps are credible and tied to the mission (e.g. a practical source on CSV/CLI is missing); if gaps is empty, the mission is really covered by the sources present."
+        },
+        {
+          "id": "use_for_form",
+          "weight": 1,
+          "criterion": "Every use_for is a noun phrase that completes 'Use it for...' and does not repeat 'use it for'."
+        },
+        {
+          "id": "level_fits_starting_point",
+          "weight": 2,
+          "criterion": "The level of the sources fits the starting point (already programs in Python and C, not Rust): no source is an introduction to programming for absolute beginners, and none assumes Rust already; the annotations do not quote the person's starting point."
+        },
+        {
+          "id": "second_solid_source",
+          "weight": 2,
+          "criterion": "It does not cite communities, forums or groups. It uses searches for a second solid source on the hardest part (borrow checker, references) or for missing official documentation (official book, Rust By Example, csv crate docs, Rust reference), and the gaps do not list communities."
+        },
+        {
+          "id": "in_english",
+          "weight": 1,
+          "criterion": "Annotations, use_for and gap notes are written in English."
+        }
+      ],
+      "content_language": "en"
+    },
+    {
+      "id": "hobby_opt_out_en",
+      "description": "English version of hobby_opt_out: a hobby with practical safety and an explicit preference not to join communities: zero communities, communities_skipped=true. Sources must be primary (manufacturers data sheets, manuals), not viral videos.",
+      "topic": {
+        "title": "Developing black and white film at home"
+      },
+      "mission": {
+        "version": 1,
+        "why": "I inherited a film camera and I want to develop the rolls in my bathroom instead of sending them to a lab.",
+        "success": [
+          "I develop a 35mm black and white roll on my own and get sharp, scratch-free negatives",
+          "I choose the right times and temperatures by reading a film data sheet"
+        ],
+        "starting_point": null,
+        "constraints": [
+          "Budget under 100 euros",
+          "Small home, no darkroom"
+        ],
+        "out_of_scope": [
+          "darkroom printing",
+          "colour film"
+        ]
+      },
+      "preferences": [
+        {
+          "scope": "topic",
+          "text": "I don't want to join communities or groups, I prefer to learn on my own."
+        }
+      ],
+      "existing_resources": [],
+      "deterministic": {
+        "communities_skipped": true,
+        "max_per_kind": {
+          "community": 0
+        },
+        "min_per_kind": {
+          "knowledge": 3
+        },
+        "must_include_url_matching": [
+          "(?i)(ilford|kodak|fujifilm|adox|foma|harman|photographersformulary)"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "opt_out",
+          "weight": 4,
+          "criterion": "It does not propose or mention any community, forum, group or in-person course, not even in annotations or gaps as 'I suggest joining...'. The gaps do not talk about communities."
+        },
+        {
+          "id": "primary_datasheets",
+          "weight": 3,
+          "criterion": "It includes primary sources of the field (data sheets or guides from film and developer manufacturers) for times and temperatures, and annotates them as such."
+        },
+        {
+          "id": "safety",
+          "weight": 2,
+          "criterion": "If the mission requires handling chemicals, at least one resource or gap concerns safety or disposal; it is not silently omitted."
+        },
+        {
+          "id": "no_marketing",
+          "weight": 2,
+          "criterion": "No resource is marketing disguised as training (shops selling kits with a 'guide', viral videos without a competent author)."
+        },
+        {
+          "id": "out_of_scope",
+          "weight": 1,
+          "criterion": "No resource is mainly about darkroom printing or colour film."
+        },
+        {
+          "id": "in_english",
+          "weight": 1,
+          "criterion": "Annotations, use_for and gap notes are written in English."
+        }
+      ],
+      "content_language": "en"
+    }
+  ],
+  "pass_criteria": {
+    "deterministic": "tutte le run di tutti i casi rispettano tutti i controlli deterministici; urls_must_be_in_search_results e opt_out e community facoltative (zero community e communities_skipped=true senza richiesta, almeno una community con richiesta) devono passare in 100% delle run, perché sono la garanzia contro fonti inventate e il rispetto delle preferenze",
+    "rubric_score": "punteggio medio pesato >= 0.75 per caso, con nessuna run sotto 0.6",
+    "stability": "tutte le run passano per hobby_opt_out; almeno 1 run su 2 per gli altri casi",
+    "cost": "web_search_requests <= search_budget in ogni run; riportare costo totale per run (usage + $10/1000 ricerche)"
+  }
+}

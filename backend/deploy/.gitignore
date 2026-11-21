@@ -1,0 +1,3 @@
+# Real secrets and local data never get versioned.
+.env
+backups/

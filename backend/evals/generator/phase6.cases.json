@@ -1,0 +1,1496 @@
+{
+  "suite": "generator-phase6",
+  "prompt_dir": "backend/prompts/generator",
+  "description": "Generator in Fase 6: scrive il documento SDUI dal piano, dalle fonti e dal glossario del Topic. Il piano è un input fisso (non si chiama il Planner): la suite misura solo il Generator. Output emulato (testo JSON), Validator reale del backend, fino a 2 riparazioni con repair.md.",
+  "defaults": {
+    "runs_per_case": 3,
+    "streaming": true,
+    "deterministic": {
+      "validator_pass_first_try": true,
+      "validator_pass_within_3": true,
+      "sources_copied_exactly": true,
+      "topic_glossary_copied_exactly": true,
+      "lesson_links_must_be_in": "cases[].lessons[].id",
+      "no_exclamation_in_feedback": true,
+      "prose_words": [
+        1200,
+        2200
+      ],
+      "sections": [
+        3,
+        6
+      ],
+      "forbidden_phrases": [
+        "(?i)\\b(bravo|ottimo lavoro|semplicemente|ovviamente|banale)\\b",
+        "(?i)\\bcome abbiamo visto\\b",
+        "(?i)\\bclicca qui\\b"
+      ],
+      "objective_not_repeated_in_paragraph": true,
+      "open_answer_rubric_words": [
+        25,
+        250
+      ],
+      "quiz_correct_position_varies": true,
+      "no_nearly_all_or_none_of_the_above": [
+        "(?i)nessuna delle precedenti",
+        "(?i)tutte le precedenti"
+      ],
+      "exercise_types_subset_of_plan": "warn",
+      "quiz_option_char_ratio_max": 1.3,
+      "quiz_correct_not_longest_in_chars": "metrica per run: quota di quiz con la corretta strettamente più lunga in caratteri; atteso <= 1/3 dei quiz (con meno di 3 quiz: 0)",
+      "fill_blank_answer_not_in_adjacent_text": {
+        "description": "nessuna risposta di un blank (word-boundary, case-insensitive; per risposte di 1-2 caratteri non alfabetici come `?` basta la presenza dentro `codice inline` o nel testo) compare in: heading di sezione, caption e code del blocco code precedente, paragrafi (e callout) nei 2 blocchi non-exercise precedenti e nel blocco successivo",
+        "severity": "error"
+      },
+      "closing_active": {
+        "last_section_has_checklist": true,
+        "checklist_items": [
+          2,
+          3
+        ],
+        "closing_summary_words_max": 60,
+        "summary_not_repeating_answers": "rubrica (closing_active)"
+      },
+      "consecutive_code_blocks_need_missing_component": {
+        "description": "due blocchi code adiacenti (stessa sezione, senza altro blocco in mezzo) fuori da un fallback sono ammessi solo se il secondo non confronta con il primo; euristica: caption o paragrafo vicino con \"invece|rispetto|confronto|mentre|contro|vs|Go|prima|dopo\". Se scatta, atteso un missing_component wanted=code_compare",
+        "severity": "warn"
+      },
+      "glossary_entries_max": 12,
+      "output_tokens": {
+        "warn_above": 14000,
+        "note": "includere il ragionamento; baseline reale: 3,5k (lezione 1) e 14k (lezione 2) con Sonnet 5.5 prima di phase9. Riportare mediana e massimo per caso"
+      },
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+      }
+    },
+    "notes": "Ogni run: Context Assembler reale -> Generator -> Validator -> (repair)*. Si registra quanti documenti sono serviti (1-3), i codici di errore incontrati per run (indicano regole del prompt poco chiare) e l'usage con cache_read_tokens. sources_copied_exactly: resource_id, title e url identici a quelli del caso. topic_glossary_copied_exactly: ogni voce del documento con la stessa key di una del Topic ha key, term, definition e avoid identici. numbers_need_citation: ogni paragrafo, callout o feedback che contiene una cifra fuori da `codice` porta almeno una citazione [^key] oppure la cifra compare nella formulazione di un esempio ipotetico segnalato (controllo euristico, da rivedere a mano sui falliti). Fase 9: aggiunti controlli sui difetti trovati nelle due lezioni reali (docs/design/review-mvp.md, problemi 1, 2, 6, 7): rapporto in caratteri delle opzioni, risposta del vuoto nel testo adiacente, chiusura attiva, confronto di codice con missing_component, budget di token. Il Validator reale oggi ammette 3 parole di differenza e non guarda i caratteri: i controlli qui sono più severi di proposito, per misurare se il prompt basta. Run reale 2026-11-09: prosa osservata ~160 parole con la lezione completa, quindi il minimo è 150. Falsi positivi noti del runner (risposte cortissime come `si`, `r`): non inseguirli nel prompt. Fase 12: i piani fissi sono stati portati alla forma nuova (concetti con `example`, `steps`, `pitfall`; `document_sections: []`; `estimated_minutes` dalla formula) mantenendo il contenuto didattico; dove c'era un solo concetto ne è stato aggiunto un secondo coerente con la fonte (rust_second_lesson_recall_and_link: `&mut`; strength_thin_sources: recupero tra le sedute; preference_more_practice: modifiche dopo `git add`; fill_blank_no_leak: copia dei tipi semplici). Le soglie di lunghezza sono quelle della Fase 12 (`prose_words` 1200-2200, `sections` 3-6, `closing_summary_words_max` 60, `glossary_entries_max` 12, `output_tokens` 14000; il caso preference_more_practice 1200-1700), con il conteggio §9; i controlli di contenuto sono invariati. Il caso strength_thin_sources ha ora un prerequisito `general`: la lezione avrà la sezione di richiamo. Dal 2026-11-11 (decisione del proprietario) i piani fissi hanno 4-5 concetti (4 con un prerequisito `general`) con concetti aggiunti coerenti con la fonte del caso; i controlli di contenuto sono invariati, `sections` e `min_exercises` sono stati adattati. `estimated_minutes` lo calcola il backend."
+  },
+  "pass_criteria": {
+    "validator_pass_within_3": "100% delle run (altrimenti il job fallirebbe)",
+    "validator_pass_first_try": ">= 60% delle run; il dato guida le correzioni al prompt",
+    "rubric_mean": ">= 0.8 (somma dei pesi soddisfatti / somma dei pesi, media sulle run)",
+    "regression": "nessun controllo deterministico peggiora rispetto alla baseline",
+    "phase9_defects": "quiz_option_char_ratio_max e fill_blank_answer_not_in_adjacent_text: 0 violazioni in >= 90% delle run (baseline: lezione 2 q3 a 1,6 e 2 fill_blank su 2 violati nelle lezioni reali); closing_active: >= 90% delle run; output_tokens: mediana <= 14000 con effort medium (soglia di Fase 12; baseline Fase 9 10-17k)"
+  },
+  "cases": [
+    {
+      "id": "rust_first_lesson",
+      "description": "Prima lezione di un Topic tecnico, nessun record, nessun glossario. Il rischio: troppa teoria prima dell'esercizio, caso dell'esercizio uguale all'esempio, quiz con opzioni di lunghezza diversa o corretta sempre nella stessa posizione, termini usati prima di essere definiti.",
+      "topic": {
+        "title": "Ownership e borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+        "success": [
+          "Leggo un messaggio «borrow of moved value» e so dire quale riga ha spostato il valore",
+          "Scelgo tra passare per valore e passare un riferimento"
+        ],
+        "starting_point": "So già programmare in Python.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "lifetime espliciti"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Quando una variabile smette di essere valida",
+        "objective": "Saper prevedere se una variabile Rust è ancora utilizzabile dopo un assegnamento.",
+        "why_now": "Primo passo verso il criterio «leggere il messaggio borrow of moved value»: serve sapere che cosa sposta il valore.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa dichiarare variabili e chiamare funzioni in un linguaggio imperativo",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "move",
+            "key_point": "Assegnare una String sposta la proprietà: la variabile di partenza non è più utilizzabile.",
+            "example": "let a = String::from(\"ciao\"); let b = a; println!(\"{}\", a); non compila: il valore è stato spostato in `b`.",
+            "steps": [
+              "`String::from` crea un valore che possiede i suoi byte sull'heap, e `a` ne è la proprietaria.",
+              "`let b = a;` trasferisce la proprietà a `b`.",
+              "Da quel momento `a` non è più utilizzabile e il compilatore rifiuta ogni uso successivo."
+            ],
+            "pitfall": "Pensare che `let b = a;` faccia una copia della String e lasci `a` valida."
+          },
+          {
+            "name": "copia dei tipi semplici",
+            "key_point": "I tipi come i32 si duplicano e restano validi.",
+            "example": "let n = 7; let m = n; println!(\"{}\", n); compila: `n` vale ancora 7 dopo l'assegnamento.",
+            "steps": [
+              "`i32` è un tipo semplice che sta tutto sullo stack.",
+              "`let m = n;` ne duplica il valore.",
+              "Entrambe le variabili restano valide."
+            ],
+            "pitfall": "Pensare che la copia valga per ogni tipo, `String` compresa."
+          },
+          {
+            "name": "passare una String a una funzione",
+            "key_point": "Passare una `String` a una funzione la sposta nel parametro: dopo la chiamata la variabile del chiamante non è più utilizzabile.",
+            "example": "`fn consuma(s: String) { println!(\"{}\", s); }` chiamata con `let nome = String::from(\"Ada\"); consuma(nome); println!(\"{}\", nome);`: l'ultima riga non compila.",
+            "steps": [
+              "`nome` possiede la stringa prima della chiamata.",
+              "`consuma(nome)` sposta la proprietà nel parametro `s`.",
+              "Alla fine della funzione `s` esce di scope e la stringa viene liberata.",
+              "L'uso di `nome` dopo la chiamata è l'uso di una variabile spostata: errore."
+            ],
+            "pitfall": "Pensare che una funzione che riceve una `String` la guardi soltanto e il chiamante la ritrovi intatta."
+          },
+          {
+            "name": "duplicare con clone",
+            "key_point": "`clone` crea una copia esplicita del valore: dopo averla fatta, originale e copia sono valide, ma la copia ha un costo.",
+            "example": "`let a = String::from(\"mare\"); let b = a.clone(); println!(\"{} {}\", a, b);` compila e stampa `mare mare`.",
+            "steps": [
+              "`a.clone()` alloca una nuova stringa con gli stessi byte.",
+              "`b` possiede la copia, `a` possiede l'originale: nessun move.",
+              "Entrambe le variabili restano utilizzabili, a prezzo di un'allocazione in più."
+            ],
+            "pitfall": "Pensare che `clone` sia gratuito e vada messo ovunque per far tacere il compilatore."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "ownership",
+              "term": "ownership",
+              "hint": "regola per cui ogni valore ha un solo proprietario"
+            },
+            {
+              "key": "move",
+              "term": "move",
+              "hint": "trasferimento della proprietà"
+            },
+            {
+              "key": "copy_trait",
+              "term": "Copy",
+              "hint": "tipi duplicati all'assegnamento"
+            },
+            {
+              "key": "clone",
+              "term": "clone",
+              "hint": "copia esplicita di un valore"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere l'esito di un assegnamento di String",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "distinguere move e copia",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "prevedere quali righe dopo la chiamata di una funzione che prende una `String` compilano",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché dopo `clone` entrambe le variabili restano valide e dopo un move no",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust, scritto dai manutentori del linguaggio: regole di ownership, move e copia dei tipi semplici, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "sections": [
+          5,
+          5
+        ],
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "single_win",
+          "text": "La lezione serve una sola capacità (prevedere la validità dopo un assegnamento); niente borrowing, lifetime o altri argomenti.",
+          "weight": 3
+        },
+        {
+          "id": "exercise_matches_objective",
+          "text": "Almeno un esercizio obbligatorio chiede di prevedere (non solo riconoscere una definizione).",
+          "weight": 3
+        },
+        {
+          "id": "transfer",
+          "text": "Il caso di almeno un esercizio è diverso dall'esempio mostrato nel codice della spiegazione.",
+          "weight": 2
+        },
+        {
+          "id": "distractors",
+          "text": "I distrattori dei quiz rappresentano misconcezioni plausibili e ogni feedback dice perché l'opzione sembrava ragionevole.",
+          "weight": 2
+        },
+        {
+          "id": "pretraining",
+          "text": "Ogni termine nuovo è definito nel glossario e usato come [[key]] alla prima menzione, prima del concetto che lo richiede.",
+          "weight": 2
+        },
+        {
+          "id": "citations",
+          "text": "Le affermazioni sulle regole di Rust portano una citazione e non compaiono dettagli (numeri di versione, citazioni testuali) che le fonti fornite non possono sostenere.",
+          "weight": 3
+        },
+        {
+          "id": "open_answer_rubric",
+          "text": "La rubrica dell'open_answer è autosufficiente: elenca punti chiave, errori tipici con la convinzione sbagliata che rivelano e come trattare le risposte parziali; la domanda non dipende da blocchi che chi valuta non vede.",
+          "weight": 3
+        },
+        {
+          "id": "tone",
+          "text": "Tono sobrio: nessun complimento, nessun giudizio, nessun «semplicemente/ovviamente».",
+          "weight": 1
+        },
+        {
+          "id": "no_answer_in_context",
+          "text": "Nessun esercizio ha la risposta nel testo che lo circonda: per ogni fill_blank, la caption del codice, il titolo di sezione e il paragrafo adiacente dicono cosa osservare ma non contengono il valore del vuoto; nessun quiz ha la corretta anticipata verbatim sopra.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "La sezione finale chiude con una checklist di 2-3 azioni concrete da fare nel proprio codice (legate alla mission, non ripetizioni degli esercizi) e una sintesi di al più 2 frasi che non ripete le risposte degli esercizi.",
+          "weight": 2
+        },
+        {
+          "id": "economy",
+          "text": "La lezione non contiene elementi oltre il piano: nessuna sezione, callout, termine di glossario o esercizio superfluo, e nessuna spiegazione ripetuta in due punti.",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "photo_reuse_glossary",
+      "description": "Topic non tecnico con termini già nel glossario del Topic. Il rischio: ridefinire o rinominare i termini esistenti (linguaggio canonico), mancato riuso esatto di key/term/definition, rubrica dell'open_answer vaga. Valuta anche l'uso sensato di un missing_component (diagramma) con fallback.",
+      "topic": {
+        "title": "Fotografia: esposizione"
+      },
+      "mission": {
+        "version": 2,
+        "why": "Voglio smettere di usare l'automatico e scegliere io i tre parametri quando fotografo mio figlio che gioca.",
+        "success": [
+          "Per una scena in movimento scelgo un tempo di scatto adeguato e compenso con diaframma e ISO"
+        ],
+        "starting_point": null,
+        "constraints": [
+          "Ho una mirrorless con modalità manuale"
+        ],
+        "out_of_scope": [
+          "flash e illuminazione in studio"
+        ]
+      },
+      "preferences": [
+        {
+          "scope": "all",
+          "text": "Esempi con situazioni di vita quotidiana, non con attrezzatura costosa."
+        }
+      ],
+      "plan": {
+        "title": "Congelare il movimento: tempo di scatto e compenso",
+        "objective": "Saper scegliere un tempo di scatto che congeli un soggetto in movimento e compensare con diaframma o ISO.",
+        "why_now": "Il record 1 mostra che distingue i tre parametri; il criterio di successo richiede ora di usarli insieme su una scena in movimento.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa dire che diaframma, tempo di scatto e ISO regolano la luce che arriva al sensore",
+            "basis": "record",
+            "record_numbers": [
+              1
+            ]
+          }
+        ],
+        "concepts": [
+          {
+            "name": "tempo di scatto e movimento",
+            "key_point": "Un tempo più breve congela il movimento ma lascia entrare meno luce.",
+            "example": "Un bambino corre in giardino: con 1/60 s le gambe vengono mosse, con 1/500 s sono nitide ma la foto viene più scura.",
+            "steps": [
+              "Valuta quanto è veloce il soggetto: un bambino che corre è un soggetto veloce.",
+              "Scegli un tempo breve, per esempio 1/500 s.",
+              "Controlla l'esposizione: con meno luce la foto risulta più scura."
+            ],
+            "pitfall": "Pensare che un tempo più breve basti da solo a migliorare la foto, senza guardare la luce che si perde."
+          },
+          {
+            "name": "compenso",
+            "key_point": "La luce persa si recupera aprendo il diaframma o alzando gli ISO, ciascuno con un prezzo.",
+            "example": "Con 1/500 s la foto è scura di due stop: apri il diaframma di uno stop e alza gli ISO di uno stop.",
+            "steps": [
+              "Misura quanta luce hai perso rispetto all'esposizione corretta, in stop.",
+              "Recupera una parte aprendo il diaframma: la profondità di campo diminuisce.",
+              "Se non basta, alza gli ISO: aumenta il rumore.",
+              "Ricontrolla l'esposizione."
+            ],
+            "pitfall": "Pensare che per recuperare la luce persa convenga sempre alzare gli ISO, come se non avessero un prezzo."
+          },
+          {
+            "name": "direzione e velocità del soggetto",
+            "key_point": "Il tempo che congela una scena dipende da quanto si sposta il soggetto nel fotogramma: un soggetto che attraversa la scena richiede un tempo più breve di uno che si avvicina.",
+            "example": "Un bambino attraversa il fotogramma correndo e un altro corre verso di te alla stessa velocità: per il primo 1/500 s può non bastare, per il secondo 1/250 s può già essere nitido.",
+            "steps": [
+              "Chiediti quanto si sposta il soggetto sul sensore durante lo scatto.",
+              "Un soggetto che attraversa si sposta molto sul sensore, uno che si avvicina molto meno.",
+              "A parità di velocità, il primo vuole un tempo più breve del secondo."
+            ],
+            "pitfall": "Pensare che lo stesso tempo di scatto congeli ugualmente un soggetto che attraversa la scena e uno che si avvicina."
+          },
+          {
+            "name": "quando la compensazione non basta",
+            "key_point": "Se anche con il diaframma tutto aperto e gli ISO alti la foto resta scura, bisogna scegliere che cosa sacrificare: nitidezza del movimento, rumore o luce.",
+            "example": "Palestra al coperto, 1/500 s, diaframma già tutto aperto: la foto è scura anche a ISO alti e il fotografo deve decidere se allungare il tempo.",
+            "steps": [
+              "Parti dal tempo che serve al soggetto: 1/500 s.",
+              "Apri il diaframma al massimo e alza gli ISO fino al limite accettabile.",
+              "Se la foto è ancora scura, allunga il tempo accettando un po' di mosso, oppure accetta più rumore."
+            ],
+            "pitfall": "Pensare che esista sempre un'impostazione che dia insieme foto nitida e ben esposta."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "motion_blur",
+              "term": "mosso",
+              "hint": "sfocatura dovuta al movimento durante lo scatto"
+            }
+          ],
+          "reuse": [
+            "stop",
+            "tempo_scatto",
+            "diaframma",
+            "iso"
+          ]
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000003",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere il tempo adatto a una scena",
+            "verifies_objective": true
+          },
+          {
+            "type": "order_steps",
+            "purpose": "ordinare i passi di compenso",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali scene richiedono un tempo più breve a parità di soggetto",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "giustificare una scelta di parametri quando la luce non basta, dicendo che cosa si sacrifica",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000003",
+          "title": "Understanding Exposure, Bryan Peterson (4th ed.)",
+          "url": "https://www.penguinrandomhouse.com/books/understanding-exposure",
+          "annotation": "Manuale di riferimento sul triangolo dell'esposizione scritto da un fotografo professionista e docente; copre diaframma, tempo di scatto, ISO e compromessi.",
+          "use_for": "relazione tra diaframma, tempo di scatto e ISO"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [
+        {
+          "key": "stop",
+          "term": "stop",
+          "definition": "Un raddoppio o un dimezzamento della quantità di luce che raggiunge il sensore.",
+          "avoid": [
+            "punto"
+          ]
+        },
+        {
+          "key": "tempo_scatto",
+          "term": "tempo di scatto",
+          "definition": "Per quanto tempo l'otturatore resta aperto: più è breve, meno luce entra e meno movimento viene registrato.",
+          "avoid": [
+            "velocità"
+          ]
+        },
+        {
+          "key": "diaframma",
+          "term": "diaframma",
+          "definition": "L'apertura dell'obiettivo che regola la luce in ingresso e la profondità di campo.",
+          "avoid": []
+        },
+        {
+          "key": "iso",
+          "term": "ISO",
+          "definition": "La sensibilità del sensore alla luce: valori alti schiariscono ma aggiungono rumore.",
+          "avoid": [
+            "luminosità"
+          ]
+        }
+      ],
+      "lessons": [],
+      "deterministic": {
+        "sections": [
+          5,
+          5
+        ],
+        "must_include_block_types": [
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "canonical_terms",
+          "text": "Stop, tempo di scatto, diaframma e ISO sono usati con quel nome e con la definizione del glossario, mai con sinonimi (es. «velocità» al posto di tempo di scatto).",
+          "weight": 3
+        },
+        {
+          "id": "new_term_defined",
+          "text": "Il termine «mosso» è definito nel glossario del documento e presentato prima del concetto che lo usa.",
+          "weight": 2
+        },
+        {
+          "id": "daily_examples",
+          "text": "Gli esempi seguono la preferenza (situazioni quotidiane, non attrezzatura costosa).",
+          "weight": 1
+        },
+        {
+          "id": "order_steps_valid",
+          "text": "Se c'è un order_steps, i passi sono realmente sequenziali, con la stessa forma verbale e senza marcatori di sequenza («prima», «poi»).",
+          "weight": 2
+        },
+        {
+          "id": "missing_component_ok",
+          "text": "Se la lezione usa un missing_component, il bisogno è reale, `purpose` descrive una funzione didattica e il fallback funziona da solo; se non lo usa, nessun blocco forzato per mostrare qualcosa di visivo.",
+          "weight": 2
+        },
+        {
+          "id": "transfer",
+          "text": "L'open_answer chiede una scelta giustificata su una scena nuova, non la ripetizione dell'esempio spiegato.",
+          "weight": 2
+        },
+        {
+          "id": "no_answer_in_context",
+          "text": "Nessun esercizio ha la risposta nel testo che lo circonda: per ogni fill_blank, la caption del codice, il titolo di sezione e il paragrafo adiacente dicono cosa osservare ma non contengono il valore del vuoto; nessun quiz ha la corretta anticipata verbatim sopra.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "La sezione finale chiude con una checklist di 2-3 azioni concrete da fare nel proprio codice (legate alla mission, non ripetizioni degli esercizi) e una sintesi di al più 2 frasi che non ripete le risposte degli esercizi.",
+          "weight": 2
+        },
+        {
+          "id": "economy",
+          "text": "La lezione non contiene elementi oltre il piano: nessuna sezione, callout, termine di glossario o esercizio superfluo, e nessuna spiegazione ripetuta in due punti.",
+          "weight": 2
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Distingue i tre parametri dell'esposizione",
+          "body": "Dice che diaframma, tempo di scatto e ISO regolano la luce che arriva al sensore e li associa correttamente a un esempio."
+        }
+      ]
+    },
+    {
+      "id": "rust_second_lesson_recall_and_link",
+      "description": "Seconda lezione: il piano richiama un record precedente (ripasso a distanza) e rimanda a una lezione esistente. Il rischio: lesson_link con un id non presente nel contesto, ripasso assente, ripetizione della teoria della lezione 1.",
+      "topic": {
+        "title": "Ownership e borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+        "success": [
+          "Scelgo tra passare per valore e passare un riferimento"
+        ],
+        "starting_point": null,
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "lifetime espliciti"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Prestare un valore senza spostarlo",
+        "objective": "Saper scegliere tra passare una String per valore e passarne un riferimento.",
+        "why_now": "Il record 3 mostra che sa cos'è un move; il criterio «scelgo tra valore e riferimento» è il passo successivo.",
+        "estimated_minutes": 10,
+        "prerequisites": [
+          {
+            "statement": "Sa prevedere che dopo un move la variabile di partenza non è utilizzabile",
+            "basis": "record",
+            "record_numbers": [
+              3
+            ]
+          }
+        ],
+        "concepts": [
+          {
+            "name": "riferimento condiviso",
+            "key_point": "`&s` presta il valore senza cambiare il proprietario.",
+            "example": "fn lunghezza(s: &String) -> usize { s.len() } chiamata con lunghezza(&testo): `testo` resta utilizzabile dopo la chiamata.",
+            "steps": [
+              "Scrivi `&testo` alla chiamata: presti il valore senza cederlo.",
+              "La funzione riceve `&String` e può soltanto leggere.",
+              "Dopo la chiamata `testo` è ancora di chi l'aveva."
+            ],
+            "pitfall": "Pensare che passare `&testo` sposti la proprietà come passare `testo`."
+          },
+          {
+            "name": "riferimento mutabile `&mut`",
+            "key_point": "`&mut s` presta il valore con il permesso di modificarlo, e finché esiste nessun altro riferimento allo stesso valore è ammesso.",
+            "example": "fn aggiungi(s: &mut String) { s.push_str(\" mondo\"); } chiamata con aggiungi(&mut t) su `let mut t = String::from(\"ciao\");`.",
+            "steps": [
+              "Dichiara la variabile con `mut`.",
+              "Passa `&mut t` alla funzione.",
+              "La funzione modifica il valore in prestito.",
+              "Finché il riferimento mutabile è in uso, nessun altro riferimento a `t` è ammesso."
+            ],
+            "pitfall": "Pensare che si possano tenere nello stesso momento un riferimento condiviso e uno mutabile allo stesso valore."
+          },
+          {
+            "name": "un mutabile oppure molti condivisi",
+            "key_point": "Di un valore si può avere un solo riferimento mutabile oppure molti riferimenti condivisi, mai entrambi nello stesso momento.",
+            "example": "`let mut t = String::from(\"ciao\"); let r1 = &t; let r2 = &t; let m = &mut t; println!(\"{r1} {r2} {m}\");` non compila.",
+            "steps": [
+              "`r1` e `r2` sono due riferimenti condivisi: possono coesistere.",
+              "`&mut t` chiede l'accesso esclusivo mentre `r1` e `r2` sono ancora usati.",
+              "Condivisi e mutabile insieme non sono ammessi: il compilatore rifiuta."
+            ],
+            "pitfall": "Pensare che due riferimenti allo stesso valore vadano bene se non si modificano nello stesso istante."
+          },
+          {
+            "name": "passare per valore: quando la funzione deve tenere il valore",
+            "key_point": "Si passa per valore quando la funzione deve possedere il dato (conservarlo, restituirlo, consumarlo); altrimenti un riferimento basta.",
+            "example": "`fn archivia(archivio: &mut Vec<String>, nota: String) { archivio.push(nota); }`: la nota entra nel vettore, quindi serve per valore.",
+            "steps": [
+              "Chiediti che cosa farà la funzione con il valore.",
+              "`push` mette la nota nel vettore: il vettore deve possederla.",
+              "Per questo `nota` è per valore e il chiamante non la usa più dopo la chiamata."
+            ],
+            "pitfall": "Pensare che passare sempre un riferimento sia la scelta migliore."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "borrow",
+              "term": "borrowing",
+              "hint": "accesso tramite riferimento senza prendere la proprietà"
+            }
+          ],
+          "reuse": [
+            "move",
+            "ownership"
+          ]
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000002",
+        "other_source_ids": [
+          "0193a000-0000-7000-8000-000000000001"
+        ],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "completare la firma di una funzione che legge soltanto",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere la firma di una funzione che deve modificare la stringa ricevuta",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali frammenti rispettano la regola dei prestiti",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "richiamo del move e scelta tra valore e riferimento per una funzione che deve conservare la stringa",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": [
+          {
+            "lesson_id": "0193b000-0000-7000-8000-000000000001",
+            "reason": "è la lezione sul move che questa continua"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000002",
+          "title": "The Rust Programming Language, 4.2 References and Borrowing",
+          "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html",
+          "annotation": "Capitolo del libro ufficiale: riferimenti condivisi e mutabili, regole del borrow checker, riferimenti pendenti.",
+          "use_for": "prestito con `&` e `&mut` e regole del borrow checker"
+        },
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust, scritto dai manutentori del linguaggio: regole di ownership, move e copia dei tipi semplici, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [
+        {
+          "key": "ownership",
+          "term": "ownership",
+          "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+          "avoid": [
+            "proprietà intellettuale"
+          ]
+        },
+        {
+          "key": "move",
+          "term": "move",
+          "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+          "avoid": []
+        }
+      ],
+      "lessons": [
+        {
+          "id": "0193b000-0000-7000-8000-000000000001",
+          "number": 1,
+          "title": "Quando una variabile smette di essere valida"
+        }
+      ],
+      "deterministic": {
+        "lesson_links_must_be_in": [
+          "0193b000-0000-7000-8000-000000000001"
+        ],
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "lesson_link",
+          "primary_source",
+          "ask_agent"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "recall",
+          "text": "Un esercizio o un paragrafo richiama il move (il prerequisito) senza rispiegarlo per intero.",
+          "weight": 3
+        },
+        {
+          "id": "no_repeat",
+          "text": "Non rispiega da zero l'ownership e il move come nella lezione 1: li dà per acquisiti.",
+          "weight": 2
+        },
+        {
+          "id": "link_label",
+          "text": "L'etichetta del lesson_link dice che cosa si farà, non «Prossima lezione»; l'id è quello del contesto.",
+          "weight": 1
+        },
+        {
+          "id": "canonical_terms",
+          "text": "«move» e «ownership» sono usati con la definizione del glossario, copiata uguale nel glossario del documento se usati come [[key]].",
+          "weight": 2
+        },
+        {
+          "id": "single_win",
+          "text": "Una sola capacità (scegliere valore o riferimento); niente `&mut`.",
+          "weight": 3
+        },
+        {
+          "id": "no_answer_in_context",
+          "text": "Nessun esercizio ha la risposta nel testo che lo circonda: per ogni fill_blank, la caption del codice, il titolo di sezione e il paragrafo adiacente dicono cosa osservare ma non contengono il valore del vuoto; nessun quiz ha la corretta anticipata verbatim sopra.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "La sezione finale chiude con una checklist di 2-3 azioni concrete da fare nel proprio codice (legate alla mission, non ripetizioni degli esercizi) e una sintesi di al più 2 frasi che non ripete le risposte degli esercizi.",
+          "weight": 2
+        },
+        {
+          "id": "economy",
+          "text": "La lezione non contiene elementi oltre il piano: nessuna sezione, callout, termine di glossario o esercizio superfluo, e nessuna spiegazione ripetuta in due punti.",
+          "weight": 2
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Legge una variabile come proprietaria",
+          "body": "Dice che ogni valore ha un solo proprietario e che `let a = String::from(\"x\");` rende `a` proprietaria della stringa."
+        },
+        {
+          "number": 2,
+          "kind": "misconception_corrected",
+          "lesson_number": 1,
+          "title": "I tipi semplici si copiano",
+          "body": "All'inizio pensava che `let y = x;` con `x: i32` rendesse `x` inutilizzabile; ora sa che `i32` si copia e `x` resta valida."
+        },
+        {
+          "number": 3,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Prevede l'uso dopo un move",
+          "body": "Dice che dopo `let b = a;` con `a: String` la variabile `a` non è più utilizzabile."
+        }
+      ]
+    },
+    {
+      "id": "strength_thin_sources",
+      "description": "Fonti con la sola annotazione e nessun estratto, argomento in cui i numeri sono facili da inventare. Misura 'never trust parametric knowledge': nessun numero, percentuale, citazione testuale o dato non sostenibile dalla sola annotazione.",
+      "topic": {
+        "title": "Allenamento della forza: progressione del carico"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio aumentare i carichi in palestra senza infortunarmi e capire quando alzare il peso.",
+        "success": [
+          "Decido io quando aumentare il carico di un esercizio"
+        ],
+        "starting_point": "Mi alleno con i pesi da 2 mesi: sono principiante.",
+        "constraints": [
+          "3 sedute a settimana"
+        ],
+        "out_of_scope": [
+          "integratori"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Quando aumentare il carico",
+        "objective": "Saper decidere se aumentare il carico di un esercizio alla prossima seduta.",
+        "why_now": "È il primo criterio di successo della mission e il primo passo concreto della progressione.",
+        "estimated_minutes": 13,
+        "prerequisites": [
+          {
+            "statement": "Sa che cos'è una serie e una ripetizione",
+            "basis": "general",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "progressione",
+            "key_point": "Si aumenta il carico quando il lavoro programmato è stato completato con margine.",
+            "example": "Chiara chiude con margine tutte le serie e le ripetizioni programmate di uno squat: alla prossima seduta può aumentare il carico.",
+            "steps": [
+              "Controlla di aver completato tutto il lavoro programmato.",
+              "Valuta se l'ultima serie è stata chiusa con margine, cioè senza arrivare al limite.",
+              "Se sì, aumenta il carico alla seduta successiva; se no, ripeti lo stesso carico."
+            ],
+            "pitfall": "Pensare che il carico vada aumentato a ogni seduta, a prescindere da come è andata la precedente."
+          },
+          {
+            "name": "recupero tra le sedute",
+            "key_point": "Il recupero tra le sedute decide se si riesce a completare il lavoro con margine: con poco recupero conviene mantenere il carico.",
+            "example": "Marco ha dormito poco e la seduta di ieri è stata intensa: oggi non completa le serie con margine, quindi tiene il carico invece di alzarlo.",
+            "steps": [
+              "Considera quanto tempo è passato dall'ultima seduta che ha allenato gli stessi muscoli.",
+              "Se la seduta di oggi va peggio del solito, tratta il recupero come possibile causa.",
+              "Mantieni il carico finché il lavoro non torna completabile con margine."
+            ],
+            "pitfall": "Pensare che una seduta andata male dopo poco recupero dimostri che il carico è sbagliato e vada abbassato per sempre."
+          },
+          {
+            "name": "la tecnica come condizione",
+            "key_point": "Completare le ripetizioni programmate non basta per aumentare: se la tecnica cede nelle ultime ripetizioni, il carico resta com'è.",
+            "example": "Luca completa tutte le serie di panca, ma nelle ultime ripetizioni il bilanciere sbanda e le spalle si alzano: alla prossima seduta tiene lo stesso carico.",
+            "steps": [
+              "Verifica prima se il lavoro programmato è stato completato.",
+              "Poi guarda com'era la tecnica nelle ultime ripetizioni, non solo se sono uscite.",
+              "Se la tecnica cede, il carico resta; si aumenta quando le serie escono pulite."
+            ],
+            "pitfall": "Pensare che completare tutte le ripetizioni sia sempre un motivo sufficiente per aumentare il carico."
+          },
+          {
+            "name": "guardare più di una seduta",
+            "key_point": "Una seduta isolata non basta per decidere: si guarda l'andamento delle ultime sedute prima di aumentare o di tenere.",
+            "example": "Anna ha una seduta di squat andata male dopo una notte in bianco, ma le due sedute precedenti erano state complete con margine.",
+            "steps": [
+              "Confronta la seduta di oggi con le ultime due.",
+              "Se le precedenti erano complete con margine, la seduta andata male è un caso isolato.",
+              "Tieni il carico e ricontrolla alla prossima seduta senza abbassarlo."
+            ],
+            "pitfall": "Pensare che una sola seduta andata male dica che il carico è sbagliato."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "progressive_overload",
+              "term": "progressive overload",
+              "hint": "aumento graduale dello stimolo nel tempo"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere la decisione giusta in una seduta descritta",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali segnali indicano che oggi conviene tenere il carico",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere la decisione quando le ripetizioni sono complete ma la tecnica cede",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "giustificare la decisione guardando l'andamento di più sedute",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "Science and Practice of Strength Training, Zatsiorsky e Kraemer",
+          "url": "https://www.humankinetics.com/products/science-and-practice-of-strength-training-3rd-edition",
+          "annotation": "Testo universitario con bibliografia scientifica su carico, volume, recupero e periodizzazione nell'allenamento della forza.",
+          "use_for": "progressione del carico e recupero"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "numbers_need_citation": true,
+        "must_not_match_in_text": [
+          "(?i)\\b\\d{2,3}\\s?%",
+          "(?i)secondo (uno )?studio"
+        ],
+        "must_include_block_types": [
+          "primary_source",
+          "ask_agent"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "no_invented_data",
+          "text": "Nessuna percentuale, soglia numerica o risultato di studio presentato come fatto, a meno che sia dato per esempio ipotetico chiaramente dichiarato tale (es. «ad esempio, 8 ripetizioni») e non attribuito a una fonte.",
+          "weight": 4
+        },
+        {
+          "id": "cautious_claims",
+          "text": "Le affermazioni di contenuto sono generali, restano nel perimetro dell'annotazione e portano la citazione della fonte.",
+          "weight": 3
+        },
+        {
+          "id": "no_fake_quotes",
+          "text": "Nessuna citazione testuale (virgolette caporali o inglesi) attribuita alla fonte.",
+          "weight": 3
+        },
+        {
+          "id": "safety_tone",
+          "text": "Nessuna prescrizione medica o promessa di risultati; tono sobrio.",
+          "weight": 1
+        },
+        {
+          "id": "no_answer_in_context",
+          "text": "Nessun esercizio ha la risposta nel testo che lo circonda: per ogni fill_blank, la caption del codice, il titolo di sezione e il paragrafo adiacente dicono cosa osservare ma non contengono il valore del vuoto; nessun quiz ha la corretta anticipata verbatim sopra.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "La sezione finale chiude con una checklist di 2-3 azioni concrete da fare nel proprio codice (legate alla mission, non ripetizioni degli esercizi) e una sintesi di al più 2 frasi che non ripete le risposte degli esercizi.",
+          "weight": 2
+        },
+        {
+          "id": "economy",
+          "text": "La lezione non contiene elementi oltre il piano: nessuna sezione, callout, termine di glossario o esercizio superfluo, e nessuna spiegazione ripetuta in due punti.",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "preference_more_practice",
+      "description": "Preferenza «più esercizi, meno teoria». Il rischio: la preferenza spinge a violare una regola del Validator (nessun esercizio obbligatorio, troppi quiz uguali, più di 2 esercizi dello stesso tipo, opzioni sbilanciate) oppure viene ignorata.",
+      "topic": {
+        "title": "Git: staging area e commit"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio fare commit puliti e smettere di aggiungere file per sbaglio.",
+        "success": [
+          "Faccio commit contenenti solo le modifiche volute"
+        ],
+        "starting_point": "Uso git da terminale.",
+        "constraints": [],
+        "out_of_scope": [
+          "rebase"
+        ]
+      },
+      "preferences": [
+        {
+          "scope": "all",
+          "text": "Più esercizi, meno teoria."
+        }
+      ],
+      "plan": {
+        "title": "Cosa finisce in un commit",
+        "objective": "Saper dire quali modifiche finiranno nel prossimo commit.",
+        "why_now": "Primo criterio di successo: sapere cosa c'è nella staging area prima di fare commit.",
+        "estimated_minutes": 13,
+        "prerequisites": [
+          {
+            "statement": "Ha usato git init e git commit almeno una volta",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "staging area",
+            "key_point": "Il commit contiene solo ciò che è stato aggiunto alla staging area, non tutte le modifiche.",
+            "example": "Hai modificato `a.txt` e `b.txt`; esegui `git add a.txt` e poi `git commit`: nel commit entra solo `a.txt`, mentre `b.txt` resta modificato.",
+            "steps": [
+              "Controlla con `git status` quali file sono modificati e quali già in staging.",
+              "Aggiungi alla staging area solo i file voluti con `git add <file>`.",
+              "Esegui `git commit`: contiene soltanto la staging area.",
+              "`git status` mostra ciò che è rimasto fuori."
+            ],
+            "pitfall": "Pensare che `git commit` registri tutte le modifiche presenti nella cartella di lavoro."
+          },
+          {
+            "name": "modifiche dopo `git add`",
+            "key_point": "Se modifichi un file dopo `git add`, la nuova modifica non è in staging finché non lo aggiungi di nuovo.",
+            "example": "Aggiungi `a.txt`, poi lo modifichi ancora: `git status` lo mostra sia in staging sia tra le modifiche non in staging, e il commit contiene la versione aggiunta.",
+            "steps": [
+              "Esegui `git add a.txt`: la versione attuale è in staging.",
+              "Modifica ancora `a.txt`.",
+              "`git status` lo elenca due volte: tra le modifiche in staging e tra quelle non in staging.",
+              "Il commit registra la versione aggiunta; per includere l'ultima modifica serve un nuovo `git add a.txt`."
+            ],
+            "pitfall": "Pensare che dopo `git add` il file resti agganciato al commit con tutte le modifiche future."
+          },
+          {
+            "name": "leggere le differenze: diff e diff --staged",
+            "key_point": "`git diff` mostra le modifiche non ancora in staging, `git diff --staged` quelle che finiranno nel prossimo commit.",
+            "example": "Hai aggiunto `a.txt` e poi modificato ancora `a.txt` e `c.txt`: `git diff` mostra le righe nuove di entrambi, `git diff --staged` la versione aggiunta di `a.txt`.",
+            "steps": [
+              "Lancia `git diff --staged` per vedere ciò che entrerà nel commit.",
+              "Lancia `git diff` per vedere ciò che resta fuori.",
+              "Confronta i due elenchi per sapere che cosa contiene il prossimo commit."
+            ],
+            "pitfall": "Pensare che `git diff` mostri tutto ciò che finirà nel commit."
+          },
+          {
+            "name": "escludere file: .gitignore",
+            "key_point": "Un file elencato in `.gitignore` non viene aggiunto da `git add .`; ma se il file è già tracciato, l'elenco non lo toglie dal repository.",
+            "example": "In un progetto `debug.log` compare in `git status`; dopo aver scritto `*.log` in `.gitignore`, `git add .` non lo prende più.",
+            "steps": [
+              "`debug.log` non è ancora tracciato e appare tra i file non tracciati.",
+              "La riga `*.log` in `.gitignore` lo esclude dall'aggiunta.",
+              "Se `debug.log` fosse già stato committato, `.gitignore` non cambierebbe nulla finché non lo si toglie dal controllo."
+            ],
+            "pitfall": "Pensare che `.gitignore` tolga dal repository un file già tracciato."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "staging_area",
+              "term": "staging area",
+              "hint": "insieme delle modifiche preparate per il prossimo commit"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_multi",
+            "purpose": "classificare modifiche già in staging",
+            "verifies_objective": true
+          },
+          {
+            "type": "order_steps",
+            "purpose": "sequenza di comandi per un commit parziale",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere l'output di git status",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare il comando che mostra ciò che finirà nel prossimo commit",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché un file già tracciato compare ancora in git status nonostante `.gitignore`",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "Pro Git, 2.2 Recording Changes to the Repository",
+          "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository",
+          "annotation": "Capitolo del libro ufficiale di Git, scritto da Scott Chacon e Ben Straub: stati dei file, staging area, git status, git add e git commit.",
+          "use_for": "staging area e commit"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "prose_words": [
+          1200,
+          1900
+        ],
+        "min_exercises": 5,
+        "max_same_type_consecutive": 2
+      },
+      "rubric": [
+        {
+          "id": "preference_respected",
+          "text": "La lezione ha meno prosa del solito (al massimo circa 1900 parole con 4 concetti) e almeno 5 esercizi, ma rispetta le regole di ritmo (non tre esercizi uguali di fila).",
+          "weight": 3
+        },
+        {
+          "id": "still_explains",
+          "text": "Ogni esercizio è risolvibile con ciò che è stato spiegato prima di esso (la poca teoria non lascia buchi).",
+          "weight": 3
+        },
+        {
+          "id": "option_parity",
+          "text": "Le opzioni dei quiz hanno pari lunghezza e la corretta non è la più lunga o precisa.",
+          "weight": 2
+        },
+        {
+          "id": "no_clues",
+          "text": "Titoli di sezione, domande e feedback precedenti non rivelano la risposta di un esercizio successivo.",
+          "weight": 2
+        },
+        {
+          "id": "no_answer_in_context",
+          "text": "Nessun esercizio ha la risposta nel testo che lo circonda: per ogni fill_blank, la caption del codice, il titolo di sezione e il paragrafo adiacente dicono cosa osservare ma non contengono il valore del vuoto; nessun quiz ha la corretta anticipata verbatim sopra.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "La sezione finale chiude con una checklist di 2-3 azioni concrete da fare nel proprio codice (legate alla mission, non ripetizioni degli esercizi) e una sintesi di al più 2 frasi che non ripete le risposte degli esercizi.",
+          "weight": 2
+        },
+        {
+          "id": "economy",
+          "text": "La lezione non contiene elementi oltre il piano: nessuna sezione, callout, termine di glossario o esercizio superfluo, e nessuna spiegazione ripetuta in due punti.",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "id": "go_to_rust_compare_and_code_options",
+      "description": "Riproduce la lezione reale 2 (docs/design/samples/lesson-02-result-question-mark.json): confronto Go/Rust e quiz con opzioni di codice. Rischi misurati: due blocchi code in fila al posto di missing_component, opzioni corrette di 74-75 caratteri contro distrattori di 46-49, fill_blank con risposta `?` già scritta nella caption, chiusura senza azioni, output da 14k token.",
+      "topic": {
+        "title": "Gestione degli errori in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Lavoro su un backend in Rust e voglio gestire gli errori senza unwrap ovunque.",
+        "success": [
+          "Scrivo una funzione che propaga un errore con `?` e capisco quando non compila",
+          "Confronto il mio vecchio codice Go con il modo Rust"
+        ],
+        "starting_point": "Conosco bene Go.",
+        "constraints": [
+          "15 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "errori personalizzati con thiserror",
+          "async"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Propagare un errore con ?",
+        "objective": "Saper prevedere se una funzione che usa `?` compila e correggerne la firma.",
+        "why_now": "Primo passo verso il criterio «scrivo una funzione che propaga un errore con ?».",
+        "estimated_minutes": 13,
+        "prerequisites": [
+          {
+            "statement": "Sa scrivere funzioni con tipo di ritorno e gestire errori con if err != nil in Go",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "Result e Err",
+            "key_point": "Una funzione fallibile restituisce Result<T, E> invece di un valore o di un errore a parte.",
+            "example": "fn leggi(n: &str) -> Result<u32, ParseIntError> { n.parse::<u32>() } restituisce Ok(42) con \"42\" e un Err con \"x\".",
+            "steps": [
+              "Dichiara il tipo di ritorno come `Result<u32, ParseIntError>`.",
+              "Restituisci `Ok(valore)` quando va bene.",
+              "Restituisci `Err(errore)` quando fallisce.",
+              "Il chiamante deve trattare entrambe le possibilità."
+            ],
+            "pitfall": "Pensare che una funzione fallibile in Rust restituisca il valore e segnali l'errore a parte, come in Go."
+          },
+          {
+            "name": "operatore ?",
+            "key_point": "`?` fa uscire dalla funzione con l'Err solo se il tipo di ritorno è compatibile.",
+            "example": "let x = a.parse::<u32>()?; dentro una funzione che restituisce Result: con un input non numerico la funzione esce subito con l'Err.",
+            "steps": [
+              "Scrivi `?` dopo la chiamata che può fallire.",
+              "Se il risultato è `Ok(v)`, prosegue con `v`.",
+              "Se è `Err(e)`, la funzione ritorna subito con `Err(e)`.",
+              "Il tipo di ritorno deve essere un `Result` con un errore compatibile."
+            ],
+            "pitfall": "Pensare che `?` funzioni in qualunque funzione, anche in una che non restituisce `Result`."
+          },
+          {
+            "name": "confronto con Go",
+            "key_point": "Il controllo `if err != nil { return err }` di Go corrisponde a `?`, ma il compilatore verifica il tipo di ritorno.",
+            "example": "In Go: v, err := leggi(s); if err != nil { return err }. In Rust: let v = leggi(s)?;",
+            "steps": [
+              "Individua nel codice Go il controllo `if err != nil { return err }`.",
+              "Sostituiscilo con `?` dopo la chiamata.",
+              "Verifica che la funzione restituisca un `Result` con un errore compatibile.",
+              "Il compilatore rifiuta la funzione se il tipo di ritorno non lo è."
+            ],
+            "pitfall": "Pensare che `?` equivalga al controllo di Go senza che il tipo di ritorno conti."
+          },
+          {
+            "name": "unwrap e expect: quando far fermare il programma",
+            "key_point": "`unwrap` e `expect` tolgono il valore da un `Result` e, se è `Err`, fermano il programma con un panic: vanno bene per un errore che non si sa gestire.",
+            "example": "`let n: u32 = \"7\".parse().unwrap();` dà 7; con `\"x\"` il programma si ferma con un panic e il messaggio dell'errore.",
+            "steps": [
+              "`parse` restituisce un `Result`.",
+              "`unwrap` su un `Ok` restituisce il valore.",
+              "`unwrap` su un `Err` ferma il programma con un panic invece di far tornare l'errore al chiamante."
+            ],
+            "pitfall": "Pensare che `unwrap` gestisca l'errore invece di interrompere il programma."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "result_type",
+              "term": "Result",
+              "hint": "tipo che vale Ok(valore) oppure Err(errore)"
+            },
+            {
+              "key": "question_mark_operator",
+              "term": "operatore ?",
+              "hint": "propaga l'Err al chiamante"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000010",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere se una chiamata restituisce `Ok` o `Err` con un input dato",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "classificare quali firme di funzione permettono ?",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare la riga Rust che corrisponde a un controllo `if err != nil { return err }` di Go",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere tra `?`, `unwrap` e `match` in tre situazioni",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché una funzione che ritorna u32 non compila con ? e correggerla",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000010",
+          "title": "The Rust Programming Language, 9.2 Recoverable Errors with Result",
+          "url": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html",
+          "annotation": "Capitolo del libro ufficiale: il tipo Result, match su Ok/Err, propagazione degli errori e operatore ?, dove ? può essere usato.",
+          "use_for": "Result, propagazione con ? e il vincolo sul tipo di ritorno della funzione"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent",
+          "checklist"
+        ],
+        "must_include_missing_component": "code_compare",
+        "missing_component_max": 2
+      },
+      "rubric": [
+        {
+          "id": "compare_uses_missing_component",
+          "text": "Il confronto tra il controllo errori di Go e quello di Rust è un missing_component con wanted code_compare (o equivalente) e un fallback con i due code, ciascuno con la sua caption; non due blocchi code in fila senza missing_component.",
+          "weight": 3
+        },
+        {
+          "id": "code_options_same_shape",
+          "text": "Nel quiz con opzioni di codice, le opzioni hanno la stessa forma (stessa firma, numero di token simile): i distrattori sono varianti realistiche, non frammenti più corti, e la corretta non spicca per lunghezza o completezza.",
+          "weight": 3
+        },
+        {
+          "id": "single_win",
+          "text": "La lezione serve solo la capacità dell'obiettivo (prevedere se `?` compila e correggere la firma); niente thiserror, async o Option.",
+          "weight": 2
+        },
+        {
+          "id": "citations",
+          "text": "Le regole su Result e `?` portano una citazione e non compaiono numeri o citazioni testuali non sostenibili dalla fonte.",
+          "weight": 2
+        },
+        {
+          "id": "tone",
+          "text": "Tono sobrio, nessun complimento o giudizio.",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "fill_blank_no_leak",
+      "description": "Caso mirato al problema 2 della revisione: il piano chiede un fill_blank che ripete un concetto appena mostrato. Il rischio è che la caption o il paragrafo precedente contengano la risposta (come in lezione 1: «il proprietario è `b`» sopra il vuoto `owner`). Il caso verifica che il vuoto chieda un caso nuovo.",
+      "topic": {
+        "title": "Ownership e borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+        "success": [
+          "Scelgo tra passare per valore e passare un riferimento"
+        ],
+        "starting_point": null,
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "lifetime espliciti"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Quando una variabile smette di essere valida",
+        "objective": "Saper prevedere se una variabile Rust è ancora utilizzabile dopo un assegnamento.",
+        "why_now": "Primo passo verso il criterio «leggere borrow of moved value».",
+        "estimated_minutes": 10,
+        "prerequisites": [
+          {
+            "statement": "Sa dichiarare variabili e chiamare funzioni",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "move",
+            "key_point": "Assegnare una String sposta la proprietà: la variabile di partenza non è più utilizzabile.",
+            "example": "let s1 = String::from(\"rust\"); let s2 = s1; println!(\"{}\", s1); non compila: il valore è stato spostato in `s2`.",
+            "steps": [
+              "`s1` possiede il valore sull'heap.",
+              "`let s2 = s1;` trasferisce la proprietà a `s2`.",
+              "Un uso successivo di `s1` è rifiutato dal compilatore."
+            ],
+            "pitfall": "Pensare che `let s2 = s1;` faccia una copia della String e lasci `s1` valida."
+          },
+          {
+            "name": "copia dei tipi semplici",
+            "key_point": "I tipi come `i32` si duplicano all'assegnamento e la variabile di partenza resta valida.",
+            "example": "let n = 7; let m = n; println!(\"{}\", n); compila: `n` vale ancora 7.",
+            "steps": [
+              "`i32` sta tutto sullo stack.",
+              "`let m = n;` ne duplica il valore.",
+              "Entrambe le variabili restano valide."
+            ],
+            "pitfall": "Pensare che la copia valga per ogni tipo, `String` compresa."
+          },
+          {
+            "name": "passare una String a una funzione",
+            "key_point": "Passare una `String` a una funzione la sposta nel parametro: dopo la chiamata la variabile del chiamante non è più utilizzabile.",
+            "example": "`fn stampa(t: String) { println!(\"{}\", t); }` chiamata con `let titolo = String::from(\"Dune\"); stampa(titolo); println!(\"{}\", titolo);`: l'ultima riga non compila.",
+            "steps": [
+              "`titolo` possiede la stringa prima della chiamata.",
+              "`stampa(titolo)` sposta la proprietà nel parametro `t`.",
+              "Dopo la chiamata `titolo` è spostata: il suo uso è un errore."
+            ],
+            "pitfall": "Pensare che una funzione che riceve una `String` la guardi soltanto e il chiamante la ritrovi intatta."
+          },
+          {
+            "name": "duplicare con clone",
+            "key_point": "`clone` crea una copia esplicita: dopo averla fatta, originale e copia sono valide, ma la copia ha un costo.",
+            "example": "`let a = String::from(\"vela\"); let b = a.clone(); println!(\"{} {}\", a, b);` compila e stampa `vela vela`.",
+            "steps": [
+              "`a.clone()` alloca una nuova stringa con gli stessi byte.",
+              "`a` e `b` hanno ciascuna il proprio valore: nessun move.",
+              "Entrambe restano utilizzabili, a prezzo di un'allocazione in più."
+            ],
+            "pitfall": "Pensare che `clone` sia gratuito e vada messo ovunque per far tacere il compilatore."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "move",
+              "term": "move",
+              "hint": "trasferimento della proprietà"
+            },
+            {
+              "key": "clone",
+              "term": "clone",
+              "hint": "copia esplicita di un valore"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "indicare quale variabile non è più utilizzabile in un caso nuovo",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali variabili restano utilizzabili dopo una serie di assegnamenti di `String` e `i32`",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere se compila una funzione che prende String per valore",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare la chiamata che permette di usare ancora la stringa dopo averla passata a una funzione",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust, scritto dai manutentori del linguaggio: regole di ownership, move e copia dei tipi semplici, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "code",
+          "primary_source",
+          "ask_agent",
+          "checklist"
+        ],
+        "fill_blank_answer_not_in_adjacent_text": {
+          "severity": "error"
+        },
+        "quiz_option_char_ratio_max": 1.25
+      },
+      "rubric": [
+        {
+          "id": "new_case",
+          "text": "Il caso del fill_blank è strutturalmente diverso dall'esempio mostrato (non lo stesso codice con altri nomi) e chiede una previsione.",
+          "weight": 3
+        },
+        {
+          "id": "caption_observe_not_result",
+          "text": "Le caption e i paragrafi vicini indicano cosa osservare (es. «guarda la riga 2») senza dire quale variabile diventa inutilizzabile né chi è il nuovo proprietario.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "Chiude con una checklist di azioni da fare nel proprio codice e una sintesi di al più 2 frasi.",
+          "weight": 2
+        }
+      ]
+    }
+  ]
+}

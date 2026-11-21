@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Card band -->
+    <string name="mission_band_proposal">Proposta di mission</string>
+    <string name="mission_band_change">Proposta di modifica</string>
+    <string name="mission_band_with_version">%1$s · versione %2$d</string>
+    <string name="mission_band_confirmed">Mission confermata</string>
+    <string name="mission_band_superseded">Sostituita da una proposta più recente</string>
+    <string name="mission_pane_title">Proposta di mission, versione %1$d</string>
+    <string name="mission_replaces">Sostituirà la versione %1$d, confermata il %2$s.</string>
+    <string name="mission_replaces_nodate">Sostituirà la versione %1$d.</string>
+
+    <!-- Sections -->
+    <string name="mission_section_why">Perché</string>
+    <string name="mission_section_starting_point">Punto di partenza</string>
+    <string name="mission_section_criteria">Come capirai di esserci riuscito</string>
+    <string name="mission_section_constraints">Vincoli</string>
+    <string name="mission_section_out_of_scope">Fuori dal percorso, per ora</string>
+    <string name="mission_criterion_description">Criterio %1$d di %2$d: %3$s</string>
+    <string name="mission_constraint_description">Vincolo: %1$s</string>
+    <string name="mission_out_of_scope_description">Fuori dal percorso: %1$s</string>
+    <string name="mission_bullet">•</string>
+
+    <!-- Differences -->
+    <string name="mission_diff_new">Nuovo</string>
+    <string name="mission_diff_new_suffix">, nuovo</string>
+    <string name="mission_diff_why_description">%1$s, nuovo</string>
+    <string name="mission_diff_removed">Tolto dalla versione %1$d</string>
+    <string name="mission_diff_removed_item">Tolto dalla versione %1$d: %2$s</string>
+    <plurals name="mission_diff_show_removed">
+        <item quantity="one">Mostra la voce tolta</item>
+        <item quantity="other">Mostra le %1$d voci tolte</item>
+    </plurals>
+
+    <!-- Starting point -->
+    <string name="mission_starting_point_was">Com\'era nella versione %1$d</string>
+    <string name="mission_starting_point_before">Prima, nella versione %1$d: %2$s</string>
+    <string name="mission_starting_point_removed" tools:ignore="PluralsCandidate">Il punto di partenza della versione %1$d non c\'è più.</string>
+    <string name="mission_starting_point_invite">Non hai ancora detto al Tutor cosa sai già di «%1$s». Se lo scrivi, le lezioni partono da lì e non ti ripetono ciò che conosci.</string>
+    <string name="mission_starting_point_write">Scrivilo al Tutor</string>
+    <string name="mission_starting_point_write_description">Scrivilo al Tutor: scrivi cosa sai già di %1$s</string>
+
+    <!-- Card text and actions -->
+    <string name="mission_question">Ti riconosci in questi criteri? Se qualcosa non torna, dimmelo nel messaggio qui sotto.</string>
+    <string name="mission_arriving">Il Tutor sta ancora scrivendo. Potrai confermare tra un attimo.</string>
+    <string name="mission_confirm">Conferma la mission</string>
+    <string name="mission_confirm_description">Conferma la mission per %1$s</string>
+    <string name="mission_confirming">Confermo…</string>
+    <string name="mission_retry">Riprova</string>
+    <string name="mission_retry_description">Riprova a confermare la mission per %1$s</string>
+    <string name="mission_edit">Modifica</string>
+    <string name="mission_edit_description">Modifica la mission per %1$s: scrivi cosa cambiare nel messaggio</string>
+    <string name="mission_error_title">Non sono riuscito a confermare</string>
+    <string name="mission_error_body">La mission non è stata salvata. Controlla la connessione e riprova.</string>
+    <string name="mission_confirmed_on">Confermata il %1$s.</string>
+    <string name="mission_confirmed_announce">Mission confermata.</string>
+    <string name="mission_show_details">Mostra criteri e vincoli</string>
+    <string name="mission_see_mission">Vedi la mission</string>
+    <string name="mission_superseded_show">Mostra questa versione</string>
+    <string name="mission_superseded_hidden">Sostituita da una proposta più recente. Contenuto nascosto.</string>
+
+    <!-- Toasts -->
+    <string name="mission_toast_changed">La mission era cambiata: ho aggiornato la proposta.</string>
+    <string name="mission_toast_pref_saved">Ho salvato una preferenza.</string>
+    <string name="mission_toast_see">Vedi</string>
+    <string name="mission_toast_pref_deleted">Preferenza eliminata.</string>
+
+    <!-- Tab -->
+    <string name="mission_loading">Carico la mission…</string>
+    <string name="mission_load_title">Non riesco a caricare la mission</string>
+    <string name="mission_load_network">Non raggiungo il backend. Controlla la connessione e riprova.</string>
+    <string name="mission_load_server">Il server ha avuto un problema. Riprova tra poco.</string>
+    <string name="mission_load_retry">Riprova</string>
+    <string name="mission_pending_title">Proposta in attesa</string>
+    <string name="mission_current_title">La tua mission</string>
+    <string name="mission_current_meta">Versione %1$d · confermata il %2$s</string>
+    <string name="mission_current_hint">Per cambiare la mission, scrivilo al Tutor: ti proporrà una nuova versione da confermare.</string>
+    <string name="mission_pdf_line_many">Studi dai tuoi PDF.</string>
+    <string name="mission_pdf_line">Studi dal tuo PDF «%1$s».</string>
+    <string name="mission_pdf_go">Vai ai documenti</string>
+    <string name="mission_go_chat">Vai alla chat</string>
+    <string name="mission_empty_body">Ancora da definire. La mission è lo scopo per cui impari «%1$s»: guida cosa ti insegno e in che ordine. La definiamo insieme in chat.</string>
+    <string name="mission_empty_action">Definiscila con il Tutor</string>
+    <string name="mission_empty_with_draft">Non c\'è ancora una mission confermata. Conferma la proposta qui sopra o scrivi al Tutor cosa cambiare.</string>
+
+    <!-- Versions -->
+    <string name="mission_versions_title">Versioni precedenti (%1$d)</string>
+    <string name="mission_versions_loading">Carico le versioni…</string>
+    <string name="mission_versions_failed">Non riesco a caricare le versioni.</string>
+    <string name="mission_version_name">Versione %1$d</string>
+    <string name="mission_version_confirmed">confermata il %1$s</string>
+    <string name="mission_version_unconfirmed">proposta non confermata, %1$s</string>
+    <string name="mission_version_description">%1$s, %2$s</string>
+    <string name="mission_versions_more">Mostra altre</string>
+
+    <!-- Preferences -->
+    <string name="mission_prefs_title">Preferenze</string>
+    <string name="mission_prefs_intro">Come preferisci imparare. Le salva il Tutor quando le dici in chat.</string>
+    <string name="mission_prefs_topic">Per questo argomento</string>
+    <string name="mission_prefs_global">Per tutti gli argomenti</string>
+    <string name="mission_prefs_global_hint">Valgono anche per gli altri argomenti.</string>
+    <string name="mission_prefs_empty">Nessuna preferenza ancora. Se dici al Tutor come ti piace imparare (per esempio «esempi in Python» o «niente analogie sportive»), la ricorda e la trovi qui.</string>
+    <string name="mission_prefs_loading">Carico le preferenze…</string>
+    <string name="mission_prefs_failed">Non riesco a caricare le preferenze.</string>
+    <string name="mission_prefs_retry">Riprova</string>
+    <string name="mission_pref_delete_description">Elimina la preferenza «%1$s»</string>
+    <string name="mission_pref_delete_action">Elimina</string>
+    <string name="mission_delete_title">Eliminare questa preferenza?</string>
+    <string name="mission_delete_body_topic">«%1$s» non varrà più per «%2$s».</string>
+    <string name="mission_delete_body_global">«%1$s» non varrà più per nessun argomento.</string>
+    <string name="mission_delete_cancel">Annulla</string>
+    <string name="mission_delete_confirm">Elimina</string>
+    <string name="mission_delete_loading">Elimino…</string>
+    <string name="mission_delete_error_title">Non sono riuscito a eliminarla</string>
+    <string name="mission_delete_error_body">Riprova.</string>
+
+    <!-- Tabs -->
+    <string name="mission_tab_lessons">Lezioni</string>
+    <string name="mission_tab_chat">Chat</string>
+    <string name="mission_tab_progress">Cosa sai</string>
+    <string name="mission_tab_resources">Fonti</string>
+    <string name="mission_tab_mission">Mission</string>
+
+    <!-- Pointers to the research (resources.md section 7) -->
+    <string name="mission_research_card_progress">Sto cercando le fonti per la tua mission.</string>
+    <string name="mission_research_card_failed">La ricerca delle fonti non è riuscita.</string>
+    <string name="mission_research_card_done">Ho finito di cercare le fonti.</string>
+    <plurals name="mission_research_card_found">
+        <item quantity="one">Ho trovato %1$d fonte.</item>
+        <item quantity="other">Ho trovato %1$d fonti.</item>
+    </plurals>
+    <string name="mission_research_stale">Le fonti sono della versione %1$d.</string>
+    <string name="mission_research_see_progress">Vedi l\'avanzamento</string>
+    <string name="mission_research_see_sources">Vedi le fonti</string>
+    <string name="mission_research_go_sources">Vai alle fonti</string>
+    <string name="mission_research_context_progress">Cerco le fonti…</string>
+    <plurals name="mission_research_context_ready">
+        <item quantity="one">%1$d fonte pronta.</item>
+        <item quantity="other">%1$d fonti pronte.</item>
+    </plurals>
+    <string name="mission_research_tab_title">Cerco le fonti…</string>
+    <string name="mission_research_tab_body">Le scelgo in base alla tua mission. Di solito ci vogliono pochi minuti.</string>
+    <string name="mission_research_tab_failed_title">La ricerca delle fonti non è riuscita</string>
+    <string name="mission_research_tab_failed_body">La mission è al sicuro: puoi riprovare dalla tab Fonti.</string>
+</resources>

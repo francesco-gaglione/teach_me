@@ -1,0 +1,137 @@
+{
+  "version": "recorder-issue29-v6",
+  "name": "recorder_output",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "records",
+      "terms",
+      "cards"
+    ],
+    "properties": {
+      "records": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "title",
+            "body",
+            "evidence",
+            "evidence_blocks",
+            "supersedes"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "demonstrated",
+                "misconception_corrected"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },
+            "evidence": {
+              "type": "string"
+            },
+            "evidence_blocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "supersedes": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "terms": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "term",
+            "definition",
+            "avoid",
+            "evidence_blocks"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "term": {
+              "type": "string"
+            },
+            "definition": {
+              "type": "string"
+            },
+            "avoid": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "evidence_blocks": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "cards": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "front",
+            "back",
+            "record_index",
+            "term_key",
+            "unpassed_block"
+          ],
+          "properties": {
+            "front": {
+              "type": "string"
+            },
+            "back": {
+              "type": "string"
+            },
+            "record_index": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "term_key": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "unpassed_block": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

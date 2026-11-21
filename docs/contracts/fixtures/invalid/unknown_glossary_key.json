@@ -1,0 +1,302 @@
+{
+  "catalog_version": 1,
+  "title": "Ownership e move",
+  "objective": "Saper prevedere se una variabile Rust è ancora utilizzabile dopo un assegnamento o una chiamata di funzione.",
+  "estimated_minutes": 9,
+  "glossary": [
+    {
+      "key": "ownership",
+      "term": "ownership",
+      "definition": "La regola per cui ogni valore in Rust ha un solo proprietario: quando il proprietario esce dallo scope, il valore viene liberato.",
+      "avoid": [
+        "proprietà intellettuale",
+        "permessi dei file"
+      ]
+    },
+    {
+      "key": "move",
+      "term": "move",
+      "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di origine non è più utilizzabile.",
+      "avoid": [
+        "spostamento in memoria dei byte"
+      ]
+    },
+    {
+      "key": "copy_trait",
+      "term": "Copy",
+      "definition": "Trait dei tipi semplici (come `i32`, `bool`, `char`) che vengono duplicati bit per bit all'assegnamento, invece di essere spostati."
+    },
+    {
+      "key": "borrow",
+      "term": "borrowing",
+      "definition": "Accesso a un valore tramite riferimento (`&x`) senza prenderne la proprietà: il proprietario resta lo stesso.",
+      "avoid": [
+        "copia del valore"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "key": "rust_book_4_1",
+      "resource_id": null,
+      "title": "The Rust Programming Language, 4.1 What is Ownership?",
+      "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+    },
+    {
+      "key": "rust_book_4_2",
+      "resource_id": null,
+      "title": "The Rust Programming Language, 4.2 References and Borrowing",
+      "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "h1",
+      "type": "heading",
+      "level": 1,
+      "text": "Ownership e move"
+    },
+    {
+      "id": "intro",
+      "type": "paragraph",
+      "text": "In questa lezione impari a prevedere se una variabile è ancora utilizzabile dopo un assegnamento. È la regola che il compilatore Rust controlla più spesso, ed è la causa del primo errore che quasi tutti incontrano: *borrow of moved value*."
+    },
+    {
+      "id": "g_ownership",
+      "type": "glossary_term",
+      "key": "ownership"
+    },
+    {
+      "id": "g_move",
+      "type": "glossary_term",
+      "key": "move"
+    },
+    {
+      "id": "s1",
+      "type": "heading",
+      "level": 2,
+      "text": "Un valore, un proprietario"
+    },
+    {
+      "id": "s1_p1",
+      "type": "paragraph",
+      "text": "In Rust ogni valore ha un solo proprietario, la variabile che lo contiene: questa è l'[[ownership]][^rust_book_4_1]. Quando il proprietario esce dallo scope, il valore viene liberato. Non c'è un garbage collector: è il compilatore a sapere, riga per riga, chi possiede cosa."
+    },
+    {
+      "id": "s1_code",
+      "type": "code",
+      "language": "rust",
+      "code": "fn main() {\n    let a = String::from(\"ciao\");\n    let b = a;\n    println!(\"{b}\");\n    // println!(\"{a}\"); // errore: borrow of moved value: `a`\n}",
+      "caption": "Dopo `let b = a;` il proprietario della stringa è `b`."
+    },
+    {
+      "id": "s1_p2",
+      "type": "paragraph",
+      "text": "La riga `let b = a;` non copia il testo: trasferisce la proprietà. Questo trasferimento si chiama [[move]]. Da quel momento `a` è considerata non inizializzata e il compilatore rifiuta ogni suo uso. Lo stesso succede quando passi una `String` **per valore** a una funzione: anche quello è un move."
+    },
+    {
+      "id": "q1",
+      "type": "quiz_single",
+      "question": "Nel codice sopra, cosa succede se togli il commento all'ultimo `println!`?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Stampa «ciao» due volte",
+          "feedback": "Sembra ragionevole perché la stringa esiste ancora in memoria, ma ora appartiene a `b`: usare `a` non è più permesso."
+        },
+        {
+          "id": "b",
+          "text": "Il programma non compila",
+          "feedback": "Esatto: `a` è stata spostata in `b` e il compilatore segnala *borrow of moved value* prima ancora dell'esecuzione."
+        },
+        {
+          "id": "c",
+          "text": "Stampa una stringa vuota",
+          "feedback": "Rust non lascia valori svuotati da leggere: dopo il move `a` non si può proprio usare, e l'errore arriva in compilazione."
+        }
+      ],
+      "correct": "b"
+    },
+    {
+      "id": "s2",
+      "type": "heading",
+      "level": 2,
+      "text": "Trasferire o duplicare?"
+    },
+    {
+      "id": "s2_p1",
+      "type": "paragraph",
+      "text": "Non tutti i tipi si spostano. I tipi semplici che vivono interamente sullo stack, come `i32`, `bool` o `char`, implementano il trait [[copy_trait|Copy]]: l'assegnamento duplica il valore ed entrambe le variabili restano valide. `String` invece possiede memoria sull'[[heap]], quindi viene spostata[^rust_book_4_1]."
+    },
+    {
+      "id": "s2_code",
+      "type": "code",
+      "language": "rust",
+      "code": "let x = 5;\nlet y = x;          // Copy: x resta valida\nlet s = String::from(\"ciao\");\nlet t = s.clone();  // copia profonda esplicita\nprintln!(\"{x} {y} {s} {t}\");"
+    },
+    {
+      "id": "s2_tip",
+      "type": "callout",
+      "variant": "tip",
+      "title": "Copiare costa, e Rust te lo fa scrivere",
+      "text": "Se ti serve davvero una seconda `String` indipendente, chiama `.clone()`. È una duplicazione profonda dei dati sull'heap: Rust la rende esplicita così vedi dove paghi in memoria e tempo."
+    },
+    {
+      "id": "q_multi",
+      "type": "quiz_multi",
+      "question": "In quali di questi casi, dopo l'istruzione descritta, `v` **non** è più utilizzabile?",
+      "options": [
+        {
+          "id": "a",
+          "text": "`v` è una `String` assegnata a `w`",
+          "feedback": "Corretto: assegnare una `String` è un move, la proprietà passa a `w`."
+        },
+        {
+          "id": "b",
+          "text": "`v` è un `i32` assegnato a `w`",
+          "feedback": "`i32` implementa `Copy`: l'assegnamento duplica il numero e `v` resta valida."
+        },
+        {
+          "id": "c",
+          "text": "`v` è una `String` passata a `f`",
+          "feedback": "Corretto: passare una `String` per valore è un move, come un assegnamento."
+        },
+        {
+          "id": "d",
+          "text": "`v` è una `String` clonata in `w`",
+          "feedback": "`.clone()` crea una seconda stringa indipendente: `v` non viene toccata e resta valida."
+        }
+      ],
+      "correct": [
+        "a",
+        "c"
+      ]
+    },
+    {
+      "id": "fb1",
+      "type": "fill_blank",
+      "text": "Assegnare una `String` a un'altra variabile esegue un {{op_string}}, mentre assegnare un `i32` ne esegue una {{op_int}}.",
+      "blanks": [
+        {
+          "id": "op_string",
+          "answers": [
+            "move",
+            "spostamento"
+          ]
+        },
+        {
+          "id": "op_int",
+          "answers": [
+            "copia"
+          ]
+        }
+      ],
+      "feedback": {
+        "correct": "Giusto: `String` si sposta, i tipi `Copy` si duplicano.",
+        "incorrect": "Ripensa a dove vivono i dati: `String` possiede memoria sull'heap e si sposta; `i32` implementa `Copy` e si duplica."
+      }
+    },
+    {
+      "id": "s3",
+      "type": "heading",
+      "level": 2,
+      "text": "Prestare invece di spostare"
+    },
+    {
+      "id": "s3_p1",
+      "type": "paragraph",
+      "text": "Spesso vuoi solo far *leggere* un valore a una funzione senza cederlo. In quel caso passi un riferimento `&s`: è il [[borrow]], un prestito che non cambia il proprietario[^rust_book_4_2]."
+    },
+    {
+      "id": "s3_code",
+      "type": "code",
+      "language": "rust",
+      "code": "fn lunghezza(s: &String) -> usize {\n    s.len()\n}\n\nfn main() {\n    let s = String::from(\"ciao\");\n    let n = lunghezza(&s);\n    println!(\"{s} ha {n} byte\");\n}"
+    },
+    {
+      "id": "q2",
+      "type": "quiz_single",
+      "question": "Nel codice sopra, perché `s` è ancora utilizzabile nel `println!`?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Perché `lunghezza` riceve solo un riferimento",
+          "feedback": "Esatto: `&s` presta la stringa, la proprietà resta a `s` in `main`."
+        },
+        {
+          "id": "b",
+          "text": "Perché `String` implementa il trait `Copy`",
+          "feedback": "`String` non è `Copy`: possiede memoria sull'heap. Se la passassi per valore verrebbe spostata."
+        },
+        {
+          "id": "c",
+          "text": "Perché `lunghezza` restituisce la stringa al chiamante",
+          "feedback": "Restituire il valore è un modo per riaverlo, ma qui `lunghezza` restituisce un `usize`, non la stringa."
+        }
+      ],
+      "correct": "a"
+    },
+    {
+      "id": "q3",
+      "type": "quiz_single",
+      "code": {
+        "language": "rust",
+        "code": "let a = String::from(\"ciao\");\nlet b = a;\nprintln!(\"{a}\");"
+      },
+      "question": "Quale modifica fa compilare questo codice?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dichiarare `a` come `let mut a`",
+          "feedback": "`mut` permette di modificare il valore, ma non impedisce il move: `a` resterebbe inutilizzabile."
+        },
+        {
+          "id": "b",
+          "text": "Dichiarare `b` prima di `a`",
+          "feedback": "L'ordine delle dichiarazioni non conta: ciò che conta è l'assegnamento `b = a`, che sposta il valore."
+        },
+        {
+          "id": "c",
+          "text": "Scrivere `let b = a.clone();`",
+          "feedback": "Corretto: `b` riceve una copia indipendente e `a` resta proprietaria della sua stringa."
+        },
+        {
+          "id": "d",
+          "text": "Scrivere `let b = a;` due volte",
+          "feedback": "Il secondo assegnamento userebbe un valore già spostato: l'errore raddoppia invece di sparire."
+        }
+      ],
+      "correct": "c"
+    },
+    {
+      "id": "fc1",
+      "type": "flashcard",
+      "front": "Cosa fa `let b = a;` se `a` è una `String`? E se è un `i32`?",
+      "back": "Con una `String` sposta la proprietà da `a` a `b` (move): da lì in poi solo `b` è utilizzabile. Con un `i32`, che implementa `Copy`, duplica il valore e restano valide entrambe.",
+      "required": false
+    },
+    {
+      "id": "s4",
+      "type": "heading",
+      "level": 2,
+      "text": "Per approfondire"
+    },
+    {
+      "id": "src",
+      "type": "primary_source",
+      "source": "rust_book_4_1",
+      "why": "Il capitolo ufficiale su ownership e move, con i diagrammi di stack e heap che mostrano cosa succede alla memoria a ogni assegnamento."
+    },
+    {
+      "id": "next",
+      "type": "lesson_link",
+      "lesson_id": "0b7d3c1e-5a2f-4e8b-9c61-2f4a8d9e7b13",
+      "label": "Prossima lezione: riferimenti mutabili"
+    },
+    {
+      "id": "ask",
+      "type": "ask_agent",
+      "prompt_hint": "Non mi è chiaro quando un assegnamento sposta il valore e quando lo copia."
+    }
+  ]
+}

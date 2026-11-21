@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Empty state (mission not confirmed) -->
+    <string name="res_empty_title">Le fonti arrivano dopo la mission</string>
+    <string name="res_empty_body">Le fonti sono i libri, la documentazione e gli articoli affidabili da cui prendo ciò che ti insegno. Le cerco quando hai confermato la mission, così le scelgo per il tuo scopo.</string>
+    <string name="res_empty_action">Definisci la mission</string>
+    <string name="res_empty_action_proposal">Vai alla proposta</string>
+
+    <!-- Loading and load errors -->
+    <string name="res_loading">Caricamento</string>
+
+    <!-- Progress -->
+    <string name="res_progress_title">Sto cercando le fonti</string>
+    <string name="res_progress_title_refresh">Aggiorno le fonti</string>
+    <string name="res_progress_mission">Per la tua mission: «%1$s»</string>
+    <string name="res_phase_planning">Preparo le domande di ricerca</string>
+    <string name="res_phase_searching">Cerco sul web</string>
+    <string name="res_phase_reading">Leggo le pagine migliori</string>
+    <string name="res_phase_evaluating">Valuto l\'affidabilità e scrivo le note</string>
+    <string name="res_phase_saving">Salvo le fonti</string>
+    <string name="res_phase_generic">Cerco le fonti…</string>
+    <string name="res_phase_queued">In coda…</string>
+    <string name="res_phase_done">completata</string>
+    <string name="res_phase_current">in corso</string>
+    <string name="res_phase_todo">da fare</string>
+    <string name="res_progress_footer">Di solito ci vogliono pochi minuti. Puoi uscire: la ricerca continua sul server.</string>
+    <string name="res_progress_footer_slow">Sta richiedendo più del solito. Puoi lasciare l\'app: la ricerca continua sul server.</string>
+    <string name="res_progress_previous">Intanto, le fonti della ricerca precedente (mission versione %1$d).</string>
+    <string name="res_progress_previous_unknown">Intanto, le fonti della ricerca precedente.</string>
+    <string name="res_announce_phase">Ricerca: %1$s.</string>
+    <plurals name="res_announce_ready">
+        <item quantity="one">Fonti pronte, %1$d trovata.</item>
+        <item quantity="other">Fonti pronte, %1$d trovate.</item>
+    </plurals>
+
+    <!-- Failure -->
+    <string name="res_failed_title_upstream">Ricerca interrotta</string>
+    <string name="res_failed_body_upstream">Il servizio di ricerca non ha risposto. La mission è al sicuro: puoi riprovare.</string>
+    <string name="res_failed_title_rate">Troppe richieste</string>
+    <string name="res_failed_body_rate">Il servizio di ricerca è occupato. Aspetta un minuto e riprova.</string>
+    <string name="res_failed_title_timeout">La ricerca ha richiesto troppo tempo</string>
+    <string name="res_failed_body_timeout">Non sono riuscito a finire in tempo. Puoi riprovare: spesso basta.</string>
+    <string name="res_failed_title_generic">Ricerca interrotta</string>
+    <string name="res_failed_body_generic">Qualcosa è andato storto sul server. Riprova.</string>
+    <string name="res_failed_title_refresh">Aggiornamento non riuscito</string>
+    <string name="res_failed_body_refresh">Le fonti che vedi sono quelle della ricerca precedente. Puoi riprovare quando vuoi.</string>
+    <string name="res_failed_network">Non sono riuscito a raggiungere il backend. Controlla la connessione.</string>
+    <string name="res_failed_server">Il server ha avuto un problema. Riprova tra poco.</string>
+    <string name="res_retry">Riprova</string>
+    <string name="res_retrying">Riprovo…</string>
+    <string name="res_details">Dettagli</string>
+
+    <!-- Results -->
+    <string name="res_group_knowledge">Conoscenza · %1$d</string>
+    <plurals name="res_group_knowledge_description">
+        <item quantity="one">Conoscenza, %1$d fonte</item>
+        <item quantity="other">Conoscenza, %1$d fonti</item>
+    </plurals>
+    <string name="res_group_knowledge_hint">Da qui prendo ciò che ti insegno.</string>
+    <string name="res_group_community">Community · %1$d</string>
+    <plurals name="res_group_community_description">
+        <item quantity="one">Community, %1$d fonte</item>
+        <item quantity="other">Community, %1$d fonti</item>
+    </plurals>
+    <string name="res_group_community_hint">Dove trovi l\'esperienza pratica di chi lo fa.</string>
+    <string name="res_communities_skipped">Non ho cercato community: se ne vuoi, chiedimelo in chat e poi aggiorna le fonti.</string>
+
+    <string name="res_none_title">Non ho trovato fonti affidabili</string>
+    <string name="res_none_body">Ho cercato, ma niente era abbastanza solido per la tua mission, e preferisco non includere fonti dubbie. Qui sotto trovi cosa è mancato.</string>
+    <string name="res_none_action">Cerca di nuovo</string>
+    <string name="res_none_action_busy">Cerco…</string>
+
+    <string name="res_refresh">Aggiorna le fonti</string>
+    <string name="res_refresh_busy">Avvio…</string>
+
+    <!-- Summary (side column or top row) -->
+    <string name="res_side_title">La ricerca</string>
+    <string name="res_side_when">Cercate il %1$s.</string>
+    <string name="res_side_mission">Per la mission, versione %1$d.</string>
+    <string name="res_side_count_split">%1$s: %2$d di conoscenza, %3$d di community.</string>
+    <string name="res_side_count_knowledge_only">%1$s di conoscenza.</string>
+    <string name="res_row_summary">%1$s · cercate il %2$s per la mission v%3$d.</string>
+    <string name="res_row_summary_no_date">%1$s · per la mission v%2$d.</string>
+    <plurals name="res_count">
+        <item quantity="one">%1$d fonte</item>
+        <item quantity="other">%1$d fonti</item>
+    </plurals>
+
+    <!-- Banner: the mission changed -->
+    <string name="res_stale_title">La mission è cambiata dopo la ricerca</string>
+    <string name="res_stale_body">Le fonti sono state scelte per la versione %1$d. Se lo scopo è cambiato in modo importante, aggiornale: ci vogliono pochi minuti. Se è cambiato solo un dettaglio, puoi lasciarle.</string>
+
+    <!-- Gaps -->
+    <string name="res_gaps_title">Cosa non ho trovato</string>
+    <string name="res_gaps_intro">Per questi punti della tua mission non ho trovato fonti abbastanza affidabili, quindi non ne ho incluse. Le lezioni su questi temi vanno prese con più cautela.</string>
+    <string name="res_gap_description">Non trovato: %1$s</string>
+    <string name="res_gaps_more">Mostra le altre %1$d</string>
+    <string name="res_gaps_less">Mostra meno</string>
+
+    <!-- Source row -->
+    <string name="res_new">Nuova</string>
+    <string name="res_use_for">Usala per:</string>
+    <string name="res_row_description">%1$s: %2$s, %3$s. %4$s. Usala per: %5$s.</string>
+    <string name="res_row_description_no_domain">%1$s: %2$s. %3$s. Usala per: %4$s.</string>
+    <string name="res_row_external">Collegamento esterno.</string>
+    <string name="res_row_new">Nuova.</string>
+    <string name="res_row_open">Apri nel browser</string>
+    <string name="res_row_copy">Copia il link</string>
+    <string name="res_row_menu">Azioni per %1$s</string>
+    <string name="res_link_copied">Link copiato</string>
+    <string name="res_external_link">Collegamento esterno</string>
+    <string name="res_type_book">Libro</string>
+    <string name="res_type_paper">Studio</string>
+    <string name="res_type_article">Articolo</string>
+    <string name="res_type_documentation">Documentazione</string>
+    <string name="res_type_video">Video</string>
+    <string name="res_type_course">Corso</string>
+    <string name="res_type_standard">Standard</string>
+    <string name="res_type_pdf">PDF</string>
+    <string name="res_type_forum">Forum</string>
+    <string name="res_type_community">Community</string>
+    <string name="res_type_live">Corso dal vivo</string>
+    <string name="res_type_local">Gruppo locale</string>
+    <string name="res_type_other">Fonte</string>
+
+    <!-- Toasts (shown by the Topic screen) -->
+    <plurals name="res_toast_found">
+        <item quantity="one">Ho trovato %1$d fonte.</item>
+        <item quantity="other">Ho trovato %1$d fonti.</item>
+    </plurals>
+    <plurals name="res_toast_updated">
+        <item quantity="one">Fonti aggiornate: %1$d fonte.</item>
+        <item quantity="other">Fonti aggiornate: %1$d fonti.</item>
+    </plurals>
+    <string name="res_toast_failed">La ricerca delle fonti non è riuscita.</string>
+    <string name="res_toast_see">Vedi</string>
+
+    <!-- Documents: "I tuoi documenti" (resources.md section 13) -->
+    <string name="doc_title">I tuoi documenti</string>
+    <string name="doc_title_count">I tuoi documenti · %1$d</string>
+    <string name="doc_subtitle">Le lezioni seguono questi PDF, insieme alle fonti del web.</string>
+    <string name="doc_pending_mission">Quando confermi la mission, cerco anche fonti sul web che completino il tuo PDF.</string>
+    <string name="doc_load_failed_title">Non riesco a caricare i tuoi documenti</string>
+    <string name="doc_loading">Caricamento dei documenti</string>
+
+    <string name="doc_empty_title">Studia dal tuo PDF</string>
+    <string name="doc_empty_body">Carica un libro, una dispensa o i tuoi appunti in PDF. Le lezioni ne seguiranno le pagine e le citeranno, insieme alle fonti che trovo sul web.</string>
+    <string name="doc_empty_note_text">Servono PDF con testo selezionabile: le scansioni non riesco a leggerle.</string>
+    <string name="doc_empty_note_limits">Fino a 5 documenti, 50 MB l\'uno.</string>
+    <string name="doc_empty_note_privacy">Il file resta sul tuo dispositivo; io tengo il testo, e le pagine che usiamo in una lezione vengono inviate al modello che la scrive.</string>
+    <string name="doc_upload">Carica un PDF</string>
+    <string name="doc_limit_reached">Hai raggiunto il limite di 5 documenti. Rimuovine uno per caricarne un altro.</string>
+    <string name="doc_busy">Sto leggendo un documento: potrai caricarne un altro tra poco.</string>
+
+    <plurals name="doc_pages">
+        <item quantity="one">%1$d pagina</item>
+        <item quantity="other">%1$d pagine</item>
+    </plurals>
+    <string name="doc_in_language">in %1$s</string>
+    <string name="doc_row_description">Documento: %1$s.</string>
+    <string name="doc_row_description_meta">Documento: %1$s, %2$s.</string>
+    <plurals name="doc_index_title">
+        <item quantity="one">Indice · %1$d sezione</item>
+        <item quantity="other">Indice · %1$d sezioni</item>
+    </plurals>
+    <string name="doc_index_hint">Nella chat puoi dirmi quali parti vuoi studiare.</string>
+    <string name="doc_pages_range">pp. %1$d-%2$d</string>
+    <string name="doc_pages_single">p. %1$d</string>
+    <string name="doc_remove_a11y">Rimuovi «%1$s»</string>
+    <string name="doc_remove">Rimuovi</string>
+    <string name="doc_removing">Rimuovo…</string>
+
+    <string name="doc_phase_uploading">Carico il file…</string>
+    <string name="doc_phase_queued">In attesa di iniziare…</string>
+    <string name="doc_phase_reading">Apro il file…</string>
+    <string name="doc_phase_extracting">Leggo il testo…</string>
+    <string name="doc_phase_extracting_pages">Leggo il testo · pagina %1$d di %2$d</string>
+    <string name="doc_phase_sectioning">Cerco la struttura del documento…</string>
+    <string name="doc_phase_saving">Salvo il testo…</string>
+    <string name="doc_phase_unknown">Elaboro il documento…</string>
+    <string name="doc_progress_footer">Puoi lasciare l\'app: continuo sul server.</string>
+    <string name="doc_cancel">Annulla</string>
+    <string name="doc_importing_description">Documento in elaborazione: %1$s</string>
+
+    <string name="doc_failed_no_text_title">Questo PDF è una scansione</string>
+    <string name="doc_failed_no_text_body">Le pagine sono immagini e non contengono testo che io possa leggere. Cerca una versione con testo selezionabile (prova a selezionare una parola con il dito) e caricala.</string>
+    <string name="doc_failed_encrypted_title">Il PDF è protetto da password</string>
+    <string name="doc_failed_encrypted_body">Non posso aprirlo. Toglila dal tuo lettore PDF, salva una copia senza protezione e caricala di nuovo.</string>
+    <string name="doc_failed_pages_title">Il PDF è troppo lungo</string>
+    <string name="doc_failed_pages_body">Ha più di 1.500 pagine. Dividilo in parti, per esempio per capitoli, e carica quella che vuoi studiare.</string>
+    <string name="doc_failed_invalid_title">Non riesco ad aprire il file</string>
+    <string name="doc_failed_invalid_body">Sembra danneggiato o non è un PDF. Prova ad aprirlo sul dispositivo: se si apre, salvalo di nuovo come PDF e riprova.</string>
+    <string name="doc_failed_other_title">Non sono riuscito a leggere il PDF</string>
+    <string name="doc_failed_other_body">È un problema mio, non del file. Puoi riprovare.</string>
+    <string name="doc_failed_other_body_no_retry">È un problema mio, non del file. Se non passa, rimuovilo e caricalo di nuovo.</string>
+    <string name="doc_details">Dettagli</string>
+    <string name="doc_retry">Riprova</string>
+    <string name="doc_retrying">Riprovo…</string>
+
+    <string name="doc_upload_too_large_title">Il file è troppo grande</string>
+    <string name="doc_upload_too_large_body">Il limite è 50 MB. Prova a comprimere il PDF o a dividerlo in parti.</string>
+    <string name="doc_upload_not_pdf_title">Questo non è un PDF</string>
+    <string name="doc_upload_not_pdf_body">Per ora leggo solo file PDF.</string>
+    <string name="doc_upload_network_title">Non sono riuscito a caricare il file</string>
+    <string name="doc_upload_network_body">Controlla la connessione e riprova. Il file non è stato modificato.</string>
+    <string name="doc_close">Chiudi</string>
+
+    <string name="doc_delete_title">Rimuovere il documento?</string>
+    <string name="doc_delete_body">«%1$s» non sarà più una fonte per le prossime lezioni. Le lezioni che hai già fatto restano come sono, con le loro citazioni. Il file sul tuo dispositivo non viene toccato.</string>
+    <string name="doc_delete_cancel">Annulla</string>
+    <string name="doc_delete_error_title">Non sono riuscito a rimuoverlo</string>
+    <string name="doc_delete_error_network">Controlla la connessione e riprova.</string>
+    <string name="doc_delete_error_busy">Sto ancora leggendo il documento. Riprova tra poco.</string>
+    <string name="doc_delete_error_other">Qualcosa è andato storto sul server. Riprova tra poco.</string>
+
+    <plurals name="doc_banner_title">
+        <item quantity="one">Ho letto il tuo PDF</item>
+        <item quantity="other">Ho letto i tuoi PDF</item>
+    </plurals>
+    <string name="doc_banner_body">Le fonti del web sono state scelte prima, senza conoscerlo. Se vuoi, cerco altre fonti che lo completino: ci vogliono pochi minuti. Le lezioni useranno il PDF in ogni caso.</string>
+    <string name="doc_banner_not_now">Non ora</string>
+    <string name="res_stale_title_pdf">Le fonti possono essere aggiornate</string>
+    <string name="res_stale_body_pdf">Le fonti sono state scelte per la versione %1$d. Se lo scopo è cambiato in modo importante, aggiornale: ci vogliono pochi minuti. Se è cambiato solo un dettaglio, puoi lasciarle. Hai anche aggiunto un PDF dopo l\'ultima ricerca.</string>
+
+    <string name="doc_toast_removed">Documento rimosso.</string>
+    <string name="doc_toast_retry_failed">Non sono riuscito a riprovare. Controlla la connessione.</string>
+    <plurals name="doc_toast_read">
+        <item quantity="one">Ho letto «%1$s»: %2$d pagina.</item>
+        <item quantity="other">Ho letto «%1$s»: %2$d pagine.</item>
+    </plurals>
+    <string name="doc_toast_read_no_pages">Ho letto «%1$s».</string>
+    <plurals name="doc_announce_read">
+        <item quantity="one">Ho letto «%1$s», %2$d pagina.</item>
+        <item quantity="other">Ho letto «%1$s», %2$d pagine.</item>
+    </plurals>
+    <string name="doc_announce_read_no_pages">Ho letto «%1$s».</string>
+</resources>

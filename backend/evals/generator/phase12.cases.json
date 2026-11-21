@@ -1,0 +1,1282 @@
+{
+  "suite": "generator/phase12",
+  "prompt_dir": "generator",
+  "description": "Fase 12: lezioni da 10-15 minuti con 4-5 concetti, catena per concetto (intuizione, esempio svolto, regola, errore tipico), richiamo dei prerequisiti `general`, record dimostrati nel contesto, lunghezze (1500-1900 parole di prosa, minimo 1200, tetto 2200). Il piano è un input fisso (forma di `planner/output_schema.json` phase12, 4-5 concetti come impone `validate_plan`), così la suite misura il Generator e non il Planner. Cinque profili: principiante senza record con richiamo, seconda lezione con record senza richiamo, piano «stretto» a 4 concetti senza riempitivo, e i due casi al limite del budget di blocchi.",
+  "defaults": {
+    "runs_per_case": 3,
+    "streaming": true,
+    "deterministic": {
+      "validator_pass_first_try": true,
+      "validator_pass_within_3": true,
+      "quality_warnings_max": 0,
+      "sources_copied_exactly": true,
+      "topic_glossary_copied_exactly": true,
+      "no_exclamation_in_feedback": true,
+      "language": "it",
+      "prose_words": [
+        1200,
+        2200
+      ],
+      "prose_words_target": {
+        "range": [
+          1500,
+          1900
+        ],
+        "severity": "warn"
+      },
+      "sections": [
+        3,
+        6
+      ],
+      "sections_from_plan": {
+        "description": "numero di h2 = concetti del piano + 1 (chiusura) + 1 se il piano ha almeno un prerequisito `general`",
+        "severity": "error"
+      },
+      "explanation_run_words_max": {
+        "max": 300,
+        "defect_above": 350,
+        "description": "parole di `paragraph` e `callout` (title e text) consecutive tra l'inizio di una sezione h2 (o un esercizio) e il blocco esercizio successivo; il `code` non conta e non interrompe; l'intro e la chiusura sono sezioni a parte"
+      },
+      "paragraphs_consecutive_max": 2,
+      "paragraph_words": {
+        "range": [
+          20,
+          110
+        ],
+        "severity": "warn",
+        "description": "tutti i paragrafi, richiamo compreso (il paragrafo d'invito del richiamo è di 20-40 parole, i ripassi di 25-60: per questo il minimo è 20); esclusi i paragrafi di `lang` diverso da it e le citazioni in lingua originale"
+      },
+      "concept_chain": {
+        "description": "per ogni sezione di concetto la sequenza dei tipi di blocco, ignorando `glossary_term`, deve corrispondere a: paragraph, heading(3) con testo che inizia per «Esempio:», code?, paragraph, paragraph, callout(warning)?, poi >= 1 esercizio. Nessun esercizio prima del terzo paragrafo; il callout c'è se e solo se il `pitfall` del concetto (stesso indice, nell'ordine del piano) non è vuoto; title del callout che inizia per «Errore tipico:» e <= 8 parole, text <= 300 caratteri",
+        "severity": "error"
+      },
+      "h3_per_concept_section": {
+        "description": "esattamente un heading di livello 3 in ogni sezione di concetto e nessuno in intro, richiamo e chiusura",
+        "severity": "error"
+      },
+      "callouts": {
+        "per_section_max": 1,
+        "warning_max": 5,
+        "tip_plus_info_max": 2
+      },
+      "intro": {
+        "paragraphs": [
+          1,
+          2
+        ],
+        "words_max": 100,
+        "no_exercise": true,
+        "no_h3": true
+      },
+      "recall_iff_general": {
+        "description": "la prima sezione h2 inizia per «Cosa ti serve:» se e solo se il piano ha >= 1 prerequisito `general` (case.deterministic.recall.expected lo conferma). Se c'è: >= 1 e <= 3 paragrafi di ripasso (25-60 parole, avviso fuori), esattamente 1 esercizio quiz_single o fill_blank con required false, venuto prima dei paragrafi di ripasso, nessuna flashcard, nessun h3, parole di prosa della sezione <= 300",
+        "severity": "error"
+      },
+      "closing": {
+        "words_max": 120,
+        "description": "parole di paragraph, checklist (title e items) e primary_source.why nell'ultima sezione h2"
+      },
+      "closing_active": {
+        "last_section_has_checklist": true,
+        "checklist_items": [
+          2,
+          3
+        ],
+        "closing_summary_words_max": 60
+      },
+      "forbidden_phrases": [
+        "(?i)\\b(bravo|ottimo lavoro|semplicemente|ovviamente|banale|banalmente|naturalmente|chiaramente)\\b",
+        "(?i)\\b(come è noto|è facile vedere|come abbiamo visto)\\b",
+        "(?i)\\bclicca qui\\b"
+      ],
+      "forbidden_phrases_warn": [
+        "(?i)\\bbasta\\s+\\w+(are|ere|ire)\\b"
+      ],
+      "term_first_mention_is_glossary_link": {
+        "description": "per ogni termine di `plan.terms.introduce`, la prima occorrenza (parola intera, case-insensitive, fuori dai `codice inline` e dal testo dei titoli) di `term` nella prosa è dentro un `[[key]]` o preceduta da un blocco `glossary_term` della stessa key; la prima menzione non può stare in un blocco successivo a quello che usa il termine in chiaro",
+        "severity": "error"
+      },
+      "exercises_per_concept_section": [
+        1,
+        2
+      ],
+      "objective_not_repeated_in_paragraph": true,
+      "quiz_correct_position_varies": true,
+      "quiz_option_char_ratio_max": 1.3,
+      "fill_blank_answer_not_in_adjacent_text": {
+        "severity": "error"
+      },
+      "glossary_entries_max": 12,
+      "output_tokens": {
+        "warn_above": 14000,
+        "note": "ragionamento compreso; riportare mediana e massimo per caso. Tetto di richiesta consigliato 20000"
+      },
+      "blocks_max": {
+        "max": 50,
+        "severity": "warn",
+        "description": "blocchi di primo livello (heading compresi); avviso a 50 (obiettivo del prompt). Oltre 60 fallisce già il Validator (`schema` su `/blocks`), quindi la soglia d'errore non serve: la chiave accetta una sola soglia"
+      },
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+      }
+    },
+    "notes": "Ogni run: Context Assembler reale -> Generator -> Validator -> (repair)*. Input del caso come phase6 più `records` (stessa forma di `planner/phase12`: number, kind, lesson_number, title, body), che il runner scrive nell'argomento prima della run e che l'Assembler passa in `{{records_section}}` (i record citati da `plan.prerequisites` per primi). Id e URL delle fonti sono inventati a scopo di test (URL plausibili, non verificati). I controlli Fase 12 sono più severi del Validator (che impone solo 6 sezioni e 2200 parole). Quelli senza `severity` sono errori. `prose_words_target` e `paragraph_words` solo avvisi: si riporta la quota di run dentro la fascia. Dal 2026-11-11 ogni piano ha 4-5 concetti (decisione del proprietario: con 2-3 concetti la prosa restava sotto le 1200 parole). `estimated_minutes` lo calcola il backend (sostituisce il valore del modello): il controllo `estimated_minutes_formula` non c'è più, resta `estimated_minutes_range` come avviso sulla durata reale. I due casi `*_block_budget` (Fase 12 blocco C) misurano il budget dei blocchi nelle due configurazioni al limite: 5 concetti senza richiamo (5 h2 + chiusura = 6 sezioni) e 4 concetti con richiamo (stesse 6 sezioni). Il giudice consigliato è Sonnet (Haiku si è mostrato inaffidabile sulle rubriche: vedi README)."
+  },
+  "pass_criteria": {
+    "validator_pass_within_3": "100% delle run",
+    "validator_pass_first_try": ">= 50% delle run (la lezione è più lunga: baseline Fase 6 >= 60%; il dato guida le correzioni)",
+    "length_and_structure": "`prose_words`, `sections_from_plan`, `explanation_run_words_max`, `paragraphs_consecutive_max`, `concept_chain`, `h3_per_concept_section`, `intro`, `recall_iff_general`, `closing`, `forbidden_phrases`: >= 90% delle run per caso (e 3/3 per `recall_iff_general`)",
+    "prose_target": "`prose_words_target` >= 70% delle run; `estimated_minutes_range` solo avviso",
+    "term_first_mention": "`term_first_mention_is_glossary_link` >= 90% delle run",
+    "rubric_mean": ">= 0.8",
+    "regression": "i controlli già presenti in phase10 (`quiz_option_char_ratio_max`, `fill_blank_answer_not_in_adjacent_text`, `closing_active`, `topic_glossary_copied_exactly`, `sources_copied_exactly`): 0 violazioni in >= 90% delle run; nessun peggioramento rispetto alla baseline Fase 10",
+    "output_tokens": "mediana <= 14000 con effort medium",
+    "block_budget": "`blocks_max` (avviso a 50): nessun avviso in >= 80% delle run dei casi `five_concepts_no_recall_block_budget` e `four_concepts_with_recall_block_budget`; il massimo di blocchi per run si riporta sempre; nessuna run oltre 60 (sarebbe già un errore del Validator, che fa scattare la riparazione)"
+  },
+  "cases": [
+    {
+      "id": "beginner_no_records_recall_section",
+      "description": "Principiante: nessun record, nessun glossario, due prerequisiti `general` (indirizzo di cella, formula con `=`) che sembrano ovvi. Atteso: sezione di richiamo «Cosa ti serve: …» come prima sezione h2 con un esercizio `required: false`, 4 sezioni di concetto con catena completa, il terzo concetto SENZA callout (pitfall vuoto), chiusura. Sezioni totali: 6 (il massimo). Il rischio: dare per scontato l'indirizzo di cella, lezione sotto le 1200 parole o sopra le 2200, esempio ricalcato dall'esercizio. Il quarto concetto (scegliere che cosa fissare) è un ragionamento nuovo rispetto ai primi tre (da «che cosa succede» a «che cosa serve»): il rischio è che diventi un riassunto dei tre precedenti.",
+      "topic": {
+        "title": "Fogli di calcolo: formule e riferimenti"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di ricopiare a mano le formule e fidarmi dei totali dei miei fogli.",
+        "success": [
+          "Copio una formula in una colonna e so prevedere come cambiano i riferimenti",
+          "Fisso una cella con `$` quando serve"
+        ],
+        "starting_point": "Uso i fogli di calcolo solo per liste della spesa.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "macro",
+          "tabelle pivot"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Perché una formula copiata cambia indirizzi",
+        "objective": "Saper prevedere come cambia una formula quando la copi in un'altra cella e fissare con `$` l'indirizzo che non deve cambiare.",
+        "why_now": "Prima lezione, nessun record: il criterio «prevedo come cambiano i riferimenti copiando una formula» richiede di capire che cos'è un riferimento e come si sposta.",
+        "estimated_minutes": 13,
+        "prerequisites": [
+          {
+            "statement": "Sa che ogni cella ha un indirizzo formato da colonna e riga, come B3",
+            "basis": "general",
+            "record_numbers": []
+          },
+          {
+            "statement": "Sa scrivere una formula che comincia con = e usa indirizzi di celle",
+            "basis": "general",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "riferimento relativo",
+            "key_point": "Un indirizzo senza `$` si sposta insieme alla formula quando la copi.",
+            "example": "In C2 c'è `=A2*B2` con il prezzo 12 in A2 e la quantità 3 in B2; la formula si copia in C3, dove A3 vale 8 e B3 vale 5.",
+            "steps": [
+              "In C2 l'indirizzo A2 è due colonne a sinistra di C2 e B2 è una colonna a sinistra, nella stessa riga.",
+              "Copiando la formula in C3 queste distanze restano uguali, ma la riga è la 3.",
+              "In C3 la formula diventa `=A3*B3` e dà 8 per 5, cioè 40."
+            ],
+            "pitfall": "Pensare che copiare una formula la ricopi identica, con gli stessi indirizzi."
+          },
+          {
+            "name": "riferimento assoluto con `$`",
+            "key_point": "Il `$` davanti a colonna e riga fissa l'indirizzo: non si sposta quando copi la formula.",
+            "example": "L'IVA al 22% sta in E1; in C2 c'è `=A2*$E$1` con A2 che vale 50, e la formula si copia in C3 (A3 vale 20) e in C4.",
+            "steps": [
+              "In C2 `A2` è relativo e `$E$1` è assoluto: il `$` fissa la colonna E e la riga 1.",
+              "Copiando in C3 `A2` diventa `A3`, mentre `$E$1` resta `$E$1`.",
+              "In C4 succede lo stesso: ogni riga moltiplica il proprio prezzo per la stessa cella dell'IVA."
+            ],
+            "pitfall": "Pensare che il `$` blocchi il valore della cella e non il suo indirizzo."
+          },
+          {
+            "name": "riferimento misto",
+            "key_point": "Il `$` solo davanti alla colonna o solo davanti alla riga fissa una sola delle due parti.",
+            "example": "Una tabella con i prezzi in A2 e A3 e gli sconti 10% in B1 e 20% in C1: in B2 si scrive `=$A2*(1-B$1)` e si copia in tutta la tabella.",
+            "steps": [
+              "Nella formula `$A2` ha la colonna fissa e la riga libera; `B$1` ha la colonna libera e la riga fissa.",
+              "Copiando a destra, in C2 `$A2` resta `$A2` e `B$1` diventa `C$1`.",
+              "Copiando in giù, in B3 `$A2` diventa `$A3` e `B$1` resta `B$1`."
+            ],
+            "pitfall": ""
+          },
+          {
+            "name": "scegliere che cosa fissare",
+            "key_point": "Per ogni indirizzo di una formula ci si chiede se, copiando, deve seguire la riga, la colonna o restare fermo: si mette `$` solo dove serve.",
+            "example": "Quantità in A2:A4, costo unitario in D1 e sconto in E1: in B2 serve il totale; scrivere `=$A$2*$D$1` dà lo stesso valore in ogni riga.",
+            "steps": [
+              "Per `A2`: copiando in giù deve cambiare riga, quindi resta relativo.",
+              "Per `D1`: deve restare fermo in ogni riga e colonna, quindi `$D$1`.",
+              "La formula giusta è `=A2*$D$1`; con `$A$2` ogni riga ripeterebbe la quantità della prima."
+            ],
+            "pitfall": "Pensare che nel dubbio fissare tutto con `$` sia sempre la scelta più sicura."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "cell_reference",
+              "term": "riferimento di cella",
+              "hint": "l'indirizzo con cui una formula indica un'altra cella"
+            },
+            {
+              "key": "relative_reference",
+              "term": "riferimento relativo",
+              "hint": "indirizzo che si sposta con la formula quando la copi"
+            },
+            {
+              "key": "absolute_reference",
+              "term": "riferimento assoluto",
+              "hint": "indirizzo con `$` che non cambia quando copi la formula"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f200-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "completare la formula che risulta copiando in una cella a destra e in basso (caso nuovo: somma di due colonne)",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere quale formula tiene fissa la cella di una percentuale copiandola in una colonna",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare con parole proprie che cosa si sposta e che cosa resta fermo in `$B2` copiata a destra e in basso",
+            "verifies_objective": true
+          },
+          {
+            "type": "order_steps",
+            "purpose": "ordinare le domande da farsi per decidere che cosa fissare in una formula da copiare in una tabella",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f200-0000-7000-8000-000000000001",
+          "title": "LibreOffice Calc, Riferimenti relativi e assoluti",
+          "url": "https://help.libreoffice.org/latest/it/text/scalc/guide/relativ_absolut_ref.html",
+          "annotation": "Guida in italiano di LibreOffice Calc: riferimenti relativi, assoluti e misti, il simbolo `$` e la copia delle formule.",
+          "use_for": "come cambiano gli indirizzi copiando una formula e come fissarli con `$`"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "estimated_minutes_range": [
+          10,
+          15
+        ],
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": true,
+          "prerequisites": 2
+        }
+      },
+      "rubric": [
+        {
+          "id": "recall_section",
+          "weight": 3,
+          "text": "La prima sezione h2 dopo l'intro è «Cosa ti serve: …» e richiama i due prerequisiti `general`: un paragrafo che annuncia, un esercizio facoltativo che chiede di usare il prerequisito (non di ripetere una definizione) prima dei paragrafi di ripasso, un breve ripasso per prerequisito con mini-esempio; tono sul cosa la lezione usa, mai sul cosa la persona non sa."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ogni sezione di concetto spiega per intero: intuizione in parole di tutti i giorni, esempio svolto che scrive ogni passaggio del piano (nessun «quindi» che nasconde un passo), regola con la formulazione chiave in grassetto, poi gli esercizi."
+        },
+        {
+          "id": "nothing_assumed",
+          "weight": 3,
+          "text": "Nessun termine tecnico (indirizzo, colonna, riga, formula, riferimento) è usato prima di essere definito o richiamato; nessuna formula presuppositiva («ovviamente», «basta», «semplicemente»)."
+        },
+        {
+          "id": "transfer",
+          "weight": 3,
+          "text": "Il caso di ogni esercizio è diverso dall'esempio svolto della sua sezione (altri valori e altra struttura) e la sua risposta non compare nel testo che lo circonda."
+        },
+        {
+          "id": "pitfall_callout",
+          "weight": 2,
+          "text": "Il callout «Errore tipico: …» c'è nei concetti 1, 2 e 4 (tre mosse: che cosa si crede, perché sembra ragionevole, come stanno le cose) e NON c'è nel concetto 3, il cui `pitfall` è vuoto; nessuna colpa. Un distrattore di un quiz della stessa sezione mette alla prova la convinzione."
+        },
+        {
+          "id": "no_padding",
+          "weight": 2,
+          "text": "La lunghezza viene dalla completezza (passaggi dell'esempio, feedback che nominano l'errore), non da ripetizioni, riempitivi o sezioni, concetti e callout oltre il piano."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Le regole sui riferimenti portano la citazione della fonte; gli esempi ipotetici non hanno citazione; nessuna versione, menu o scorciatoia del programma inventati."
+        },
+        {
+          "id": "single_win",
+          "weight": 2,
+          "text": "La lezione serve la sola capacità dell'obiettivo; niente macro, tabelle pivot, funzioni."
+        },
+        {
+          "id": "closing",
+          "weight": 2,
+          "text": "Chiusura: sintesi di 2-3 frasi che non ripete le risposte degli esercizi, checklist di 2-3 azioni da fare sul proprio foglio, una fonte primaria con un `why` specifico, almeno un `ask_agent`."
+        },
+        {
+          "id": "tone",
+          "weight": 1,
+          "text": "Tono sobrio: nessun complimento, nessun giudizio, nessun «facile»."
+        },
+        {
+          "id": "fourth_concept_not_summary",
+          "weight": 2,
+          "text": "La sezione del quarto concetto non riassume i primi tre: parte da un caso in cui bisogna decidere che cosa fissare e mostra l'errore di fissare tutto, con un esempio proprio (A2, D1, E1)."
+        }
+      ]
+    },
+    {
+      "id": "rust_second_lesson_records_no_recall",
+      "description": "Seconda lezione: due record (move dimostrato, misconcezione sui tipi semplici corretta), un prerequisito dichiarato dalla mission, nessun `general`. Atteso: NESSUNA sezione di richiamo (4 sezioni di concetto + chiusura = 5 sezioni h2); il move è agganciato e non rispiegato; il prerequisito `mission` porta una clausola «ricorda: …» di al massimo 15 parole alla prima menzione; i record non sono citati come fonti né per numero; `[[move]]`/`[[ownership]]` copiati uguali dal glossario.",
+      "topic": {
+        "title": "Ownership e borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+        "success": [
+          "Leggo un messaggio «borrow of moved value» e so dire quale riga ha spostato il valore",
+          "Scelgo tra passare per valore e passare un riferimento"
+        ],
+        "starting_point": "So già programmare in Python.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "lifetime espliciti"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Prestare una String senza spostarla",
+        "objective": "Saper scegliere tra passare una `String` per valore, per riferimento condiviso o per riferimento mutabile.",
+        "why_now": "I record 1 e 2 mostrano che prevede il move e la copia dei tipi semplici; il criterio «scelgo tra valore e riferimento» è il passo successivo.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa prevedere che dopo un move la variabile di partenza non è utilizzabile",
+            "basis": "record",
+            "record_numbers": [
+              1
+            ]
+          },
+          {
+            "statement": "Sa che i tipi semplici come `i32` si copiano invece di spostarsi",
+            "basis": "record",
+            "record_numbers": [
+              2
+            ]
+          },
+          {
+            "statement": "Sa scrivere e chiamare funzioni con parametri",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "riferimento condiviso `&`",
+            "key_point": "`&s` presta il valore in sola lettura senza cambiare il proprietario.",
+            "example": "La funzione `lunghezza(testo: &String) -> usize` riceve `&nome`, con `nome` che vale `String::from(\"Marta\")`; dopo la chiamata `nome` si usa ancora.",
+            "steps": [
+              "`&nome` crea un riferimento: la funzione guarda la stringa senza diventarne proprietaria.",
+              "La funzione legge 5 caratteri e restituisce 5; il valore non si sposta.",
+              "Alla fine `nome` è ancora il proprietario e si può stampare."
+            ],
+            "pitfall": "Pensare che passare `&nome` sposti `nome` come passare `nome`."
+          },
+          {
+            "name": "riferimento mutabile `&mut`",
+            "key_point": "`&mut s` presta il valore con il permesso di modificarlo, e la variabile deve essere dichiarata `mut`.",
+            "example": "La funzione `aggiungi_punto(testo: &mut String)` riceve `&mut frase`, con `let mut frase = String::from(\"Ciao\")`, e vi aggiunge un punto.",
+            "steps": [
+              "`frase` è dichiarata `mut`: senza `mut` il compilatore rifiuta `&mut frase`.",
+              "`&mut frase` presta il valore con il permesso di cambiarlo.",
+              "La funzione aggiunge `.` e `frase` diventa `Ciao.` nel chiamante."
+            ],
+            "pitfall": "Pensare che `&mut` si possa prendere anche da una variabile dichiarata senza `mut`."
+          },
+          {
+            "name": "regola dei prestiti",
+            "key_point": "Un valore ha o un riferimento mutabile o più riferimenti condivisi, mai insieme nello stesso momento.",
+            "example": "`let mut v = vec![1, 2]; let primo = &v[0]; v.push(3); println!(\"{primo}\");`",
+            "steps": [
+              "`primo` è un riferimento condiviso a un elemento di `v` e viene ancora usato dopo `push`.",
+              "`v.push(3)` richiede un riferimento mutabile a `v`.",
+              "Condiviso e mutabile coesisterebbero: il compilatore rifiuta il codice."
+            ],
+            "pitfall": "Pensare che leggere un elemento tramite riferimento non impedisca di modificare il vettore finché non si modifica l'elemento stesso."
+          },
+          {
+            "name": "fine del prestito: l'ultimo uso",
+            "key_point": "Un riferimento vale dal punto in cui nasce fino al suo ultimo uso, non fino alla graffa di chiusura: dopo l'ultimo uso si può prendere un riferimento mutabile.",
+            "example": "`let mut s = String::from(\"ciao\"); let r = &s; println!(\"{r}\"); let m = &mut s; m.push('!');` compila perché `r` non si usa più dopo la stampa.",
+            "steps": [
+              "`r` nasce con `&s` e viene usato una volta, nella stampa.",
+              "Dopo la stampa nessuna riga usa `r`: il suo prestito è finito.",
+              "`&mut s` è allora l'unico riferimento vivo e il compilatore lo accetta."
+            ],
+            "pitfall": "Pensare che un riferimento resti attivo fino alla fine dello scope in cui è dichiarato."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "borrow",
+              "term": "borrowing",
+              "hint": "accesso tramite riferimento senza prendere la proprietà"
+            },
+            {
+              "key": "reference",
+              "term": "riferimento",
+              "hint": "valore che indica dove sta un altro valore senza prenderne la proprietà"
+            },
+            {
+              "key": "mutable_reference",
+              "term": "riferimento mutabile",
+              "hint": "riferimento che permette di modificare il valore, uno solo alla volta"
+            }
+          ],
+          "reuse": [
+            "move",
+            "ownership"
+          ]
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f200-0000-7000-8000-000000000003",
+        "other_source_ids": [
+          "0193f200-0000-7000-8000-000000000002"
+        ],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere come passare una `String` a una funzione che la legge soltanto",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare la firma di una funzione che deve modificare la stringa ricevuta",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali coppie di riferimenti allo stesso valore possono coesistere",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché un frammento con un riferimento condiviso ancora in uso e una modifica non compila, e come riordinare le righe perché compili",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": [
+          {
+            "lesson_id": "0193f200-0000-7000-8000-0000000000a1",
+            "reason": "è la lezione sul move che questa continua"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "resource_id": "0193f200-0000-7000-8000-000000000003",
+          "title": "The Rust Programming Language, 4.2 References and Borrowing",
+          "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html",
+          "annotation": "Capitolo del libro ufficiale: riferimenti condivisi e mutabili, regole del borrow checker, riferimenti pendenti.",
+          "use_for": "prestito con `&` e `&mut` e regole del borrow checker"
+        },
+        {
+          "resource_id": "0193f200-0000-7000-8000-000000000002",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust: regole di ownership, move e copia dei tipi semplici, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [
+        {
+          "key": "ownership",
+          "term": "ownership",
+          "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+          "avoid": [
+            "proprietà intellettuale"
+          ]
+        },
+        {
+          "key": "move",
+          "term": "move",
+          "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+          "avoid": []
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Prevede l'uso dopo un move",
+          "body": "Dice che dopo `let b = a;` con `a: String` la variabile `a` non è più utilizzabile."
+        },
+        {
+          "number": 2,
+          "kind": "misconception_corrected",
+          "lesson_number": 1,
+          "title": "I tipi semplici si copiano",
+          "body": "All'inizio pensava che `let y = x;` con `x: i32` rendesse `x` inutilizzabile; ora sa che `i32` si copia e `x` resta valida."
+        }
+      ],
+      "lessons": [
+        {
+          "id": "0193f200-0000-7000-8000-0000000000a1",
+          "number": 1,
+          "title": "Quando una variabile smette di essere valida"
+        }
+      ],
+      "deterministic": {
+        "min_exercises": 4,
+        "lesson_links_must_be_in": [
+          "0193f200-0000-7000-8000-0000000000a1"
+        ],
+        "estimated_minutes_range": [
+          10,
+          15
+        ],
+        "must_include_block_types": [
+          "code",
+          "lesson_link",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "topic_glossary_copied_exactly": true
+      },
+      "rubric": [
+        {
+          "id": "no_recall_section",
+          "weight": 3,
+          "text": "Non c'è una sezione «Cosa ti serve» né un ripasso del move o della copia dei tipi semplici: sono dimostrati (record 1 e 2)."
+        },
+        {
+          "id": "hook_records",
+          "weight": 3,
+          "text": "Il move (record 1) e la copia dei tipi semplici (record 2) sono agganciati in al più mezza frase rivolta alla persona e senza lodi («hai già visto che…»), per esempio nell'intuizione del primo concetto; non sono rispiegati e non sono citati con `[^key]` né per numero."
+        },
+        {
+          "id": "declared_reminder",
+          "weight": 2,
+          "text": "Il prerequisito dichiarato dalla mission (funzioni con parametri) non ha una sezione: alla prima menzione, dove serve, c'è una clausola di richiamo breve («ricorda: …»)."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ogni sezione di concetto ha intuizione, esempio svolto con tutti i passaggi del piano, regola con un grassetto e callout «Errore tipico: …» (i quattro concetti hanno un `pitfall`), poi gli esercizi."
+        },
+        {
+          "id": "transfer",
+          "weight": 3,
+          "text": "Il caso di ogni esercizio è diverso dall'esempio della sua sezione e la risposta non è nel testo adiacente."
+        },
+        {
+          "id": "nothing_assumed",
+          "weight": 2,
+          "text": "I termini nuovi (borrowing, riferimento, riferimento mutabile) sono definiti alla prima menzione come `[[key]]`; nessun termine del borrow checker compare prima di essere introdotto."
+        },
+        {
+          "id": "canonical_terms",
+          "weight": 2,
+          "text": "«move» e «ownership» usati con le definizioni del glossario, mai con sinonimi, e copiati uguali nel glossario del documento."
+        },
+        {
+          "id": "citations",
+          "weight": 3,
+          "text": "Le regole di Rust portano la citazione e non compaiono numeri di versione o messaggi del compilatore non sostenuti dalle annotazioni; gli esempi ipotetici non hanno citazione."
+        },
+        {
+          "id": "link_label",
+          "weight": 1,
+          "text": "L'etichetta del `lesson_link` dice che cosa si farà e l'id è quello del contesto."
+        },
+        {
+          "id": "no_padding",
+          "weight": 2,
+          "text": "Nessuna sezione, concetto (lifetime, `unsafe`, `Option`), callout o termine di glossario oltre il piano; la lunghezza viene da passaggi completi e feedback specifici."
+        }
+      ]
+    },
+    {
+      "id": "narrow_plan_four_concepts_no_filler",
+      "description": "Piano «stretto» a 4 concetti senza riempitivo: l'argomento (Conventional Commits) ha due idee proprie (struttura, tipi) e il piano arriva a 4 con un caso limite (cambiamento incompatibile) e un'applicazione con ragionamento nuovo (commit con due scopi), non con ripetizioni. Atteso: 5 sezioni h2 (4 concetti + chiusura), nessun richiamo, tre sezioni con callout (concetti 1, 3 e 4; il secondo ha `pitfall` vuoto), prosa >= 1200 parole SENZA aggiungere concetti, sezioni o callout oltre il piano. Misura se con 4 concetti su un argomento stretto la lezione raggiunge la lunghezza spiegando per intero, e che il Generator non riempia con sezioni di riepilogo, tipi rari o strumenti di rilascio.",
+      "topic": {
+        "title": "Conventional Commits"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio che la cronologia del mio repository sia leggibile e che i changelog si generino da soli.",
+        "success": [
+          "Scrivo messaggi di commit nel formato Conventional Commits",
+          "Scelgo il tipo giusto (`feat`, `fix`, `docs`, `refactor`) per un cambiamento"
+        ],
+        "starting_point": "Uso git ogni giorno da un anno e so fare commit, branch e merge.",
+        "constraints": [],
+        "out_of_scope": [
+          "strumenti di rilascio automatico"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Scrivere il messaggio di un commit",
+        "objective": "Saper scrivere il messaggio di un commit nel formato Conventional Commits, scegliendo il tipo e segnalando un cambiamento incompatibile.",
+        "why_now": "Primo passo verso il criterio «scrivo messaggi che il tool dei changelog capisce»: servono il formato, il significato dei tipi e il modo di segnalare un cambiamento incompatibile.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa creare un commit con `git commit -m`",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "struttura del messaggio",
+            "key_point": "Il messaggio ha un tipo, uno scope facoltativo e una descrizione, nella forma `tipo(scope): descrizione`.",
+            "example": "Un commit corregge un calcolo sbagliato dei totali nel modulo `cart`: il messaggio è `fix(cart): corregge il totale con sconto`.",
+            "steps": [
+              "Scegli il tipo che dice che cosa fa il commit: qui una correzione, quindi `fix`.",
+              "Aggiungi tra parentesi lo scope, cioè la parte toccata: `cart`.",
+              "Scrivi dopo i due punti che cosa cambia, in breve: `corregge il totale con sconto`.",
+              "Unisci le parti in `fix(cart): corregge il totale con sconto`."
+            ],
+            "pitfall": "Pensare che il tipo descriva il file toccato e non lo scopo della modifica."
+          },
+          {
+            "name": "scegliere il tipo",
+            "key_point": "`feat` aggiunge una funzionalità, `fix` corregge un difetto; `docs` e `refactor` non cambiano ciò che vede chi usa il programma.",
+            "example": "Un commit sposta il codice di validazione in una funzione a parte senza cambiare il risultato per chi usa il programma.",
+            "steps": [
+              "Chiediti se per chi usa il programma cambia qualcosa: no.",
+              "Quindi non è `feat` né `fix`.",
+              "Il codice cambia struttura ma non comportamento: il tipo è `refactor`."
+            ],
+            "pitfall": ""
+          },
+          {
+            "name": "segnalare un cambiamento incompatibile",
+            "key_point": "Un cambiamento che rompe chi usa il programma si segnala con `!` dopo il tipo o con il piè di pagina `BREAKING CHANGE:`; il tipo resta `feat` o `fix`.",
+            "example": "Un commit rimuove il parametro `currency` dalla funzione `price` del modulo `api` e chi la chiama dovrà cambiare: serve un messaggio che lo dica.",
+            "steps": [
+              "Il tipo dice che cosa fa il commit: qui cambia il comportamento, quindi `feat`.",
+              "Aggiungi `!` subito prima dei due punti: `feat(api)!: rimuove il parametro currency`.",
+              "In alternativa, o in aggiunta, un piè di pagina `BREAKING CHANGE: currency non è più accettato`."
+            ],
+            "pitfall": "Pensare che un cambiamento incompatibile abbia un tipo suo, come `breaking`."
+          },
+          {
+            "name": "un commit, un tipo",
+            "key_point": "Se una modifica fa due cose di tipo diverso (una correzione e una funzione nuova) non si sceglie il tipo «più importante»: si separa in due commit.",
+            "example": "Nello stesso lavoro si corregge un errore di arrotondamento nel modulo `cart` e si aggiunge il campo `note` all'ordine: due scopi in un solo commit.",
+            "steps": [
+              "Elenca che cosa cambia: la correzione dell'arrotondamento e il nuovo campo.",
+              "I due cambiamenti hanno tipi diversi, `fix` e `feat`: un solo messaggio non può dirli tutti.",
+              "Dividi il lavoro in due commit, ciascuno con il suo tipo e la sua descrizione."
+            ],
+            "pitfall": "Pensare che un commit con una correzione e una funzione nuova vada scritto con `feat` perché è la parte più importante."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "conventional_commits",
+              "term": "Conventional Commits",
+              "hint": "convenzione per scrivere i messaggi di commit"
+            },
+            {
+              "key": "scope",
+              "term": "scope",
+              "hint": "la parte del progetto toccata dal commit, tra parentesi"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f200-0000-7000-8000-000000000004",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "completare il messaggio di un commit che aggiunge una funzione di esportazione al modulo `report`",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere il tipo per un commit che cambia solo il README",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali messaggi segnalano correttamente un cambiamento incompatibile",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare come si scrivono i messaggi per un lavoro che corregge un errore e aggiunge una funzione, e perché non basta un tipo",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f200-0000-7000-8000-000000000004",
+          "title": "Conventional Commits 1.0.0",
+          "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+          "annotation": "Specifica ufficiale: struttura del messaggio, tipi `feat` e `fix`, scope, breaking change (`!` e `BREAKING CHANGE:`), esempi, domande frequenti (commit con più tipi).",
+          "use_for": "formato del messaggio, significato dei tipi, cambiamenti incompatibili"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "estimated_minutes_range": [
+          10,
+          15
+        ],
+        "must_include_block_types": [
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ]
+      },
+      "rubric": [
+        {
+          "id": "complete_not_padded",
+          "weight": 3,
+          "text": "La lezione raggiunge la lunghezza spiegando ogni passaggio dell'esempio e con feedback specifici, senza aggiungere concetti (tipi rari, scope convenzionali, strumenti di rilascio, `revert`), sezioni di riepilogo, callout o riempitivi: ha esattamente i 4 concetti del piano."
+        },
+        {
+          "id": "pitfall_only_where_planned",
+          "weight": 3,
+          "text": "Il callout «Errore tipico: …» c'è nelle sezioni dei concetti 1, 3 e 4; nella sezione del concetto 2 (pitfall vuoto) non c'è nessun callout `warning` inventato."
+        },
+        {
+          "id": "mission_clause",
+          "weight": 1,
+          "text": "Il prerequisito dichiarato (fare commit con git) non ha una sezione e al più una clausola «ricorda: …» di poche parole."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Intuizione, esempio svolto con tutti i passaggi del piano, regola con un grassetto, in quest'ordine, in tutte e quattro le sezioni."
+        },
+        {
+          "id": "transfer",
+          "weight": 3,
+          "text": "Il caso di ogni esercizio è diverso dall'esempio svolto e la risposta non è nel testo adiacente."
+        },
+        {
+          "id": "citations",
+          "weight": 3,
+          "text": "Formato e significato dei tipi portano la citazione della specifica; nessuna regola inventata (per esempio sulla lunghezza massima della descrizione o sui tipi oltre quelli citati dalla fonte)."
+        },
+        {
+          "id": "nothing_assumed",
+          "weight": 2,
+          "text": "«Scope» e «Conventional Commits» sono definiti alla prima menzione; nessun presupposto non detto."
+        },
+        {
+          "id": "closing",
+          "weight": 2,
+          "text": "Chiusura con sintesi di 2-3 frasi, checklist di 2-3 azioni sul proprio repository, fonte primaria con `why` specifico e `ask_agent`."
+        },
+        {
+          "id": "sections_distinct",
+          "weight": 3,
+          "text": "Le quattro sezioni insegnano cose diverse: nessuna riprende lo stesso esempio con un altro messaggio e nessuna è un elenco o riassunto delle precedenti; la sezione dei cambiamenti incompatibili e quella del commit con due scopi usano i casi del piano."
+        }
+      ]
+    },
+    {
+      "id": "five_concepts_no_recall_block_budget",
+      "description": "Budget dei blocchi, configurazione estrema senza richiamo: 5 concetti, nessun prerequisito `general` (la mission dichiara l'uso di git su `main`), 5 esercizi, 6 sezioni h2 in tutto. Atteso: richiamo assente, 6 sezioni, al massimo 50 blocchi di primo livello (avviso oltre), prosa <= 2200 parole anche se il piano è grande (togli un esempio secondario o frasi di contorno, mai i passaggi dell'esempio né l'errore tipico). Il rischio: più di 60 blocchi (un esercizio extra per sezione, callout, code) o prosa oltre il limite.",
+      "topic": {
+        "title": "Git: lavorare con i branch"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio sviluppare una funzione senza rompere il codice che gira in produzione.",
+        "success": [
+          "Creo un branch, ci lavoro e lo unisco a `main`",
+          "So risolvere un conflitto di merge senza perdere lavoro"
+        ],
+        "starting_point": "Uso `git add`, `git commit` e `git push` da due anni, sempre direttamente su `main`.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "rebase",
+          "git flow"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Dai branch al conflitto di merge",
+        "objective": "Saper creare un branch, riunirlo a `main` con un merge e risolvere un conflitto sulla stessa riga.",
+        "why_now": "Prima lezione: il criterio «creo un branch, ci lavoro e lo unisco a main» richiede di capire che cos'è un branch e che cosa fa un merge, conflitti compresi.",
+        "estimated_minutes": 14,
+        "prerequisites": [
+          {
+            "statement": "Sa creare un commit con `git add` e `git commit`",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "branch come puntatore",
+            "key_point": "Un branch è un puntatore mobile a un commit: crearlo non copia i file.",
+            "example": "Nel repository `main` punta all'ultimo commit C3; con `git branch prova` si crea `prova`, che punta anch'esso a C3.",
+            "steps": [
+              "`main` punta a C3, l'ultimo commit.",
+              "`git branch prova` crea un nuovo puntatore `prova` sullo stesso commit C3: nessun file si copia.",
+              "I commit restano tre e sia `main` sia `prova` indicano C3."
+            ],
+            "pitfall": "Pensare che creare un branch copi tutti i file del progetto."
+          },
+          {
+            "name": "HEAD e cambio di branch",
+            "key_point": "`HEAD` indica il branch su cui stai lavorando e `git switch` lo sposta: il commit successivo fa avanzare solo quel branch.",
+            "example": "Con `main` e `prova` su C3 e `HEAD` su `main`, `git switch prova` sposta `HEAD` su `prova`; poi un nuovo commit C4 viene creato.",
+            "steps": [
+              "`HEAD` indica `main`; `git switch prova` lo sposta su `prova` e la cartella di lavoro resta uguale perché i due branch puntano a C3.",
+              "Il nuovo commit C4 ha C3 come genitore e `prova`, dove sta `HEAD`, avanza a C4.",
+              "`main` non si muove e resta su C3."
+            ],
+            "pitfall": "Pensare che il nuovo commit faccia avanzare tutti i branch che puntavano allo stesso commit."
+          },
+          {
+            "name": "merge fast-forward",
+            "key_point": "Se il branch da unire è avanti sulla stessa linea, il merge sposta soltanto il puntatore: non crea un commit.",
+            "example": "`prova` è avanti di un commit (C4) rispetto a `main` (C3); da `main` si esegue `git merge prova`.",
+            "steps": [
+              "`main` è ancora su C3, che è un antenato di C4.",
+              "Non c'è nulla da combinare: Git sposta il puntatore `main` su C4.",
+              "Ora `main` e `prova` puntano a C4 e non è nato alcun commit di merge."
+            ],
+            "pitfall": ""
+          },
+          {
+            "name": "merge di storie divergenti",
+            "key_point": "Quando i due branch hanno commit diversi, il merge crea un nuovo commit con due genitori e non riscrive i commit esistenti.",
+            "example": "`main` ha C4 e `prova` ha C5, entrambi figli di C3 e su file diversi; da `main` si esegue `git merge prova`.",
+            "steps": [
+              "Le due linee partono da C3 e poi divergono: nessuna è antenata dell'altra.",
+              "Git combina le modifiche dei due branch, che toccano file diversi, in un nuovo commit C6.",
+              "C6 ha due genitori, C4 e C5, e `main` avanza a C6; C4 e C5 restano com'erano."
+            ],
+            "pitfall": "Pensare che un merge riscriva i commit esistenti invece di crearne uno nuovo."
+          },
+          {
+            "name": "conflitto di merge",
+            "key_point": "Se i due branch cambiano la stessa riga in modi diversi, Git si ferma e chiede a te di scegliere.",
+            "example": "Su `main` e su `prova` la riga 3 di `menu.txt` è stata cambiata in due modi diversi; `git merge prova` si ferma.",
+            "steps": [
+              "Git unisce le modifiche che toccano parti diverse, ma non sa scegliere tra due versioni della stessa riga.",
+              "`menu.txt` contiene i marcatori `<<<<<<<`, `=======` e `>>>>>>>` attorno alle due versioni.",
+              "Si modifica il file tenendo la versione voluta e togliendo i marcatori, poi `git add menu.txt` e `git commit` concludono il merge."
+            ],
+            "pitfall": "Pensare che il conflitto indichi un repository danneggiato o lavoro perso."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "branch",
+              "term": "branch",
+              "hint": "puntatore mobile a un commit"
+            },
+            {
+              "key": "head",
+              "term": "HEAD",
+              "hint": "indica il branch su cui stai lavorando"
+            },
+            {
+              "key": "fast_forward",
+              "term": "fast-forward",
+              "hint": "merge che sposta soltanto il puntatore del branch"
+            },
+            {
+              "key": "merge_commit",
+              "term": "commit di merge",
+              "hint": "commit con due genitori che unisce due storie"
+            },
+            {
+              "key": "merge_conflict",
+              "term": "conflitto di merge",
+              "hint": "due branch che cambiano la stessa riga in modi diversi"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f300-0000-7000-8000-000000000001",
+        "other_source_ids": [
+          "0193f300-0000-7000-8000-000000000002"
+        ],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere dove punta `main` dopo un merge fast-forward in un caso nuovo (due commit avanti)",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare il comando che crea un branch e vi si sposta in un colpo",
+            "verifies_objective": false
+          },
+          {
+            "type": "order_steps",
+            "purpose": "ordinare i passi di un merge con conflitto, dal merge che si ferma al commit finale",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali situazioni producono un conflitto e quali no (file diversi, stessa riga, stesso file in righe diverse)",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare con parole proprie perché dopo un merge di storie divergenti i commit dei due branch non cambiano",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000001",
+          "title": "Pro Git, Branching: Basic Branching and Merging",
+          "url": "https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging",
+          "annotation": "Capitolo di Pro Git: creare un branch, cambiare branch, unire con merge (fast-forward e a tre vie), risolvere i conflitti.",
+          "use_for": "branch, HEAD, merge e conflitti"
+        },
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000002",
+          "title": "Git documentation, git-merge",
+          "url": "https://git-scm.com/docs/git-merge",
+          "annotation": "Manuale del comando `git merge`: tipi di merge, conflitti e come annullare un merge.",
+          "use_for": "opzioni e comportamento di `git merge`"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 5,
+        "estimated_minutes_range": [
+          10,
+          15
+        ],
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "prose_words": [
+          1200,
+          2200
+        ]
+      },
+      "rubric": [
+        {
+          "id": "no_recall",
+          "weight": 2,
+          "text": "Non c'è una sezione «Cosa ti serve»: l'unico prerequisito è dichiarato dalla mission (fare un commit). Se serve, una clausola breve alla prima menzione."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ognuno dei cinque concetti ha intuizione, esempio svolto con tutti e tre i passaggi del piano scritti, regola con un grassetto e, dove il piano ha `pitfall`, il callout «Errore tipico: …» (il terzo concetto non lo ha)."
+        },
+        {
+          "id": "budget_not_by_cutting",
+          "weight": 3,
+          "text": "La lezione sta nel limite di lunghezza e di blocchi togliendo contorno (esempi secondari, frasi di cornice), non i passaggi dell'esempio, gli errori tipici né il feedback degli esercizi; ogni concetto ha almeno un esercizio."
+        },
+        {
+          "id": "no_padding",
+          "weight": 2,
+          "text": "Nessun concetto fuori dal piano (rebase, stash, remote, `git checkout`, branch remoti): la lezione resta su cinque concetti e un solo obiettivo."
+        },
+        {
+          "id": "nothing_assumed",
+          "weight": 2,
+          "text": "I cinque termini nuovi sono definiti alla prima menzione come `[[key]]` e nessun termine (puntatore, genitore, antenato) è usato prima di essere spiegato."
+        },
+        {
+          "id": "citations",
+          "weight": 3,
+          "text": "Le regole di Git portano la citazione; nessun numero di versione, opzione o messaggio del terminale che le annotazioni non sostengano; gli esempi (C3, `menu.txt`) sono ipotetici e senza citazione."
+        }
+      ]
+    },
+    {
+      "id": "four_concepts_with_recall_block_budget",
+      "description": "Budget dei blocchi, configurazione estrema con richiamo: 4 concetti (il massimo con un prerequisito `general`), due prerequisiti `general`, 4 esercizi più quello di richiamo, 6 sezioni h2 in tutto. Atteso: sezione «Cosa ti serve: …» come prima h2 con un esercizio facoltativo, 6 sezioni, al massimo 50 blocchi di primo livello, prosa <= 2200 parole. Il rischio: richiamo che si allunga (più di 300 parole o più di 3 ripassi), esercizi doppi nelle sezioni di concetto, superamento dei 60 blocchi.",
+      "topic": {
+        "title": "Fogli di calcolo: cercare un valore in una tabella"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di cercare a occhio i prezzi nel listino e farli comparire in automatico nei preventivi.",
+        "success": [
+          "Scrivo una formula che trova il prezzo di un codice prodotto in un listino",
+          "So perché una ricerca restituisce #N/D o un valore sbagliato"
+        ],
+        "starting_point": "Uso i fogli di calcolo solo per somme e liste.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "macro",
+          "tabelle pivot",
+          "funzioni di ricerca diverse da CERCA.VERT"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Trovare un prezzo con CERCA.VERT",
+        "objective": "Saper scrivere una formula `CERCA.VERT` con intervallo, indice di colonna e tipo di corrispondenza corretti.",
+        "why_now": "Prima lezione sulle ricerche: il criterio «scrivo una formula che trova il prezzo di un codice» richiede i quattro argomenti della funzione, uno alla volta.",
+        "estimated_minutes": 13,
+        "prerequisites": [
+          {
+            "statement": "Sa che un intervallo di celle si scrive con due indirizzi separati da due punti, come `A2:C4`",
+            "basis": "general",
+            "record_numbers": []
+          },
+          {
+            "statement": "Sa che una funzione si scrive con il nome e gli argomenti tra parentesi separati da punto e virgola",
+            "basis": "general",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "valore cercato",
+            "key_point": "Il primo argomento è il valore da trovare: la funzione lo confronta con la prima colonna dell'intervallo, non con le altre.",
+            "example": "La tabella `A2:C4` ha in A i codici prodotto, in B i nomi e in C i prezzi; in F1 c'è il codice `P102` e la formula `=CERCA.VERT(F1; A2:C4; 3; FALSO)` ne cerca il prezzo.",
+            "steps": [
+              "Il valore cercato è `F1`, cioè `P102`.",
+              "La funzione scorre la colonna A dall'alto in basso finché trova `P102`, per esempio nella riga 3.",
+              "Resta nella riga 3 e passa a leggere la colonna indicata dal terzo argomento."
+            ],
+            "pitfall": "Pensare che la funzione cerchi il valore in tutte le colonne dell'intervallo."
+          },
+          {
+            "name": "intervallo di ricerca",
+            "key_point": "La colonna del valore cercato deve essere la prima dell'intervallo, perché da lì si contano anche le colonne da restituire.",
+            "example": "I codici stanno in A e i nomi in B e si vuole il nome dato il codice: l'intervallo giusto è `A2:B4`; con `B2:B4` la ricerca cercherebbe i codici tra i nomi.",
+            "steps": [
+              "Il valore cercato è un codice, quindi la prima colonna dell'intervallo deve essere A.",
+              "Con `A2:B4` la colonna A è la prima e la B è la seconda.",
+              "Con `B2:B4` la prima colonna sarebbe B, dove non ci sono codici: il risultato sarebbe #N/D."
+            ],
+            "pitfall": "Pensare che l'intervallo possa cominciare da una colonna dopo quella del valore cercato."
+          },
+          {
+            "name": "indice di colonna",
+            "key_point": "Il terzo argomento è la posizione della colonna da restituire dentro l'intervallo, contata da 1 a partire dalla prima colonna dell'intervallo.",
+            "example": "Con l'intervallo `A2:C4` il codice sta nella colonna 1, il nome nella 2 e il prezzo nella 3; per il prezzo si scrive 3.",
+            "steps": [
+              "La colonna A è la posizione 1 dell'intervallo, la B la 2 e la C la 3.",
+              "Il prezzo sta in C, quindi l'indice è 3.",
+              "Con l'intervallo `B2:D4` lo stesso prezzo in D avrebbe indice 3, e un prezzo in C avrebbe indice 2: conta la posizione, non la lettera."
+            ],
+            "pitfall": "Pensare che l'indice sia il numero della colonna del foglio e non la posizione nell'intervallo."
+          },
+          {
+            "name": "corrispondenza esatta e approssimata",
+            "key_point": "L'ultimo argomento sceglie come cercare: con FALSO solo un valore uguale, con VERO il più vicino non superiore, e allora la prima colonna deve essere in ordine crescente.",
+            "example": "Una tabella di sconti ha le soglie 0, 100 e 500 in A e gli sconti 0%, 5% e 10% in B; un ordine da 250 si cerca con `=CERCA.VERT(250; A2:B4; 2; VERO)`.",
+            "steps": [
+              "Con VERO la funzione cerca il valore più grande che non supera 250.",
+              "Tra 0, 100 e 500 il più grande non superiore a 250 è 100.",
+              "Restituisce il secondo valore della riga di 100, cioè lo sconto del 5%."
+            ],
+            "pitfall": "Pensare che omettere l'ultimo argomento equivalga a cercare solo valori uguali."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "lookup_range",
+              "term": "intervallo di ricerca",
+              "hint": "la tabella in cui la funzione cerca, con il valore cercato nella prima colonna"
+            },
+            {
+              "key": "column_index",
+              "term": "indice di colonna",
+              "hint": "posizione della colonna da restituire, contata dentro l'intervallo"
+            },
+            {
+              "key": "exact_match",
+              "term": "corrispondenza esatta",
+              "hint": "cerca solo un valore uguale"
+            },
+            {
+              "key": "approximate_match",
+              "term": "corrispondenza approssimata",
+              "hint": "cerca il valore più vicino non superiore, in una colonna ordinata"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f300-0000-7000-8000-000000000011",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "completare la formula che restituisce il nome per un codice in un caso nuovo (listino con colonne in ordine diverso)",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere l'indice di colonna giusto per un intervallo che non comincia da A",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali formule restituiscono #N/D e perché (intervallo sbagliato, valore assente)",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché la stessa ricerca con VERO dà lo sconto sbagliato se le soglie non sono in ordine",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000011",
+          "title": "Supporto Microsoft, funzione CERCA.VERT",
+          "url": "https://support.microsoft.com/it-it/office/cerca-vert-funzione-cerca-vert-0bbc8083-26fe-4963-8ab8-93a18ad188a1",
+          "annotation": "Pagina di supporto in italiano: sintassi con valore, intervallo, indice e tipo di corrispondenza, esempi e cause dell'errore #N/D.",
+          "use_for": "argomenti di CERCA.VERT e errori comuni"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 5,
+        "estimated_minutes_range": [
+          10,
+          15
+        ],
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": true,
+          "prerequisites": 2
+        },
+        "prose_words": [
+          1200,
+          2200
+        ]
+      },
+      "rubric": [
+        {
+          "id": "recall_section",
+          "weight": 3,
+          "text": "La prima h2 dopo l'intro è «Cosa ti serve: …»: un paragrafo d'invito, un esercizio facoltativo prima dei ripassi, un ripasso per prerequisito (intervallo, funzione con argomenti), in tutto non più di 300 parole e senza tono da lacuna («non sai»)."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ognuno dei quattro concetti ha intuizione, esempio svolto con tutti e tre i passaggi del piano, regola con un grassetto, callout «Errore tipico: …» (tutti e quattro hanno `pitfall`) ed esercizi."
+        },
+        {
+          "id": "budget_not_by_cutting",
+          "weight": 3,
+          "text": "Il richiamo non ruba spazio ai concetti: sta nelle sue 300 parole e la lezione resta nei limiti togliendo contorno, non passaggi dell'esempio né feedback degli esercizi."
+        },
+        {
+          "id": "no_padding",
+          "weight": 2,
+          "text": "Nessuna funzione fuori dal piano (CERCA.X, INDICE/CONFRONTA, SE) e nessun concetto in più."
+        },
+        {
+          "id": "nothing_assumed",
+          "weight": 2,
+          "text": "I quattro termini nuovi sono definiti alla prima menzione come `[[key]]`; «intervallo», «argomento» e «colonna» non sono usati prima di essere richiamati."
+        },
+        {
+          "id": "citations",
+          "weight": 3,
+          "text": "Le regole della funzione portano la citazione; nessun comportamento specifico di una versione di Excel o di un altro programma che l'annotazione non sostenga; gli esempi (`P102`, soglie 0/100/500) sono ipotetici e senza citazione."
+        }
+      ]
+    }
+  ]
+}

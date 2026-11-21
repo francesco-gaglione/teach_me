@@ -1,0 +1,306 @@
+{
+  "catalog_version": 1,
+  "title": "Staging e commit in git",
+  "objective": "Saper preparare un commit che contiene solo le modifiche scelte, usando la staging area.",
+  "estimated_minutes": 7,
+  "glossary": [
+    {
+      "key": "working_tree",
+      "term": "working tree",
+      "definition": "I file del progetto così come sono sul disco in questo momento, comprese le modifiche non ancora registrate.",
+      "avoid": [
+        "branch"
+      ]
+    },
+    {
+      "key": "staging_area",
+      "term": "staging area (index)",
+      "definition": "L'elenco delle modifiche pronte per il prossimo commit. Ci entrano solo con `git add`.",
+      "avoid": [
+        "stash",
+        "area di backup"
+      ]
+    },
+    {
+      "key": "commit",
+      "term": "commit",
+      "definition": "Un'istantanea registrata del progetto, con autore, data e messaggio. Contiene esattamente ciò che era in staging."
+    }
+  ],
+  "sources": [
+    {
+      "key": "progit_2_2",
+      "resource_id": null,
+      "title": "Pro Git, 2.2 Recording Changes to the Repository",
+      "url": "https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository"
+    },
+    {
+      "key": "git_add_docs",
+      "resource_id": null,
+      "title": "git-add documentation",
+      "url": "https://git-scm.com/docs/git-add"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "h1",
+      "type": "heading",
+      "level": 1,
+      "text": "Staging e commit"
+    },
+    {
+      "id": "intro",
+      "type": "paragraph",
+      "text": "Hai corretto un bug e, nel frattempo, lasciato qualche riga di debug in un altro file. Vuoi registrare solo la correzione. In questa lezione impari a decidere **esattamente** cosa entra in un commit."
+    },
+    {
+      "id": "g_staging",
+      "type": "glossary_term",
+      "key": "staging_area"
+    },
+    {
+      "id": "s1",
+      "type": "heading",
+      "level": 2,
+      "text": "Tre posti per lo stesso file"
+    },
+    {
+      "id": "s1_p1",
+      "type": "paragraph",
+      "text": "Un file in git può avere versioni diverse in tre posti: il [[working_tree]] (i file sul disco), la [[staging_area]] (ciò che finirà nel prossimo commit) e il repository, che contiene i [[commit]] già registrati[^progit_2_2]."
+    },
+    {
+      "id": "s1_code",
+      "type": "code",
+      "language": "bash",
+      "code": "$ git status --short\n M app.py\nM  README.md\n?? note.txt",
+      "caption": "Colonna di sinistra: staging area. Colonna di destra: working tree. `??` indica un file non tracciato."
+    },
+    {
+      "id": "q_status",
+      "type": "quiz_multi",
+      "question": "Quali affermazioni sull'output di `git status --short` qui sopra sono vere?",
+      "options": [
+        {
+          "id": "a",
+          "text": "`README.md` è nella staging area",
+          "feedback": "Vero: la `M` nella colonna di sinistra indica una modifica già in staging."
+        },
+        {
+          "id": "b",
+          "text": "`app.py` ha modifiche non in staging",
+          "feedback": "Vero: la `M` è nella colonna di destra, cioè solo nel working tree."
+        },
+        {
+          "id": "c",
+          "text": "`note.txt` è già tracciato da git",
+          "feedback": "Falso: `??` significa non tracciato. Git non lo includerà finché non esegui `git add note.txt`."
+        },
+        {
+          "id": "d",
+          "text": "`git commit` includerebbe anche `app.py`",
+          "feedback": "Falso: `git commit` registra solo la staging area, e la modifica di `app.py` non c'è ancora."
+        }
+      ],
+      "correct": [
+        "a",
+        "b"
+      ]
+    },
+    {
+      "id": "s2",
+      "type": "heading",
+      "level": 2,
+      "text": "Scegliere cosa entra nel commit"
+    },
+    {
+      "id": "s2_p1",
+      "type": "paragraph",
+      "text": "Con `git add <file>` copi la versione attuale del file nella staging area; `git commit` registra **solo** quello che c'è in staging[^git_add_docs]. Se modifichi il file dopo `git add`, la nuova modifica resta fuori finché non lo aggiungi di nuovo."
+    },
+    {
+      "id": "extra_0",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_1",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_2",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_3",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_4",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_5",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_6",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_7",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_8",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_9",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_10",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_11",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "extra_12",
+      "type": "paragraph",
+      "text": "Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica. Ripeti il ciclo modifica, aggiungi, verifica e registra finché non diventa automatico: ogni volta guarda lo stato, scegli i file, controlla la staging area e solo alla fine scrivi un messaggio chiaro che spieghi perché hai fatto la modifica."
+    },
+    {
+      "id": "s2_warn",
+      "type": "callout",
+      "variant": "warning",
+      "title": "Attenzione a commit -a",
+      "text": "`git commit -a` aggiunge in automatico tutti i file **già tracciati** che hai modificato. È comodo, ma è proprio il modo in cui finiscono nel commit le righe di debug che non volevi."
+    },
+    {
+      "id": "q_twice",
+      "type": "quiz_single",
+      "question": "Modifichi `app.py`, esegui `git add app.py`, poi modifichi di nuovo `app.py` ed esegui `git commit`. Cosa entra nel commit?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Entrambe le modifiche a `app.py`",
+          "feedback": "Sembra logico perché è lo stesso file, ma `git add` ha copiato in staging la versione di quel momento: la seconda modifica è rimasta nel working tree."
+        },
+        {
+          "id": "b",
+          "text": "Solo la prima modifica a `app.py`",
+          "feedback": "Esatto: la staging area contiene la versione al momento di `git add`. Per includere anche la seconda serve un altro `git add`."
+        },
+        {
+          "id": "c",
+          "text": "Nessuna modifica, serve un nuovo `git add`",
+          "feedback": "La prima modifica è già in staging, quindi entra. Il nuovo `git add` servirebbe solo per la seconda."
+        }
+      ],
+      "correct": "b"
+    },
+    {
+      "id": "os1",
+      "type": "order_steps",
+      "prompt": "Metti in ordine i passi per registrare un commit che contiene **solo** la correzione in `app.py`.",
+      "steps": [
+        {
+          "id": "status",
+          "text": "Controlla lo stato con `git status`"
+        },
+        {
+          "id": "add",
+          "text": "Aggiungi il file con `git add app.py`"
+        },
+        {
+          "id": "diff",
+          "text": "Verifica cosa è in staging con `git diff --staged`"
+        },
+        {
+          "id": "commit",
+          "text": "Registra con `git commit -m \"Correggi il calcolo del totale\"`"
+        }
+      ],
+      "feedback": {
+        "correct": "Giusto: prima guardi, poi scegli, poi verifichi, e solo alla fine registri.",
+        "incorrect": "Il commit registra la staging area: va preparata (`git add`) e verificata (`git diff --staged`) prima di `git commit`."
+      }
+    },
+    {
+      "id": "fb1",
+      "type": "fill_blank",
+      "text": "Per vedere cosa entrerà nel prossimo commit usi {{cmd_diff}}; per togliere `app.py` dalla staging area senza perdere le modifiche usi {{cmd_restore}}.",
+      "blanks": [
+        {
+          "id": "cmd_diff",
+          "answers": [
+            "git diff --staged",
+            "git diff --cached"
+          ]
+        },
+        {
+          "id": "cmd_restore",
+          "answers": [
+            "git restore --staged app.py",
+            "git reset app.py",
+            "git reset HEAD app.py"
+          ]
+        }
+      ],
+      "feedback": {
+        "correct": "Esatto: `--staged` mostra la staging area, e `git restore --staged` la svuota lasciando intatto il working tree.",
+        "incorrect": "Senza `--staged`, `git diff` confronta il working tree con la staging area, e `git restore` senza opzioni scarterebbe le modifiche."
+      },
+      "required": false
+    },
+    {
+      "id": "s3",
+      "type": "heading",
+      "level": 2,
+      "text": "Mettilo in pratica"
+    },
+    {
+      "id": "cl1",
+      "type": "checklist",
+      "items": [
+        {
+          "id": "repo",
+          "text": "Apri un tuo repository con almeno due file modificati."
+        },
+        {
+          "id": "one",
+          "text": "Aggiungi in staging solo uno dei due e controlla con `git status --short`."
+        },
+        {
+          "id": "commit",
+          "text": "Esegui `git commit` e verifica con `git show --stat` che contenga un solo file."
+        }
+      ]
+    },
+    {
+      "id": "src",
+      "type": "primary_source",
+      "source": "progit_2_2",
+      "why": "Il capitolo di Pro Git che segue il ciclo di vita di un file, da non tracciato a registrato, con esempi di `git status`."
+    },
+    {
+      "id": "ask",
+      "type": "ask_agent",
+      "prompt_hint": "Ho aggiunto in staging un file per sbaglio: come lo tolgo senza perdere le modifiche?"
+    }
+  ]
+}

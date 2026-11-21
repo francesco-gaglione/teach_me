@@ -1,0 +1,25 @@
+# ADR — indice
+
+Leggi solo le ADR che toccano il lavoro in corso.
+
+| N° | titolo | stato | decisione |
+|---|---|---|---|
+| 0001 | [Stack tecnologico](0001-stack.md) | accettata; aggiornata (LAN) | Rust (axum, tokio, SQLite via sqlx) per il backend; Kotlin e Jetpack Compose per l'app Android. Aggiornamento 2026-11-11: accesso dalla LAN di casa. |
+| 0002 | [Struttura dei crate del backend](0002-backend-crate-structure.md) | accettata | Workspace Cargo in `backend/` con un crate per livello (domain, application, infrastructure, api): il compilatore fa rispettare la regola delle dipendenze. |
+| 0003 | [App Android: prima il tablet in orizzontale](0003-tablet-landscape-first.md) | accettata | Layout di riferimento tablet in orizzontale (classe expanded), telefono supportato ma secondario; layout adattivi su window size class. |
+| 0004 | [Port `LlmProvider` e configurazione dei modelli](0004-llm-provider-port.md) | accettata | Port `LlmProvider` nel dominio, ruolo invece di modello; errori classificati; retry come decoratore in application, solo prima del primo contenuto. |
+| 0005 | [Decisioni aperte dell'MVP (D1-D4)](0005-mvp-open-decisions.md) | accettata | D1 ricerca web con strumenti lato server Anthropic; D2 schede fronte/retro; D3 lezioni in italiano con termini originali (superata in parte da ADR 0019); D4 crate FSRS esistente. |
+| 0006 | [FSRS: crate rs-fsrs dietro ReviewScheduler](0006-fsrs-crate.md) | superata da ADR 0014 | `rs-fsrs` 1.2.1 (FSRS-5, passi brevi) dietro il port `ReviewScheduler`. |
+| 0007 | [Testo dei PDF: PDFium (pdfium-render) dietro PdfTextExtractor](0007-pdf-extraction.md) | accettata | PDFium tramite `pdfium-render` dietro il port `PdfTextExtractor`: scompone le legature, dà i segnalibri e riconosce i PDF cifrati. |
+| 0008 | [Multiutenza: utenti nello stesso database, proprietà su cartelle e argomenti](0008-multiutenza.md) | accettata | Utenti nello stesso database; `user_id` su cartelle, argomenti e preferenze, controllo nei casi d'uso; password con sessioni opache; chiave LLM cifrata per utente. |
+| 0009 | [Testo delle fonti web: web fetch del provider dato al Generator](0009-web-fetch-generator.md) | accettata, attivazione in produzione subordinata a prova reale | Il Generator riceve lo strumento web fetch lato server di Anthropic, limitato alle fonti del piano; non dichiarato per OpenRouter. Prove reali in fondo. |
+| 0010 | [Diagrammi nelle lezioni: blocco SDUI `diagram` con schema proprio](0010-diagrammi-sdui.md) | accettata | Blocco SDUI `diagram` nel catalogo v1: nodi e archi in JSON, layout flow/tree/cycle, figura statica; solo nelle lezioni, niente Mermaid né WebView. |
+| 0011 | [Evidenziatore con la penna nelle lezioni](0011-evidenziatore.md) | accettata | Evidenziatore con la penna su `paragraph` e `callout`, quattro colori, salvato sul backend e legato alla lezione; senza penna la lezione resta uguale. |
+| 0012 | [Notifiche delle schede di ripasso in scadenza](0012-notifiche-ripasso.md) | accettata | Notifiche locali: WorkManager interroga `GET /reviews/due` ogni ora e avvisa solo quando il conteggio cresce; interruttore per dispositivo, nessun push. |
+| 0013 | [Lettura ad alta voce delle lezioni](0013-lettura-ad-alta-voce.md) | accettata | Lettura ad alta voce con Qwen3-TTS sul server di casa, voce per utente, audio generato in anticipo. Aggiornamento 2026-11-16: modello 1.7B invece dello 0.6B. |
+| 0014 | [Ripasso con FSRS-7 e pesi personali](0014-fsrs-7.md) | accettata | FSRS-7 con il crate `fsrs` 7.0.0, pesi personali ottimizzati per utente, scadenze frazionarie; schede esistenti migrate ricalcolando lo storico dei voti. |
+| 0015 | [Scrittura a mano sulle lezioni](0015-scrittura-a-mano.md) | accettata | Penna per note a mano libere sopra il testo della lezione, agganciate al blocco e salvate sul backend; esercizi esclusi. |
+| 0016 | [Avvisi di qualità del Validator, non bloccanti](0016-avvisi-qualita-validator.md) | accettata | Due indizi involontari (fill_blank nel testo, markup solo in alcune opzioni) restano errori; gli altri controlli di stile sono avvisi salvati in `quality_warnings`, con una riparazione in più solo per lezioni con avvisi. |
+| 0017 | [Tracing con OpenTelemetry e Jaeger](0017-tracing-opentelemetry-jaeger.md) | accettata | Export OTLP/HTTP opt-in verso Jaeger v2 in memoria nel compose; span per richieste, job, chiamate LLM e TTS, senza corpi, header, chiavi o testi utente. |
+| 0018 | [Campo `visual` nel piano](0018-visual-nel-piano.md) | accettata | `concepts[].visual` nel piano del Planner (none, flow, tree, cycle, code_compare, line_chart, comparison_table, timeline, sequence), massimo due figure; controllo `planned_visual` con un passaggio improve in più. |
+| 0019 | [Lingua dei contenuti](0019-lingua-dei-contenuti.md) | accettata | Lingua per argomento (`it` o `en`, scelta alla creazione e immutabile); agenti, lezioni e voce nella lingua dell'argomento; interfaccia Android dalla lingua del dispositivo; `message` degli errori da `Accept-Language`. |

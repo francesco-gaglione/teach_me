@@ -1,0 +1,925 @@
+{
+  "suite": "planner/phase12",
+  "prompt_dir": "planner",
+  "description": "Fase 12: piano con `example`, `steps`, `pitfall` per concetto, prerequisiti `general` = da richiamare, 2-5 concetti (4 con richiamo), concetti di supporto, `estimated_minutes` con la formula. Cinque profili di learner: principiante senza record, con record che coprono, prerequisito che sembra ovvio, prerequisito troppo grande, argomento di convenzione. Fonti e URL plausibili ma non verificati. Dal blocco B, una coppia sul punto di partenza della mission (stessa lezione, il campo cambia la `basis` del prerequisito). Prompt v5: due casi sul campo facoltativo `visual` per concetto (struttura evidente: atteso diverso da `none`; convenzione: tutti `none`).",
+  "defaults": {
+    "runs_per_case": 3,
+    "deterministic": {
+      "plan_valid": true,
+      "plan_valid_first_try": "warn",
+      "planner_calls_max": 3,
+      "concepts_count": [
+        4,
+        5
+      ],
+      "concepts_max_when_general": 4,
+      "concept_fields": {
+        "example_chars": [
+          1,
+          300
+        ],
+        "steps_count": [
+          2,
+          6
+        ],
+        "step_chars": [
+          1,
+          150
+        ],
+        "pitfall_chars_max": 200
+      },
+      "pitfall_form": "^(Pensare che .+)?$",
+      "new_terms_max": {
+        "per_concept": 2,
+        "total": 8
+      },
+      "general_prerequisites_max": 3,
+      "example_not_in_exercises": {
+        "description": "nessuna sequenza di 4 parole consecutive di `example` compare in un `purpose` di esercizio e viceversa (euristica: il caso dell'esempio non è quello dell'esercizio)",
+        "severity": "warn"
+      },
+      "exercises_at_least_one_per_concept": "warn",
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sul piano (non più dal modello): misura se i 4-5 concetti rientrano nella lezione da 10-15 minuti"
+      },
+      "title_not_a_chapter_number": true
+    },
+    "notes": "Il runner del Planner (roles/planner.rs) legge `records` come per phase10; `documents: []` significa nessun PDF (`{{documents_section}}` = `Nessuno.`). I controlli duri sono quelli di `deterministic`; le regole di giudizio sono nelle rubriche. `plan_valid` usa `validate_plan` del backend, che dopo il passo di rust-backend-dev accetta 4-5 concetti (esattamente 4 con un prerequisito `general`), steps 2-6 e fino a 8 termini. Dal blocco B ogni mission ha `starting_point` (stringa o `null`); `declared_prerequisite_is_mission` e `unnamed_prerequisite_is_general` sono una coppia che differisce solo per quel campo: stessa lezione e stesse fonti, e lo stesso prerequisito sul terminale è `mission` nel primo e `general` nel secondo. Decisione del 2026-11-11: ogni lezione ha 4-5 concetti; `estimated_minutes` lo calcola il backend (il valore del modello viene sostituito), quindi non c'è più un controllo sulla formula. Le rubriche del giudice sono indicative: Haiku come giudice è inaffidabile, usare Sonnet (vedi README). `general_count` di `beginner_zero_records_general_prereqs` e `obvious_looking_prerequisite_is_general` parte da 0 perché un prerequisito promosso a concetto di supporto è ammesso e non conta come `general`."
+  },
+  "pass_criteria": {
+    "plan_valid": "100% delle run entro la riparazione; `plan_valid_first_try` >= 85%",
+    "hard_checks": "`concepts_count`, `concepts_max_when_general`, `concept_fields`, `pitfall_form`, `new_terms_max`, `general_prerequisites_max`: 3/3 run per caso",
+    "general_share": "`beginner_zero_records_general_prereqs` e `obvious_looking_prerequisite_is_general`: `general_count` nell'intervallo in >= 2/3 run (misura la proporzione di prerequisiti `general` per profilo; riportare per caso la quota media di `general` sul totale dei prerequisiti); `records_cover_prerequisites`: `general_count` [0,1] in >= 2/3 run (dal 2026-11-11 l'intervallo parte da 0 nei due casi: la copertura mancante la misura la rubrica, non il conteggio).",
+    "estimated_minutes": "`estimated_minutes_range` solo avviso (misura la durata calcolata dal backend, non il modello)",
+    "rubric_mean": ">= 0.8",
+    "regression": "nessun controllo della Fase 10 (`title_not_a_chapter_number`) regredisce",
+    "starting_point_pair": "coppia `declared_prerequisite_is_mission` / `unnamed_prerequisite_is_general`: i controlli `prerequisite_basis_min`/`general_count`/`prerequisite_basis_max` in >= 2/3 run per caso; è il test che il campo cambia la `basis` e non è solo rumore nel contesto",
+    "admission": "`narrow_topic_reaches_four_without_filler`: `concepts_count` [4,5] in 3/3 run e rubrica `admission_rule`/`no_repeated_example` >= 0.8 con giudice Sonnet; lettura manuale dei piani prima di accettare (il giudice da solo non decide)"
+  },
+  "cases": [
+    {
+      "id": "beginner_zero_records_general_prereqs",
+      "description": "Principiante assoluto su un argomento nuovo: nessun record, la mission non dichiara conoscenze di statistica. Il rischio è dare per ovvi media, campione, percentuale e classificarli `mission` o saltarli. Atteso: ciò che la lezione presuppone (percentuale, campione) è un prerequisito `general` oppure un concetto di supporto (dal 2026-11-11 la promozione a concetto è il primo modo ammesso per arrivare a 4 concetti, quindi `general_count` parte da 0: se resta senza copertura lo coglie la rubrica `nothing_assumed`); nessuno `record` né `mission`; 4 concetti con un `general`, 4-5 senza, esempi con valori.",
+      "topic": {
+        "title": "Statistica per leggere i test A/B"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Nel mio lavoro arrivano report di test A/B e annuisco senza capire se il risultato è reale o fortuna.",
+        "success": [
+          "Dico con parole mie che cosa significa «differenza significativa» in un report A/B",
+          "Decido se un test A/B con 2.000 visite per variante è abbastanza grande"
+        ],
+        "starting_point": "Ho una laurea in lettere e non faccio matematica da vent'anni; non ho mai studiato statistica.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "calcolare le formule a mano"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000011",
+          "kind": "knowledge",
+          "source_type": "article",
+          "title": "Evan Miller, How Not To Run an A/B Test",
+          "url": "https://www.evanmiller.org/how-not-to-run-an-ab-test.html",
+          "language": "en",
+          "annotation": "Articolo divulgativo su errori comuni nella lettura dei test A/B: fermarsi quando il risultato sembra buono, campioni troppo piccoli, significatività.",
+          "use_for": "capire perché un risultato A/B può essere solo fortuna"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000012",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Khan Academy, Significance tests (hypothesis testing)",
+          "url": "https://www.khanacademy.org/math/statistics-probability/significance-tests-one-sample",
+          "language": "en",
+          "annotation": "Corso introduttivo con spiegazioni ed esempi su campioni, popolazione, p-value e test di ipotesi.",
+          "use_for": "concetti di base: campione, variabilità, significatività"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "general_count": [
+          0,
+          3
+        ],
+        "prerequisite_basis_max": {
+          "record": 0,
+          "mission": 0
+        },
+        "concepts_count": [
+          4,
+          5
+        ]
+      },
+      "rubric": [
+        {
+          "id": "nothing_assumed",
+          "weight": 3,
+          "text": "I prerequisiti che il piano presuppone davvero (per esempio che cos'è un campione, una percentuale o la variabilità) sono dichiarati e classificati `general`; nessuno è classificato `mission` o `record` senza che la mission o un record lo coprano, e nessuno è omesso perché «ovvio»."
+        },
+        {
+          "id": "zpd_small_step",
+          "weight": 3,
+          "text": "La capacità scelta è il primo passo piccolo verso un criterio di successo (non l'intero test di ipotesi) e parte da un livello d'ingresso compatibile con «laurea in lettere, vent'anni senza matematica»."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 3,
+          "text": "Ogni concetto ha un `example` con valori concreti (numeri, conteggi) e `steps` che lo risolvono in ordine senza saltare passaggi."
+        },
+        {
+          "id": "example_not_exercise",
+          "weight": 2,
+          "text": "Il caso di `example` di ogni concetto è diverso dal caso descritto in `purpose` di qualunque esercizio."
+        },
+        {
+          "id": "pitfall_real",
+          "weight": 2,
+          "text": "Ogni `pitfall` non vuoto è una convinzione errata reale e comune («Pensare che…»), non un consiglio generico; i vuoti sono giustificati."
+        },
+        {
+          "id": "support_concepts",
+          "weight": 2,
+          "text": "Se un'idea necessaria non si ripassa in tre frasi, è un concetto di supporto (non un prerequisito di una riga)."
+        },
+        {
+          "id": "grounded",
+          "weight": 2,
+          "text": "Ogni concetto si può sostenere con una delle fonti dell'elenco e la fonte primaria è quella che meglio sostiene la capacità."
+        },
+        {
+          "id": "terms",
+          "weight": 1,
+          "text": "Al massimo 2 termini nuovi per concetto, solo quelli indispensabili, con chiavi in minuscolo."
+        }
+      ]
+    },
+    {
+      "id": "records_cover_prerequisites",
+      "description": "Seconda lezione su Rust: due record (un move dimostrato e una misconcezione corretta sui tipi semplici) e una mission che dichiara Python. Atteso: prerequisiti `record` con i numeri giusti e `mission` per Python, pochi o nessun `general`, nessun concetto che rispiega move o Copy, `pitfall` che parte dalla misconcezione già corretta solo se serve al nuovo concetto.",
+      "topic": {
+        "title": "Ownership e borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+        "success": [
+          "Leggo un messaggio «borrow of moved value» e so dire quale riga ha spostato il valore",
+          "Scelgo tra passare per valore e passare un riferimento"
+        ],
+        "starting_point": "So già programmare in Python.",
+        "constraints": [
+          "20 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "lifetime espliciti"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000001",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "language": "en",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust: regole di ownership, move e copia dei tipi semplici, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000002",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "The Rust Programming Language, 4.2 References and Borrowing",
+          "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html",
+          "language": "en",
+          "annotation": "Capitolo del libro ufficiale: riferimenti condivisi e mutabili, regole del borrow checker, riferimenti pendenti.",
+          "use_for": "prestito con `&` e `&mut` e regole del borrow checker"
+        }
+      ],
+      "documents": [],
+      "lessons": [
+        {
+          "id": "0193f100-0000-7000-8000-0000000000a1",
+          "number": 1,
+          "title": "Quando una variabile smette di essere valida",
+          "objective": "Saper prevedere se una variabile è ancora utilizzabile dopo un assegnamento."
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Prevede l'uso dopo un move",
+          "body": "Dice che dopo `let b = a;` con `a: String` la variabile `a` non è più utilizzabile."
+        },
+        {
+          "number": 2,
+          "kind": "misconception_corrected",
+          "lesson_number": 1,
+          "title": "I tipi semplici si copiano",
+          "body": "All'inizio pensava che `let y = x;` con `x: i32` rendesse `x` inutilizzabile; ora sa che `i32` si copia e `x` resta valida."
+        }
+      ],
+      "deterministic": {
+        "prerequisite_basis_min": {
+          "record": 1
+        },
+        "general_count": [
+          0,
+          1
+        ],
+        "record_numbers_subset_of": [
+          1,
+          2
+        ]
+      },
+      "rubric": [
+        {
+          "id": "records_used",
+          "weight": 3,
+          "text": "I prerequisiti che i record 1 e 2 provano sono `record` con i numeri giusti; il piano non li ripete come concetti da insegnare."
+        },
+        {
+          "id": "mission_basis",
+          "weight": 2,
+          "text": "Se il piano presuppone programmazione in generale (funzioni, variabili), la classifica `mission` per via di «So già programmare in Python»; non `general` e non `record`."
+        },
+        {
+          "id": "no_reteach",
+          "weight": 3,
+          "text": "Nessun concetto rispiega il move o la copia dei tipi semplici: il piano parte da lì per arrivare a un passo nuovo (borrowing)."
+        },
+        {
+          "id": "zpd",
+          "weight": 2,
+          "text": "Un solo passo oltre ciò che è dimostrato, verso il criterio «scelgo tra valore e riferimento»."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 3,
+          "text": "Ogni concetto ha `example` concreto (codice o valori) e `steps` completi in ordine; l'esempio non coincide con il caso di un esercizio."
+        },
+        {
+          "id": "pitfall_real",
+          "weight": 2,
+          "text": "I `pitfall` sono convinzioni errate reali del nuovo concetto; nessuno ripete l'errore già corretto dai record come se fosse nuovo."
+        },
+        {
+          "id": "grounded",
+          "weight": 2,
+          "text": "Fonte primaria coerente con la capacità (capitolo 4.2) e nessun concetto fuori dalle fonti."
+        }
+      ]
+    },
+    {
+      "id": "obvious_looking_prerequisite_is_general",
+      "description": "Backend developer che dichiara di conoscere HTTP e ha un record su richieste e risposte, ma nessuno parla di cookie o sessioni. Il rischio: classificare «sa cos'è un cookie» come `mission` o `record` perché «ovvio» per chi fa web. Atteso: HTTP coperto da record o mission, cookie e sessione `general` (o spiegati come concetti di supporto). Controllo duro rilassato il 2026-11-11: cookie e sessione possono diventare concetti di supporto (regola 7); li giudica la rubrica `cookie_is_general`.",
+      "topic": {
+        "title": "Sicurezza dei cookie nelle applicazioni web"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Mantengo un'app web e vorrei capire come ci hanno rubato una sessione.",
+        "success": [
+          "Spiego come un attaccante può riusare un cookie di sessione rubato",
+          "Scelgo gli attributi `HttpOnly` e `Secure` giusti per il cookie di sessione"
+        ],
+        "starting_point": "Scrivo backend da due anni e conosco HTTP: richieste GET e POST, header e codici di stato.",
+        "constraints": [],
+        "out_of_scope": [
+          "OAuth",
+          "crittografia dei token"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000021",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "MDN, Using HTTP cookies",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies",
+          "language": "en",
+          "annotation": "Guida di riferimento su come i server impostano i cookie e il browser li rimanda, con gli attributi `Secure`, `HttpOnly` e `SameSite`.",
+          "use_for": "che cos'è un cookie, come viaggia, che cosa fanno gli attributi"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000022",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "OWASP, Session Management Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html",
+          "language": "en",
+          "annotation": "Scheda di buone pratiche su identificatori di sessione, attributi dei cookie e furto di sessione.",
+          "use_for": "furto di sessione e attributi consigliati"
+        }
+      ],
+      "documents": [],
+      "lessons": [
+        {
+          "id": "0193f100-0000-7000-8000-0000000000b1",
+          "number": 1,
+          "title": "Richieste e risposte HTTP",
+          "objective": "Saper leggere una richiesta e una risposta HTTP e dire a che cosa serve ogni header."
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Legge una richiesta e una risposta HTTP",
+          "body": "Descrive una richiesta GET con i suoi header e una risposta 200 con header e corpo, dicendo a che cosa serve ciascuna parte."
+        }
+      ],
+      "deterministic": {
+        "general_count": [
+          0,
+          3
+        ],
+        "concepts_count": [
+          4,
+          5
+        ]
+      },
+      "rubric": [
+        {
+          "id": "cookie_is_general",
+          "weight": 3,
+          "text": "«Che cos'è un cookie» e/o «che cos'è una sessione» non sono `mission` né `record` (nessuno li copre: la mission dice solo HTTP): sono `general`, oppure diventano concetti di supporto spiegati per intero."
+        },
+        {
+          "id": "http_is_covered",
+          "weight": 2,
+          "text": "Ciò che riguarda HTTP (richieste, header) è classificato `record` (con il numero 1) o `mission`, non `general`."
+        },
+        {
+          "id": "zpd",
+          "weight": 2,
+          "text": "La capacità scelta è un passo piccolo verso un criterio di successo (per esempio riuso di un cookie rubato), non l'intero argomento."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 3,
+          "text": "Ogni concetto ha `example` concreto con valori (nomi di cookie, header) e `steps` completi in ordine, diverso dai casi degli esercizi."
+        },
+        {
+          "id": "pitfall_real",
+          "weight": 2,
+          "text": "I `pitfall` sono convinzioni errate reali (per esempio sul ruolo di `HttpOnly`), non consigli generici."
+        },
+        {
+          "id": "grounded",
+          "weight": 2,
+          "text": "Ogni concetto è sostenibile con MDN o OWASP; nessun dettaglio da memoria."
+        }
+      ]
+    },
+    {
+      "id": "big_prerequisite_becomes_support_concept",
+      "description": "Mission «impacchetta un servizio» di chi non ha mai usato Docker. Il prerequisito reale (immagine contro container) non si ripassa in tre frasi: atteso come concetto di supporto prima del Dockerfile, non come riga di prerequisito. Controlla anche che il totale concetti resti entro 5 (4 se resta un prerequisito `general`).",
+      "topic": {
+        "title": "Docker per i miei servizi"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio impacchettare il mio servizio Python così com'è e farlo girare su qualunque macchina.",
+        "success": [
+          "Scrivo un Dockerfile per un servizio Python e costruisco l'immagine",
+          "Avvio il servizio da un container e raggiungo la porta dal mio browser"
+        ],
+        "starting_point": "Uso il terminale ogni giorno. Non ho mai usato Docker né macchine virtuali.",
+        "constraints": [
+          "30 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "Kubernetes",
+          "orchestrazione"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000031",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Docker Docs, Get started: what is a container?",
+          "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+          "language": "en",
+          "annotation": "Introduzione ufficiale: che cos'è un container, differenza da un'immagine, come si avvia.",
+          "use_for": "container contro immagine"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000032",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Docker Docs, Dockerfile reference",
+          "url": "https://docs.docker.com/reference/dockerfile/",
+          "language": "en",
+          "annotation": "Riferimento ufficiale delle istruzioni di un Dockerfile (`FROM`, `COPY`, `RUN`, `CMD`) con esempi.",
+          "use_for": "scrivere un Dockerfile"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "concepts_count": [
+          4,
+          5
+        ],
+        "general_count": [
+          0,
+          3
+        ]
+      },
+      "rubric": [
+        {
+          "id": "support_concept",
+          "weight": 3,
+          "text": "L'idea «immagine contro container» (o equivalente) è trattata come concetto del piano, prima di quello sul Dockerfile, con esempio e passaggi; non è ridotta a una riga di prerequisito `general` che il richiamo non potrebbe spiegare."
+        },
+        {
+          "id": "no_panorama",
+          "weight": 2,
+          "text": "I concetti di supporto sono solo quelli senza i quali il concetto successivo non si capisce; la lezione non diventa una panoramica di Docker."
+        },
+        {
+          "id": "single_win",
+          "weight": 2,
+          "text": "L'obiettivo è una sola capacità osservabile (per esempio costruire un'immagine da un Dockerfile minimo), non due criteri della mission insieme."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 3,
+          "text": "Ogni concetto ha `example` con valori e comandi concreti e `steps` completi in ordine."
+        },
+        {
+          "id": "pitfall_real",
+          "weight": 2,
+          "text": "I `pitfall` sono convinzioni errate reali (per esempio sui dati che restano nel container), non consigli generici."
+        },
+        {
+          "id": "grounded",
+          "weight": 2,
+          "text": "Fonte primaria coerente con la capacità; nessun comando o istruzione che le fonti non possano sostenere."
+        }
+      ]
+    },
+    {
+      "id": "convention_pitfall_not_invented",
+      "description": "Argomento in gran parte convenzionale (formato dei messaggi di commit): per alcuni concetti non esiste una convinzione errata reale. Atteso: `pitfall` vuoto dove non c'è, mai riempito con consigli («Attenzione a…») né con errori che nessuno fa.",
+      "topic": {
+        "title": "Conventional Commits"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio che la cronologia del mio repository sia leggibile e che i changelog si generino da soli.",
+        "success": [
+          "Scrivo messaggi di commit nel formato Conventional Commits",
+          "Scelgo il tipo giusto (`feat`, `fix`, `docs`, `refactor`) per un cambiamento"
+        ],
+        "starting_point": "Uso git ogni giorno da un anno e so fare commit, branch e merge.",
+        "constraints": [],
+        "out_of_scope": [
+          "strumenti di rilascio automatico"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000041",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Conventional Commits 1.0.0",
+          "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+          "language": "en",
+          "annotation": "Specifica ufficiale: struttura del messaggio, tipi `feat` e `fix`, scope, breaking change, esempi.",
+          "use_for": "formato e tipi"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {},
+      "rubric": [
+        {
+          "id": "pitfall_not_invented",
+          "weight": 3,
+          "text": "Per i concetti di sola convenzione (per esempio come si compone il messaggio) il `pitfall` è vuoto, oppure è una convinzione errata che una persona che conosce git potrebbe davvero avere; nessun errore inventato per riempire il campo."
+        },
+        {
+          "id": "mission_basis",
+          "weight": 2,
+          "text": "«Sa fare commit con git» è `mission` (la mission lo dichiara), non `general`; non c'è un prerequisito `general` inventato."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 3,
+          "text": "Ogni concetto ha `example` con messaggi di commit concreti e `steps` completi in ordine; l'esempio è diverso dai casi degli esercizi."
+        },
+        {
+          "id": "size",
+          "weight": 2,
+          "text": "I concetti sono pochi e ciascuno spiegabile in ~250 parole; nessuna panoramica degli strumenti di rilascio (fuori scope)."
+        },
+        {
+          "id": "grounded",
+          "weight": 2,
+          "text": "Tipi e regole sono quelli della specifica; nessuna regola da memoria che la fonte non sostiene."
+        }
+      ]
+    },
+    {
+      "id": "declared_prerequisite_is_mission",
+      "description": "Coppia con `unnamed_prerequisite_is_general`: stessa lezione su Docker, stesse fonti, nessun record. Qui il punto di partenza dichiara l'uso quotidiano del terminale. Atteso: il prerequisito «sa eseguire comandi da terminale» (se compare) è `mission`, non `general`; Docker e le macchine virtuali non sono dichiarati e restano `general` o diventano concetti di supporto.",
+      "topic": {
+        "title": "Docker per i miei servizi"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio impacchettare il mio servizio Python così com'è e farlo girare su qualunque macchina.",
+        "success": [
+          "Scrivo un Dockerfile per un servizio Python e costruisco l'immagine",
+          "Avvio il servizio da un container e raggiungo la porta dal mio browser"
+        ],
+        "starting_point": "Uso il terminale ogni giorno: mi muovo tra cartelle, lancio script e uso pip. Non ho mai usato Docker né macchine virtuali.",
+        "constraints": [
+          "30 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "Kubernetes",
+          "orchestrazione"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000031",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Docker Docs, Get started: what is a container?",
+          "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+          "language": "en",
+          "annotation": "Introduzione ufficiale: che cos'è un container, differenza da un'immagine, come si avvia.",
+          "use_for": "container contro immagine"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000032",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Docker Docs, Dockerfile reference",
+          "url": "https://docs.docker.com/reference/dockerfile/",
+          "language": "en",
+          "annotation": "Riferimento ufficiale delle istruzioni di un Dockerfile (`FROM`, `COPY`, `RUN`, `CMD`) con esempi.",
+          "use_for": "scrivere un Dockerfile"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "concepts_count": [
+          4,
+          5
+        ],
+        "prerequisite_basis_min": {
+          "mission": 1
+        }
+      },
+      "rubric": [
+        {
+          "id": "terminal_is_mission",
+          "weight": 3,
+          "text": "Il prerequisito sull'uso del terminale (muoversi tra cartelle, lanciare comandi), se presente, ha `basis` `mission` perché il punto di partenza lo dichiara espressamente; non è `general`, e il piano non lo spiega come concetto."
+        },
+        {
+          "id": "docker_not_assumed",
+          "weight": 3,
+          "text": "Nessun prerequisito dà per noto Docker, i container o le macchine virtuali con `basis` `mission` o `record`: il punto di partenza dice che la persona non li ha mai usati."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 2,
+          "text": "Ogni concetto ha `example` con valori e comandi concreti e `steps` completi in ordine."
+        },
+        {
+          "id": "zpd",
+          "weight": 2,
+          "text": "La capacità scelta è un passo piccolo verso un criterio di successo (per esempio costruire un'immagine da un Dockerfile minimo)."
+        }
+      ]
+    },
+    {
+      "id": "unnamed_prerequisite_is_general",
+      "description": "Coppia con `declared_prerequisite_is_mission`: stesso argomento, stesse fonti, nessun record. Qui il punto di partenza non nomina il terminale (la persona lancia il servizio dall'IDE). Atteso: lo stesso prerequisito sul terminale è `general` (da richiamare) o diventa un concetto di supporto; nessun prerequisito è `mission` per qualcosa che il punto di partenza non nomina.",
+      "topic": {
+        "title": "Docker per i miei servizi"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio impacchettare il mio servizio Python così com'è e farlo girare su qualunque macchina.",
+        "success": [
+          "Scrivo un Dockerfile per un servizio Python e costruisco l'immagine",
+          "Avvio il servizio da un container e raggiungo la porta dal mio browser"
+        ],
+        "starting_point": "Sviluppo il servizio e lo lancio dall'IDE, senza usare comandi da terminale. Non ho mai usato Docker né macchine virtuali.",
+        "constraints": [
+          "30 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "Kubernetes",
+          "orchestrazione"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000031",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Docker Docs, Get started: what is a container?",
+          "url": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+          "language": "en",
+          "annotation": "Introduzione ufficiale: che cos'è un container, differenza da un'immagine, come si avvia.",
+          "use_for": "container contro immagine"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000032",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Docker Docs, Dockerfile reference",
+          "url": "https://docs.docker.com/reference/dockerfile/",
+          "language": "en",
+          "annotation": "Riferimento ufficiale delle istruzioni di un Dockerfile (`FROM`, `COPY`, `RUN`, `CMD`) con esempi.",
+          "use_for": "scrivere un Dockerfile"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "concepts_count": [
+          4,
+          4
+        ],
+        "general_count": [
+          1,
+          3
+        ],
+        "prerequisite_basis_max": {
+          "mission": 0
+        }
+      },
+      "rubric": [
+        {
+          "id": "terminal_is_general",
+          "weight": 3,
+          "text": "Il prerequisito sull'uso del terminale (muoversi tra cartelle, lanciare comandi) è `general` oppure è trattato come concetto di supporto spiegato per intero: il punto di partenza non lo dichiara, anzi dice che la persona lancia il servizio dall'IDE."
+        },
+        {
+          "id": "nothing_declared_leaks",
+          "weight": 3,
+          "text": "Nessun prerequisito è `mission`: il punto di partenza dichiara solo di sviluppare il servizio e di non aver mai usato Docker o macchine virtuali, e di questo il piano non può ricavare altre conoscenze."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 2,
+          "text": "Ogni concetto ha `example` con valori e comandi concreti e `steps` completi in ordine."
+        },
+        {
+          "id": "zpd",
+          "weight": 2,
+          "text": "La capacità scelta è un passo piccolo verso un criterio di successo (per esempio costruire un'immagine da un Dockerfile minimo)."
+        }
+      ]
+    },
+    {
+      "id": "narrow_topic_reaches_four_without_filler",
+      "description": "Argomento stretto: `git commit --amend` ha due idee proprie (correggere il messaggio, aggiungere un file dimenticato). Atteso: il Planner arriva a 4 (o 5) concetti ammessi dalla regola di ammissione, nell'ordine di preferenza: caso limite con ragionamento nuovo (amend di un commit già pubblicato: riscrive la storia, l'hash cambia, i colleghi divergono) e confronto con il modello noto dal punto di partenza (`git revert`: quando amend e quando revert). Il rischio: concetti ripetuti (amend del messaggio con un altro messaggio, amend con un altro file), concetti fuori mission (reflog, rebase interattivo, reset) o anticipazioni; oppure un obiettivo allargato a un tema lontano.",
+      "topic": {
+        "title": "Git: correggere l'ultimo commit"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di fare commit «fix typo» in fila e correggere l'ultimo commit prima che gli altri lo vedano.",
+        "success": [
+          "Correggo il messaggio dell'ultimo commit",
+          "Aggiungo un file dimenticato all'ultimo commit senza crearne uno nuovo",
+          "So quando conviene correggere un commit e quando annullarlo con un commit nuovo"
+        ],
+        "starting_point": "Uso git ogni giorno: commit, push, branch e `git revert` per annullare un commit già pubblicato.",
+        "constraints": [
+          "15 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "rebase interattivo",
+          "reflog",
+          "reset"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000041",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Pro Git, Git Basics: Undoing Things",
+          "url": "https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things",
+          "language": "en",
+          "annotation": "Capitolo di Pro Git: `git commit --amend` per rifare l'ultimo commit (messaggio e file dimenticati), annullare modifiche, avvertenze sulla storia già condivisa.",
+          "use_for": "correggere l'ultimo commit con --amend"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000042",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Git documentation, git-commit (--amend)",
+          "url": "https://git-scm.com/docs/git-commit",
+          "language": "en",
+          "annotation": "Manuale di `git commit`: l'opzione `--amend` sostituisce il commit in cima al branch con uno nuovo; `--no-edit` riusa il messaggio.",
+          "use_for": "comportamento e opzioni di --amend"
+        },
+        {
+          "resource_id": "0193f100-0000-7000-8000-000000000043",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Git documentation, git-revert",
+          "url": "https://git-scm.com/docs/git-revert",
+          "language": "en",
+          "annotation": "Manuale di `git revert`: crea un commit nuovo che annulla gli effetti di uno precedente, senza riscrivere la storia.",
+          "use_for": "quando annullare con un commit nuovo invece di correggere"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "concepts_count": [
+          4,
+          5
+        ],
+        "general_count": [
+          0,
+          1
+        ]
+      },
+      "rubric": [
+        {
+          "id": "admission_rule",
+          "weight": 4,
+          "text": "Ogni concetto passa il test di ammissione: l'esercizio di B non si risolve usando solo ciò che spiega A; ogni concetto serve all'`objective`; nessuno anticipa un'altra lezione. I concetti oltre i primi due sono di tipo ammesso: caso limite con ragionamento nuovo (per esempio amend su un commit già pubblicato: l'hash cambia e la storia diverge) o confronto con il modello noto dal punto di partenza (`git revert` contro --amend). Nessun concetto è lo stesso `--amend` con un altro messaggio o un altro file."
+        },
+        {
+          "id": "no_repeated_example",
+          "weight": 3,
+          "text": "L'`example` di ogni concetto è un caso con valori e struttura propri: nessuno è una variante di un altro (stesso comando con nomi diversi). Lo scopo di ogni esercizio richiede un ragionamento diverso da quello degli altri."
+        },
+        {
+          "id": "no_out_of_scope_filler",
+          "weight": 3,
+          "text": "Nessun concetto su rebase interattivo, reflog o reset (fuori scope), né una panoramica di Git: i concetti restano nel perimetro «correggere o annullare l'ultimo commit»."
+        },
+        {
+          "id": "objective_stays_close",
+          "weight": 2,
+          "text": "L'`objective` è una sola capacità osservabile vicina all'argomento (non allargata a un tema lontano) e almeno un esercizio la verifica direttamente."
+        },
+        {
+          "id": "mission_basis",
+          "weight": 2,
+          "text": "Il prerequisito «fare commit» è `mission` (il punto di partenza lo dichiara); `git revert` è usato come modello noto senza essere rispiegato per intero e non è un prerequisito `general`."
+        },
+        {
+          "id": "examples_concrete",
+          "weight": 2,
+          "text": "Ogni concetto ha `example` con comandi e valori concreti e `steps` completi in ordine."
+        },
+        {
+          "id": "grounded",
+          "weight": 2,
+          "text": "Fonte primaria coerente con la capacità; nessun comando o comportamento che le fonti non sostengano."
+        }
+      ]
+    },
+    {
+      "id": "visual_flow_for_cache_process",
+      "description": "Argomento con struttura evidente: il percorso di una richiesta nella cache HTTP ha un bivio (copia fresca, copia scaduta da validare, nessuna copia). Atteso: almeno un concetto con `visual` diverso da `none` (di norma `flow`), al massimo 2; l'esercizio di quel concetto usa un caso diverso da quello della figura. Il controllo è nella rubrica (non c'è un controllo deterministico su `visual`).",
+      "topic": {
+        "title": "HTTP: come funziona la cache del browser"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio capire perché il browser a volte non rifà la richiesta e a volte sì.",
+        "success": [
+          "Spiego quando una risposta viene riusata",
+          "Spiego quando il browser la rivalida"
+        ],
+        "starting_point": "Conosco GET e le intestazioni HTTP, non la cache.",
+        "constraints": [
+          "15 minuti al giorno"
+        ],
+        "out_of_scope": []
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-0000000000c1",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "MDN, HTTP caching",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching",
+          "language": "en",
+          "annotation": "Come la cache riusa una risposta fresca, la valida con ETag e If-None-Match quando è scaduta, e quando chiede di nuovo al server.",
+          "use_for": "cache HTTP: fresca, scaduta, validazione"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "concepts_count": [
+          4,
+          5
+        ]
+      },
+      "rubric": [
+        {
+          "id": "visual_present",
+          "weight": 4,
+          "text": "Almeno un concetto ha `visual` uguale a `flow` (o `cycle`/`tree` solo se motivato) e non più di 2 concetti hanno `visual` diverso da `none`. Il valore è sul concetto in cui il percorso con il bivio è il contenuto. L'`example` e l'esercizio del concetto con la figura non sono lo stesso caso della figura."
+        },
+        {
+          "id": "grounded",
+          "weight": 4,
+          "text": "Il piano non contiene fatti non sostenuti dall'annotazione della fonte."
+        }
+      ]
+    },
+    {
+      "id": "visual_none_for_format_rules",
+      "description": "Argomento di pura convenzione senza struttura da disegnare (formato dei messaggi di commit). Atteso: `visual` assente o `none` su tutti i concetti.",
+      "topic": {
+        "title": "Git: messaggi di commit convenzionali"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio scrivere messaggi di commit nel formato convenzionale.",
+        "success": [
+          "Scrivo un messaggio nel formato corretto",
+          "Scelgo il tipo giusto"
+        ],
+        "starting_point": "Uso git ogni giorno e scrivo messaggi liberi.",
+        "constraints": [
+          "15 minuti al giorno"
+        ],
+        "out_of_scope": []
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193f100-0000-7000-8000-0000000000c1",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Conventional Commits 1.0.0",
+          "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+          "language": "en",
+          "annotation": "Specifica del formato `tipo(scope): descrizione`, tipi `feat` e `fix`, marcatore `!` per i cambiamenti incompatibili.",
+          "use_for": "formato dei messaggi di commit"
+        }
+      ],
+      "documents": [],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "concepts_count": [
+          4,
+          5
+        ]
+      },
+      "rubric": [
+        {
+          "id": "visual_none",
+          "weight": 4,
+          "text": "Nessun concetto ha `visual` diverso da `none` (o il campo è assente): sono regole di formato e un elenco di tipi, senza una struttura la cui relazione tra le parti sia ciò che si impara."
+        }
+      ]
+    }
+  ]
+}

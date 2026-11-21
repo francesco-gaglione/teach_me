@@ -1,0 +1,50 @@
+# Production configuration, copied into the image at /etc/teach_me/teach_me.toml
+# (not mounted): after editing it, rebuild with `docker compose up -d --build`.
+# Secrets (the server secret key) live in .env, not here. LLM keys are per user:
+# each user saves theirs from the app Settings (or `teach-me user set-llm-key`).
+# bind_addr and database_url are set by the image (0.0.0.0:8080, /data/teach_me.db).
+
+[llm]
+# Anthropic API directly (since 2026-11-11; OpenRouter before that).
+# The provider is one for the whole server: every user's saved key must be an
+# Anthropic key. A key saved for OpenRouter is refused (`llm_key_rejected`)
+# until the user replaces it in Settings.
+# To go back: default_provider = "openrouter" and OpenRouter keys again.
+default_provider = "anthropic"
+
+# Sonnet 5.5 everywhere, Haiku 5.5 for the Grader.
+[llm.roles.tutor]
+model = "claude-sonnet-5-5"
+
+[llm.roles.interviewer]
+model = "claude-sonnet-5-5"
+
+[llm.roles.researcher]
+model = "claude-sonnet-5-5"
+# 6, not 4 (issue #15, 2026-11-15): with 4 the model fires every search in the
+# first step and delivers 3-6 sources, often no community; with 6 it delivers
+# 5-8 in every run of `researcher/phase4`, for ~0.04 $ more per research.
+max_searches = 6
+
+[llm.roles.planner]
+model = "claude-sonnet-5-5"
+
+[llm.roles.generator]
+model = "claude-sonnet-5-5"
+# `low`: con `medium` il ragionamento era il 60-80% dell'output e i piani da 4-5 concetti
+# finivano i token senza scrivere la lezione (eval Fase 12, backend/evals/README.md).
+effort = "low"
+# Tetto di output della chiamata (ragionamento compreso; vale anche per la riparazione).
+# Una lezione a `low` usa ~8k token.
+max_output_tokens = 32000
+# Web fetch of the sources: on, one page per lesson (the primary source).
+# Issue #26 (2026-11-19, prompt generator-issue26-v14): injection in a read
+# page ignored, no unsupported citations, same cost as without the tool.
+# With Anthropic, 1-3 here is the only switch; 0 turns it off.
+max_fetches = 1
+
+[llm.roles.grader]
+model = "claude-haiku-5-5"
+
+[llm.roles.recorder]
+model = "claude-sonnet-5-5"

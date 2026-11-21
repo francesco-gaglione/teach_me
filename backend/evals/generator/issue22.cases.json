@@ -1,0 +1,415 @@
+{
+ "suite": "generator/issue22",
+ "prompt_dir": "generator",
+ "description": "Issue #22 (`generator-phase12-v7`): il codice da leggere negli esercizi sta nel campo `code`, non inline nella domanda. Un caso, 1 run. Defaults e piano come in `phase12`.",
+ "defaults": {
+  "runs_per_case": 1,
+  "streaming": true,
+  "deterministic": {
+   "validator_pass_first_try": true,
+   "validator_pass_within_3": true,
+   "sources_copied_exactly": true,
+   "topic_glossary_copied_exactly": true,
+   "no_exclamation_in_feedback": true,
+   "language": "it",
+   "prose_words": [
+    1200,
+    2200
+   ],
+   "prose_words_target": {
+    "range": [
+     1500,
+     1900
+    ],
+    "severity": "warn"
+   },
+   "sections": [
+    3,
+    6
+   ],
+   "sections_from_plan": {
+    "description": "numero di h2 = concetti del piano + 1 (chiusura) + 1 se il piano ha almeno un prerequisito `general`",
+    "severity": "error"
+   },
+   "explanation_run_words_max": {
+    "max": 300,
+    "defect_above": 350,
+    "description": "parole di `paragraph` e `callout` (title e text) consecutive tra l'inizio di una sezione h2 (o un esercizio) e il blocco esercizio successivo; il `code` non conta e non interrompe; l'intro e la chiusura sono sezioni a parte"
+   },
+   "paragraphs_consecutive_max": 2,
+   "paragraph_words": {
+    "range": [
+     20,
+     110
+    ],
+    "severity": "warn",
+    "description": "tutti i paragrafi, richiamo compreso (il paragrafo d'invito del richiamo è di 20-40 parole, i ripassi di 25-60: per questo il minimo è 20); esclusi i paragrafi di `lang` diverso da it e le citazioni in lingua originale"
+   },
+   "concept_chain": {
+    "description": "per ogni sezione di concetto la sequenza dei tipi di blocco, ignorando `glossary_term`, deve corrispondere a: paragraph, heading(3) con testo che inizia per «Esempio:», code?, paragraph, paragraph, callout(warning)?, poi >= 1 esercizio. Nessun esercizio prima del terzo paragrafo; il callout c'è se e solo se il `pitfall` del concetto (stesso indice, nell'ordine del piano) non è vuoto; title del callout che inizia per «Errore tipico:» e <= 8 parole, text <= 300 caratteri",
+    "severity": "error"
+   },
+   "h3_per_concept_section": {
+    "description": "esattamente un heading di livello 3 in ogni sezione di concetto e nessuno in intro, richiamo e chiusura",
+    "severity": "error"
+   },
+   "callouts": {
+    "per_section_max": 1,
+    "warning_max": 5,
+    "tip_plus_info_max": 2
+   },
+   "intro": {
+    "paragraphs": [
+     1,
+     2
+    ],
+    "words_max": 100,
+    "no_exercise": true,
+    "no_h3": true
+   },
+   "recall_iff_general": {
+    "description": "la prima sezione h2 inizia per «Cosa ti serve:» se e solo se il piano ha >= 1 prerequisito `general` (case.deterministic.recall.expected lo conferma). Se c'è: >= 1 e <= 3 paragrafi di ripasso (25-60 parole, avviso fuori), esattamente 1 esercizio quiz_single o fill_blank con required false, venuto prima dei paragrafi di ripasso, nessuna flashcard, nessun h3, parole di prosa della sezione <= 300",
+    "severity": "error"
+   },
+   "closing": {
+    "words_max": 120,
+    "description": "parole di paragraph, checklist (title e items) e primary_source.why nell'ultima sezione h2"
+   },
+   "closing_active": {
+    "last_section_has_checklist": true,
+    "checklist_items": [
+     2,
+     3
+    ],
+    "closing_summary_words_max": 60
+   },
+   "forbidden_phrases": [
+    "(?i)\\b(bravo|ottimo lavoro|semplicemente|ovviamente|banale|banalmente|naturalmente|chiaramente)\\b",
+    "(?i)\\b(come è noto|è facile vedere|come abbiamo visto)\\b",
+    "(?i)\\bclicca qui\\b"
+   ],
+   "forbidden_phrases_warn": [
+    "(?i)\\bbasta\\s+\\w+(are|ere|ire)\\b"
+   ],
+   "term_first_mention_is_glossary_link": {
+    "description": "per ogni termine di `plan.terms.introduce`, la prima occorrenza (parola intera, case-insensitive, fuori dai `codice inline` e dal testo dei titoli) di `term` nella prosa è dentro un `[[key]]` o preceduta da un blocco `glossary_term` della stessa key; la prima menzione non può stare in un blocco successivo a quello che usa il termine in chiaro",
+    "severity": "error"
+   },
+   "exercises_per_concept_section": [
+    1,
+    2
+   ],
+   "objective_not_repeated_in_paragraph": true,
+   "quiz_correct_position_varies": true,
+   "quiz_option_char_ratio_max": 1.3,
+   "fill_blank_answer_not_in_adjacent_text": {
+    "severity": "error"
+   },
+   "glossary_entries_max": 12,
+   "output_tokens": {
+    "warn_above": 14000,
+    "note": "ragionamento compreso; riportare mediana e massimo per caso. Tetto di richiesta consigliato 20000"
+   },
+   "blocks_max": {
+    "max": 50,
+    "severity": "warn",
+    "description": "blocchi di primo livello (heading compresi); avviso a 50 (obiettivo del prompt). Oltre 60 fallisce già il Validator (`schema` su `/blocks`), quindi la soglia d'errore non serve: la chiave accetta una sola soglia"
+   },
+   "estimated_minutes_range": {
+    "range": [
+     10,
+     15
+    ],
+    "severity": "warn",
+    "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+   }
+  },
+  "notes": "Ogni run: Context Assembler reale -> Generator -> Validator -> (repair)*. Input del caso come phase6 più `records` (stessa forma di `planner/phase12`: number, kind, lesson_number, title, body), che il runner scrive nell'argomento prima della run e che l'Assembler passa in `{{records_section}}` (i record citati da `plan.prerequisites` per primi). Id e URL delle fonti sono inventati a scopo di test (URL plausibili, non verificati). I controlli Fase 12 sono più severi del Validator (che impone solo 6 sezioni e 2200 parole). Quelli senza `severity` sono errori. `prose_words_target` e `paragraph_words` solo avvisi: si riporta la quota di run dentro la fascia. Dal 2026-11-11 ogni piano ha 4-5 concetti (decisione del proprietario: con 2-3 concetti la prosa restava sotto le 1200 parole). `estimated_minutes` lo calcola il backend (sostituisce il valore del modello): il controllo `estimated_minutes_formula` non c'è più, resta `estimated_minutes_range` come avviso sulla durata reale. I due casi `*_block_budget` (Fase 12 blocco C) misurano il budget dei blocchi nelle due configurazioni al limite: 5 concetti senza richiamo (5 h2 + chiusura = 6 sezioni) e 4 concetti con richiamo (stesse 6 sezioni). Il giudice consigliato è Sonnet (Haiku si è mostrato inaffidabile sulle rubriche: vedi README)."
+ },
+ "pass_criteria": {
+  "validator": "`validator_pass_within_3` sì; `validator_pass_first_try` sì, altrimenti il repair deve aver risolto `inline_code_too_long`",
+  "code_field": "rubrica `code_field_used`, `code_is_compact`, `question_does_not_repeat_code` soddisfatte",
+  "rubric_mean": ">= 0.8",
+  "note": "il controllo deterministico `exercises_with_code` conta gli esercizi con il campo `code`; il resto lo giudica la rubrica"
+ },
+ "cases": [
+  {
+   "id": "rust_read_snippet_code_field",
+   "description": "Issue #22. Lezione di Rust su prestiti (stesso piano e stessi record di `rust_second_lesson_records_no_recall`) in cui due esercizi chiedono di LEGGERE un frammento di più istruzioni: un `quiz_single` («questo frammento compila?») e l'`open_answer` («perché non compila»). Atteso: lezione valida al primo tentativo (nessun `inline_code_too_long`, o risolto dal repair), almeno un esercizio con il campo `code` `{language, code}` con una istruzione per riga e righe <= 60 caratteri, domande che NON ripetono il codice, nessun numero di riga, nessun commento che dia la risposta, opzioni del quiz che sono risposte e non varianti di codice. Rischio: l'intero frammento dentro la domanda come span `` `let mut v = ...; ...` `` (il difetto dell'issue).",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission": {
+    "version": 1,
+    "why": "Voglio smettere di combattere col compilatore e capire i suoi messaggi di errore.",
+    "success": [
+     "Leggo un messaggio «borrow of moved value» e so dire quale riga ha spostato il valore",
+     "Scelgo tra passare per valore e passare un riferimento"
+    ],
+    "starting_point": "So già programmare in Python.",
+    "constraints": [
+     "20 minuti al giorno"
+    ],
+    "out_of_scope": [
+     "unsafe",
+     "lifetime espliciti"
+    ]
+   },
+   "preferences": [],
+   "plan": {
+    "title": "Prestare una String senza spostarla",
+    "objective": "Saper scegliere tra passare una `String` per valore, per riferimento condiviso o per riferimento mutabile.",
+    "why_now": "I record 1 e 2 mostrano che prevede il move e la copia dei tipi semplici; il criterio «scelgo tra valore e riferimento» è il passo successivo.",
+    "estimated_minutes": 12,
+    "prerequisites": [
+     {
+      "statement": "Sa prevedere che dopo un move la variabile di partenza non è utilizzabile",
+      "basis": "record",
+      "record_numbers": [
+       1
+      ]
+     },
+     {
+      "statement": "Sa che i tipi semplici come `i32` si copiano invece di spostarsi",
+      "basis": "record",
+      "record_numbers": [
+       2
+      ]
+     },
+     {
+      "statement": "Sa scrivere e chiamare funzioni con parametri",
+      "basis": "mission",
+      "record_numbers": []
+     }
+    ],
+    "concepts": [
+     {
+      "name": "riferimento condiviso `&`",
+      "key_point": "`&s` presta il valore in sola lettura senza cambiare il proprietario.",
+      "example": "La funzione `lunghezza(testo: &String) -> usize` riceve `&nome`, con `nome` che vale `String::from(\"Marta\")`; dopo la chiamata `nome` si usa ancora.",
+      "steps": [
+       "`&nome` crea un riferimento: la funzione guarda la stringa senza diventarne proprietaria.",
+       "La funzione legge 5 caratteri e restituisce 5; il valore non si sposta.",
+       "Alla fine `nome` è ancora il proprietario e si può stampare."
+      ],
+      "pitfall": "Pensare che passare `&nome` sposti `nome` come passare `nome`."
+     },
+     {
+      "name": "riferimento mutabile `&mut`",
+      "key_point": "`&mut s` presta il valore con il permesso di modificarlo, e la variabile deve essere dichiarata `mut`.",
+      "example": "La funzione `aggiungi_punto(testo: &mut String)` riceve `&mut frase`, con `let mut frase = String::from(\"Ciao\")`, e vi aggiunge un punto.",
+      "steps": [
+       "`frase` è dichiarata `mut`: senza `mut` il compilatore rifiuta `&mut frase`.",
+       "`&mut frase` presta il valore con il permesso di cambiarlo.",
+       "La funzione aggiunge `.` e `frase` diventa `Ciao.` nel chiamante."
+      ],
+      "pitfall": "Pensare che `&mut` si possa prendere anche da una variabile dichiarata senza `mut`."
+     },
+     {
+      "name": "regola dei prestiti",
+      "key_point": "Un valore ha o un riferimento mutabile o più riferimenti condivisi, mai insieme nello stesso momento.",
+      "example": "`let mut v = vec![1, 2]; let primo = &v[0]; v.push(3); println!(\"{primo}\");`",
+      "steps": [
+       "`primo` è un riferimento condiviso a un elemento di `v` e viene ancora usato dopo `push`.",
+       "`v.push(3)` richiede un riferimento mutabile a `v`.",
+       "Condiviso e mutabile coesisterebbero: il compilatore rifiuta il codice."
+      ],
+      "pitfall": "Pensare che leggere un elemento tramite riferimento non impedisca di modificare il vettore finché non si modifica l'elemento stesso."
+     },
+     {
+      "name": "fine del prestito: l'ultimo uso",
+      "key_point": "Un riferimento vale dal punto in cui nasce fino al suo ultimo uso, non fino alla graffa di chiusura: dopo l'ultimo uso si può prendere un riferimento mutabile.",
+      "example": "`let mut s = String::from(\"ciao\"); let r = &s; println!(\"{r}\"); let m = &mut s; m.push('!');` compila perché `r` non si usa più dopo la stampa.",
+      "steps": [
+       "`r` nasce con `&s` e viene usato una volta, nella stampa.",
+       "Dopo la stampa nessuna riga usa `r`: il suo prestito è finito.",
+       "`&mut s` è allora l'unico riferimento vivo e il compilatore lo accetta."
+      ],
+      "pitfall": "Pensare che un riferimento resti attivo fino alla fine dello scope in cui è dichiarato."
+     }
+    ],
+    "terms": {
+     "introduce": [
+      {
+       "key": "borrow",
+       "term": "borrowing",
+       "hint": "accesso tramite riferimento senza prendere la proprietà"
+      },
+      {
+       "key": "reference",
+       "term": "riferimento",
+       "hint": "valore che indica dove sta un altro valore senza prenderne la proprietà"
+      },
+      {
+       "key": "mutable_reference",
+       "term": "riferimento mutabile",
+       "hint": "riferimento che permette di modificare il valore, uno solo alla volta"
+      }
+     ],
+     "reuse": [
+      "move",
+      "ownership"
+     ]
+    },
+    "document_sections": [],
+    "primary_source_id": "0193f200-0000-7000-8000-000000000003",
+    "other_source_ids": [
+     "0193f200-0000-7000-8000-000000000002"
+    ],
+    "exercises": [
+     {
+      "type": "quiz_single",
+      "purpose": "dato un frammento di 3-4 istruzioni che passa una `String` a una funzione e poi la usa, scegliere che cosa succede alla compilazione",
+      "verifies_objective": true
+     },
+     {
+      "type": "fill_blank",
+      "purpose": "completare la firma di una funzione che deve modificare la stringa ricevuta",
+      "verifies_objective": true
+     },
+     {
+      "type": "quiz_multi",
+      "purpose": "riconoscere quali coppie di riferimenti allo stesso valore possono coesistere",
+      "verifies_objective": true
+     },
+     {
+      "type": "open_answer",
+      "purpose": "dato un frammento di 4-5 istruzioni con un riferimento condiviso ancora in uso e una modifica del vettore, spiegare perché non compila e come riordinare le istruzioni perché compili",
+      "verifies_objective": true
+     }
+    ],
+    "lesson_links": [
+     {
+      "lesson_id": "0193f200-0000-7000-8000-0000000000a1",
+      "reason": "è la lezione sul move che questa continua"
+     }
+    ]
+   },
+   "sources": [
+    {
+     "resource_id": "0193f200-0000-7000-8000-000000000003",
+     "title": "The Rust Programming Language, 4.2 References and Borrowing",
+     "url": "https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html",
+     "annotation": "Capitolo del libro ufficiale: riferimenti condivisi e mutabili, regole del borrow checker, riferimenti pendenti.",
+     "use_for": "prestito con `&` e `&mut` e regole del borrow checker"
+    },
+    {
+     "resource_id": "0193f200-0000-7000-8000-000000000002",
+     "title": "The Rust Programming Language, 4.1 What is Ownership?",
+     "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+     "annotation": "Capitolo del libro ufficiale del progetto Rust: regole di ownership, move e copia dei tipi semplici, con esempi.",
+     "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+    }
+   ],
+   "excerpts": [],
+   "topic_glossary": [
+    {
+     "key": "ownership",
+     "term": "ownership",
+     "definition": "La regola per cui ogni valore ha un solo proprietario, che lo libera quando esce di scope.",
+     "avoid": [
+      "proprietà intellettuale"
+     ]
+    },
+    {
+     "key": "move",
+     "term": "move",
+     "definition": "Il trasferimento della proprietà di un valore da una variabile a un'altra: dopo il move la variabile di partenza non è più utilizzabile.",
+     "avoid": []
+    }
+   ],
+   "records": [
+    {
+     "number": 1,
+     "kind": "demonstrated",
+     "lesson_number": 1,
+     "title": "Prevede l'uso dopo un move",
+     "body": "Dice che dopo `let b = a;` con `a: String` la variabile `a` non è più utilizzabile."
+    },
+    {
+     "number": 2,
+     "kind": "misconception_corrected",
+     "lesson_number": 1,
+     "title": "I tipi semplici si copiano",
+     "body": "All'inizio pensava che `let y = x;` con `x: i32` rendesse `x` inutilizzabile; ora sa che `i32` si copia e `x` resta valida."
+    }
+   ],
+   "lessons": [
+    {
+     "id": "0193f200-0000-7000-8000-0000000000a1",
+     "number": 1,
+     "title": "Quando una variabile smette di essere valida"
+    }
+   ],
+   "deterministic": {
+    "min_exercises": 4,
+    "exercises_with_code": [
+     1,
+     4
+    ],
+    "lesson_links_must_be_in": [
+     "0193f200-0000-7000-8000-0000000000a1"
+    ],
+    "estimated_minutes_range": [
+     10,
+     15
+    ],
+    "must_include_block_types": [
+     "code",
+     "lesson_link",
+     "open_answer",
+     "primary_source",
+     "ask_agent"
+    ],
+    "recall": {
+     "expected": false
+    },
+    "topic_glossary_copied_exactly": true,
+    "validator_pass_first_try": true,
+    "validator_pass_within_3": true
+   },
+   "rubric": [
+    {
+     "id": "complete_explanation",
+     "weight": 3,
+     "text": "Ogni sezione di concetto ha intuizione, esempio svolto con tutti i passaggi del piano, regola con un grassetto e callout «Errore tipico: …» (i quattro concetti hanno un `pitfall`), poi gli esercizi."
+    },
+    {
+     "id": "nothing_assumed",
+     "weight": 2,
+     "text": "I termini nuovi (borrowing, riferimento, riferimento mutabile) sono definiti alla prima menzione come `[[key]]`; nessun termine del borrow checker compare prima di essere introdotto."
+    },
+    {
+     "id": "canonical_terms",
+     "weight": 2,
+     "text": "«move» e «ownership» usati con le definizioni del glossario, mai con sinonimi, e copiati uguali nel glossario del documento."
+    },
+    {
+     "id": "no_padding",
+     "weight": 2,
+     "text": "Nessuna sezione, concetto (lifetime, `unsafe`, `Option`), callout o termine di glossario oltre il piano; la lunghezza viene da passaggi completi e feedback specifici."
+    },
+    {
+     "id": "code_field_used",
+     "weight": 4,
+     "text": "Almeno un esercizio (`quiz_single` o `open_answer`) che chiede di leggere un frammento di più istruzioni ha il campo `code` con `language` e `code`; il frammento non compare come span di codice inline nella domanda."
+    },
+    {
+     "id": "code_is_compact",
+     "weight": 3,
+     "text": "Ogni `code` di esercizio ha 3-12 righe, una istruzione per riga, righe di al più 60 caratteri, nessun `fn main`/`use` superfluo, nessun numero di riga e nessun commento che dia la risposta."
+    },
+    {
+     "id": "question_does_not_repeat_code",
+     "weight": 3,
+     "text": "La domanda di ogni esercizio con `code` dice che cosa fare senza rimettere le istruzioni del frammento (al più un nome o un'espressione breve inline), e nel feedback e nella rubrica si cita l'istruzione, non «la riga N»."
+    },
+    {
+     "id": "options_are_answers",
+     "weight": 2,
+     "text": "Le opzioni del quiz con `code` sono risposte («compila», «errore: …», «`v` è ancora valido») e non alternative di codice; tutte hanno struttura e lunghezza simili."
+    }
+   ]
+  }
+ ]
+}

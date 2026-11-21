@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The DataStore holds the backend token: keep it out of cloud backups and device transfers. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="file" path="datastore/" />
+</full-backup-content>

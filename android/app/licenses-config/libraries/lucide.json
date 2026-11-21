@@ -1,0 +1,8 @@
+{
+  "uniqueId": "lucide",
+  "name": "Lucide (icons)",
+  "artifactVersion": "bundled",
+  "website": "https://lucide.dev",
+  "developers": [{ "name": "Lucide Contributors" }],
+  "licenses": ["ISC"]
+}

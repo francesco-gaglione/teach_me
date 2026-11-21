@@ -1,0 +1,235 @@
+{
+  "version": "planner-phase12-v2",
+  "name": "lesson_plan",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "title",
+      "objective",
+      "why_now",
+      "estimated_minutes",
+      "prerequisites",
+      "concepts",
+      "terms",
+      "primary_source_id",
+      "other_source_ids",
+      "exercises",
+      "lesson_links",
+      "document_sections"
+    ],
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "objective": {
+        "type": "string"
+      },
+      "why_now": {
+        "type": "string"
+      },
+      "estimated_minutes": {
+        "type": "integer"
+      },
+      "prerequisites": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "statement",
+            "basis",
+            "record_numbers"
+          ],
+          "properties": {
+            "statement": {
+              "type": "string"
+            },
+            "basis": {
+              "type": "string",
+              "enum": [
+                "record",
+                "mission",
+                "general"
+              ]
+            },
+            "record_numbers": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "concepts": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "key_point",
+            "example",
+            "steps",
+            "pitfall"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "key_point": {
+              "type": "string"
+            },
+            "example": {
+              "type": "string"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pitfall": {
+              "type": "string"
+            },
+            "visual": {
+              "type": "string",
+              "enum": [
+                "none",
+                "flow",
+                "tree",
+                "cycle",
+                "code_compare",
+                "line_chart",
+                "comparison_table",
+                "timeline",
+                "sequence"
+              ]
+            }
+          }
+        }
+      },
+      "terms": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "introduce",
+          "reuse"
+        ],
+        "properties": {
+          "introduce": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "key",
+                "term",
+                "hint"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "term": {
+                  "type": "string"
+                },
+                "hint": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "reuse": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "primary_source_id": {
+        "type": "string"
+      },
+      "other_source_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "document_sections": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "document_id",
+            "section_ids"
+          ],
+          "properties": {
+            "document_id": {
+              "type": "string"
+            },
+            "section_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "exercises": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "purpose",
+            "verifies_objective"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "quiz_single",
+                "quiz_multi",
+                "fill_blank",
+                "order_steps",
+                "flashcard",
+                "open_answer"
+              ]
+            },
+            "purpose": {
+              "type": "string"
+            },
+            "verifies_objective": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "lesson_links": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "lesson_id",
+            "reason"
+          ],
+          "properties": {
+            "lesson_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

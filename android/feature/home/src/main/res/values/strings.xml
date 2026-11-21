@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="home_title">teach_me</string>
+    <string name="home_open_settings">Impostazioni</string>
+    <string name="home_section_folders">Cartelle</string>
+    <string name="home_new_folder">Nuova cartella</string>
+    <string name="home_loading_folders">Caricamento delle cartelle</string>
+    <string name="home_refresh_failed">Non riesco ad aggiornare l\'elenco.</string>
+
+    <string name="home_empty_title">Inizia da una cartella</string>
+    <string name="home_empty_body">Una cartella raccoglie gli argomenti che vuoi studiare, ad esempio Lavoro o Hobby.</string>
+    <string name="home_empty_cta">Crea la prima cartella</string>
+
+    <string name="home_row_description">%1$s, %2$s</string>
+
+    <string name="home_create_title">Nuova cartella</string>
+    <string name="home_create_label">Nome della cartella</string>
+    <string name="home_create_placeholder">Es. Lavoro</string>
+    <string name="home_create_confirm">Crea</string>
+    <string name="home_create_loading">Creo…</string>
+    <string name="home_create_not_done">La cartella non è stata creata.</string>
+    <string name="home_rename_title">Rinomina cartella</string>
+    <string name="home_rename_confirm">Salva</string>
+    <string name="home_rename_loading">Salvo…</string>
+    <string name="home_rename_not_done">La cartella non è stata rinominata.</string>
+    <string name="home_name_empty">Dai un nome alla cartella.</string>
+    <string name="home_name_duplicate">Hai già una cartella con questo nome. Scegline un altro.</string>
+
+    <string name="home_delete_title">Eliminare la cartella «%1$s»?</string>
+    <string name="home_delete_body_many" tools:ignore="PluralsCandidate">Contiene %1$d argomenti. Verranno eliminati anche loro e tutto ciò che contengono. Non si può annullare.</string>
+    <string name="home_delete_body_one">Contiene 1 argomento. Verrà eliminato anche lui e tutto ciò che contiene. Non si può annullare.</string>
+    <string name="home_delete_body_empty">La cartella è vuota. Non si può annullare.</string>
+    <string name="home_delete_confirm_many">Elimina cartella e argomenti</string>
+    <string name="home_delete_confirm_one">Elimina cartella e argomento</string>
+    <string name="home_delete_confirm_empty">Elimina cartella</string>
+    <string name="home_delete_loading">Elimino…</string>
+    <string name="home_delete_not_done">La cartella non è stata eliminata.</string>
+
+    <string name="home_toast_created">Cartella «%1$s» creata</string>
+    <string name="home_toast_renamed">Cartella rinominata in «%1$s»</string>
+    <string name="home_toast_deleted">Cartella «%1$s» eliminata</string>
+    <string name="home_toast_gone">Questa cartella non esiste più.</string>
+
+    <string name="home_pick_folder">Scegli una cartella per vedere i suoi argomenti.</string>
+
+    <string name="home_review_title">Ripasso di oggi</string>
+    <plurals name="home_review_cards">
+        <item quantity="one">%1$d scheda</item>
+        <item quantity="other">%1$d schede</item>
+    </plurals>
+    <plurals name="home_review_minutes">
+        <item quantity="one">circa %1$d minuto</item>
+        <item quantity="other">circa %1$d minuti</item>
+    </plurals>
+    <string name="home_review_status">%1$s · %2$s</string>
+    <string name="home_review_more" tools:ignore="PluralsCandidate">In tutto ne hai %1$d in scadenza. Ne ripassi %2$d per volta.</string>
+    <string name="home_review_start">Inizia il ripasso</string>
+    <string name="home_review_start_a11y">Inizia il ripasso, %1$s, %2$s</string>
+    <string name="home_review_status_a11y">%1$s, %2$s</string>
+    <string name="home_review_more_topic" tools:ignore="PluralsCandidate">In tutto ne hai %1$d di %2$s in scadenza. Ne ripassi %3$d per volta.</string>
+    <string name="home_review_start_topic">Ripassa %1$s</string>
+    <string name="home_review_start_topic_a11y">Ripassa %1$s, %2$s, %3$s</string>
+    <string name="home_review_filter">Filtra per argomento</string>
+    <string name="home_review_all">Tutti</string>
+    <string name="home_review_chip">%1$s (%2$d)</string>
+    <string name="home_review_chip_a11y">%1$s, %2$s</string>
+    <string name="home_review_none">Nessun ripasso per ora. %1$s</string>
+    <string name="home_resume_title_button">Riprendi la lezione</string>
+    <string name="home_resume_status">Lezione %1$d · %2$s</string>
+    <string name="home_resume_a11y">Riprendi la lezione %1$s, argomento %2$s, lezione %3$d, %4$s</string>
+    <string name="home_review_failed">Non riesco a controllare il ripasso.</string>
+</resources>

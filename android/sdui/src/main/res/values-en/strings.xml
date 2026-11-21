@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Inline spans -->
+    <string name="sdui_term_action">Open definition: %1$s</string>
+    <string name="sdui_cite_action">Open source %1$d: %2$s</string>
+
+    <!-- Unavailable block -->
+    <string name="sdui_unavailable">This content isn\'t available in this version of the app.</string>
+
+    <!-- Diagram -->
+    <string name="sdui_diagram_text_label">Figure described in words</string>
+    <string name="sdui_diagram_a11y">%1$s. %2$s</string>
+
+    <!-- Text blocks -->
+    <string name="sdui_callout_info">Info</string>
+    <string name="sdui_callout_tip">Tip</string>
+    <string name="sdui_callout_warning">Warning</string>
+    <string name="sdui_term_label">Term</string>
+    <string name="sdui_term_avoid">Avoid:</string>
+    <string name="sdui_term_avoid_sheet">Avoid:</string>
+    <string name="sdui_close">Close</string>
+    <string name="sdui_source_label">Source %1$d</string>
+    <string name="sdui_source_open">Open</string>
+    <string name="sdui_pdf_label">From your PDF</string>
+    <string name="sdui_pdf_title_a11y">%1$s, from your PDF</string>
+    <string name="sdui_source_pdf_body">To double-check this part, open your file at the pages shown. I don\'t keep the PDF.</string>
+    <string name="sdui_primary_source_pdf_a11y">%1$s: %2$s, from your PDF. %3$s</string>
+
+    <!-- Code -->
+    <string name="sdui_code_a11y">%1$s code, %2$s</string>
+    <plurals name="sdui_code_lines">
+        <item quantity="one">%1$d line</item>
+        <item quantity="other">%1$d lines</item>
+    </plurals>
+    <string name="sdui_code_copy">Copy code</string>
+    <string name="sdui_code_copied">Copied</string>
+    <plurals name="sdui_code_show_more">
+        <item quantity="one">Show the remaining line</item>
+        <item quantity="other">Show the other %1$d lines</item>
+    </plurals>
+    <string name="sdui_code_show_less">Show less</string>
+    <string name="sdui_code_plain_a11y">Code, %1$s</string>
+    <string name="sdui_code_scroll_right">Scroll right</string>
+    <string name="sdui_code_scroll_left">Scroll left</string>
+
+    <!-- Navigation blocks -->
+    <string name="sdui_primary_source_label">Learn more</string>
+    <string name="sdui_primary_source_a11y">%1$s: %2$s, %3$s. %4$s</string>
+    <string name="sdui_primary_source_open">Open the source in the browser</string>
+    <string name="sdui_lesson_link_topic">Lesson from the topic “%1$s”</string>
+    <string name="sdui_lesson_link_same_topic">Lesson from this topic</string>
+    <string name="sdui_lesson_link_unavailable">This lesson isn\'t available yet.</string>
+    <string name="sdui_lesson_link_state_unavailable">Not available yet</string>
+    <string name="sdui_lesson_link_a11y">%1$s. %2$s. Opens another lesson</string>
+    <string name="sdui_lesson_link_a11y_unavailable">%1$s. This lesson isn\'t available yet</string>
+    <string name="sdui_ask_agent_default">Any doubts? Ask the Tutor</string>
+    <string name="sdui_ask_agent_subtitle">Opens the chat with a ready-made question</string>
+    <string name="sdui_ask_agent_a11y">%1$s. Opens the chat with the Tutor</string>
+
+    <!-- Exercises: shared -->
+    <string name="sdui_type_quiz_single">Single choice</string>
+    <string name="sdui_type_quiz_multi">Multiple choice</string>
+    <string name="sdui_type_fill_blank">Fill in the blank</string>
+    <string name="sdui_type_order_steps">Put in order</string>
+    <string name="sdui_type_flashcard">Card</string>
+    <string name="sdui_type_open_answer">Open answer</string>
+    <string name="sdui_exercise_a11y">Exercise: %1$s</string>
+    <string name="sdui_optional">Optional</string>
+    <string name="sdui_check">Check</string>
+    <string name="sdui_send">Send</string>
+    <string name="sdui_retry">Try again</string>
+    <string name="sdui_second_attempt">Second attempt</string>
+    <string name="sdui_second_attempt_counts_first">Second attempt. For the review, the first one counts.</string>
+    <string name="sdui_outcome_correct">Correct</string>
+    <string name="sdui_outcome_partial">Almost</string>
+    <string name="sdui_outcome_incorrect">Not quite</string>
+    <string name="sdui_state_open">Open</string>
+    <string name="sdui_state_closed">Closed</string>
+    <string name="sdui_why_not">Why not?</string>
+    <string name="sdui_mark_chosen_right">Your choice · correct</string>
+    <string name="sdui_mark_chosen_wrong">Your choice · incorrect</string>
+    <string name="sdui_mark_correct_answer">Correct answer</string>
+    <string name="sdui_mark_was_correct">It was correct</string>
+
+    <!-- Quizzes -->
+    <string name="sdui_quiz_single_instruction">Choose one answer.</string>
+    <string name="sdui_quiz_single_reason">Choose an answer to check.</string>
+    <string name="sdui_quiz_multi_instruction">Choose all the correct answers.</string>
+    <string name="sdui_quiz_multi_reason">Choose at least one answer to check.</string>
+    <plurals name="sdui_multi_found">
+        <item quantity="one">You found %1$d of %2$d correct answer</item>
+        <item quantity="other">You found %1$d of %2$d correct answers</item>
+    </plurals>
+    <plurals name="sdui_multi_wrong">
+        <item quantity="one"> and %1$d that isn\'t</item>
+        <item quantity="other"> and %1$d that aren\'t</item>
+    </plurals>
+    <string name="sdui_multi_none">None of the answers you chose are correct.</string>
+
+    <!-- Fill in the blank -->
+    <string name="sdui_fill_instruction">Complete the sentence.</string>
+    <string name="sdui_fill_reason">Write something in every blank to check.</string>
+    <string name="sdui_blank_label">Blank %1$d</string>
+    <string name="sdui_blank_a11y">Blank %1$d of %2$d</string>
+    <string name="sdui_blank_state_correct">correct</string>
+    <string name="sdui_blank_state_incorrect">incorrect, expected answer %1$s</string>
+    <string name="sdui_blank_result_correct">Blank %1$d · Correct</string>
+    <string name="sdui_blank_result_incorrect">Blank %1$d · Incorrect</string>
+    <string name="sdui_blank_expected">Expected: “%1$s”</string>
+    <string name="sdui_blank_also">(also accepted: %1$s)</string>
+
+    <!-- Order steps -->
+    <string name="sdui_order_instruction">Drag, or use the arrows.</string>
+    <string name="sdui_order_show_correct">Show the correct order</string>
+    <string name="sdui_order_hide_correct">Hide the correct order</string>
+    <string name="sdui_step_position">position %1$d of %2$d</string>
+    <string name="sdui_step_up">Move up</string>
+    <string name="sdui_step_down">Move down</string>
+    <string name="sdui_step_to_start">Move to the start</string>
+    <string name="sdui_step_to_end">Move to the end</string>
+    <string name="sdui_step_right">In the right place</string>
+    <string name="sdui_step_wrong">Not here</string>
+    <string name="sdui_step_state_right">In the right place</string>
+    <string name="sdui_step_state_wrong">Not here, it belongs in position %1$d</string>
+    <string name="sdui_step_state_grabbed">Step grabbed, position %1$d of %2$d</string>
+
+    <!-- Flashcard -->
+    <string name="sdui_flashcard_hint">Try to recall it before looking at the answer.</string>
+    <string name="sdui_flashcard_show">Show answer</string>
+    <string name="sdui_flashcard_how">How well did you remember it?</string>
+    <string name="sdui_rating_again">Forgot it</string>
+    <string name="sdui_rating_hard">With effort</string>
+    <string name="sdui_rating_good">Good</string>
+    <string name="sdui_rating_easy">Very easy</string>
+    <string name="sdui_flashcard_rated">Rating: %1$s. You\'ll see it again in the review.</string>
+    <string name="sdui_flashcard_change">Change</string>
+
+    <!-- Open answer -->
+    <string name="sdui_open_instruction">Answer in your own words.</string>
+    <string name="sdui_open_reason">Write your answer to send it.</string>
+    <string name="sdui_answer_a11y">Answer to: %1$s. Edit text, length %2$d/%3$d</string>
+    <string name="sdui_answer_limit">Limit reached</string>
+    <string name="sdui_answer_registered">Answer recorded</string>
+    <string name="sdui_open_registered_pending">I\'ll grade it as soon as I can. At the latest, when you complete the lesson.</string>
+    <string name="sdui_open_registered_local">I can\'t reach the server: I\'ll send it and grade it as soon as the connection is back.</string>
+    <string name="sdui_open_key_missing_body">Your answer is saved, but I can\'t grade it because your LLM key is missing. Enter it in Settings: I\'ll grade it with “Grade now” or when the lesson closes.</string>
+    <string name="sdui_open_key_rejected_body">Your answer is saved, but the service rejected your key, so I can\'t grade it. Replace it in Settings: then I\'ll grade it with “Grade now” or when the lesson closes.</string>
+    <string name="sdui_open_pending_credit">Your answer is saved, but I can\'t grade it: the LLM service credit has run out. Top it up with the provider: then I\'ll grade it with “Grade now” or when the lesson closes.</string>
+    <string name="sdui_open_key_enter">Enter the key</string>
+    <string name="sdui_open_key_replace">Replace the key</string>
+    <string name="sdui_open_registered_closed">I\'ll grade it when the lesson closes.</string>
+    <string name="sdui_open_not_evaluable">I couldn\'t grade this answer. I\'ve saved it.</string>
+    <string name="sdui_open_reeval">Grade now</string>
+    <string name="sdui_open_reeval_failed">It still didn\'t work. I\'ll try again later.</string>
+    <string name="sdui_open_evaluating">Grading your answer…</string>
+    <string name="sdui_open_evaluating_slow">It\'s taking longer than usual…</string>
+    <string name="sdui_open_correct">Correct</string>
+    <string name="sdui_open_partial">Almost</string>
+    <string name="sdui_open_incorrect">Not quite</string>
+    <string name="sdui_open_your_answer">Your answer</string>
+    <string name="sdui_open_show_all">Show all</string>
+    <string name="sdui_open_show_less">Show less</string>
+    <string name="sdui_open_talk">Talk it over with the Tutor</string>
+    <string name="sdui_open_talk_prompt">This is how I answered the question “%1$s…”: “%2$s”. Can you help me see what\'s missing?</string>
+    <string name="sdui_exercise_closed">This lesson is closed: you can no longer send answers.</string>
+
+    <!-- Checklist -->
+    <string name="sdui_checklist_default_title">To do</string>
+    <plurals name="sdui_checklist_count">
+        <item quantity="one">%1$d of %2$d done</item>
+        <item quantity="other">%1$d of %2$d done</item>
+    </plurals>
+
+    <!-- Highlighter (docs/design/components/highlight.md) -->
+    <string name="sdui_highlight_remove">Remove</string>
+    <string name="sdui_highlight_a11y_start">highlighted in %1$s:</string>
+    <string name="sdui_highlight_a11y_end">, end of highlight.</string>
+    <string name="sdui_highlight_yellow">yellow</string>
+    <string name="sdui_highlight_green">green</string>
+    <string name="sdui_highlight_blue">blue</string>
+    <string name="sdui_highlight_pink">pink</string>
+    <plurals name="sdui_highlight_count">
+        <item quantity="one">%d highlight</item>
+        <item quantity="other">%d highlights</item>
+    </plurals>
+    <string name="sdui_highlight_remove_action">Remove highlight: %1$s…</string>
+    <!-- Handwriting (docs/design/components/handwriting.md section 10) -->
+    <plurals name="sdui_ink_note_count">
+        <item quantity="one">%d handwritten note</item>
+        <item quantity="other">%d handwritten notes</item>
+    </plurals>
+    <string name="sdui_ink_clear_action">Delete the handwritten notes on this block</string>
+</resources>

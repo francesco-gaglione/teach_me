@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="debug_lessons_title">Lezioni di prova</string>
+    <string name="debug_lessons_body">Solo nelle build di debug: apre le lezioni di esempio del contratto SDUI, senza backend.</string>
+    <string name="debug_lessons_open">Apri la lezione di prova %1$s (%2$s)</string>
+</resources>

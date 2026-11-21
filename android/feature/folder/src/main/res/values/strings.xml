@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="folder_back">Indietro</string>
+    <string name="folder_more_actions">Altre azioni per la cartella</string>
+    <string name="folder_section_topics">Argomenti</string>
+    <string name="folder_pane_title">Argomenti di %1$s</string>
+    <string name="folder_new_topic">Nuovo argomento</string>
+    <string name="folder_loading_topics">Caricamento degli argomenti</string>
+    <string name="folder_refresh_failed">Non riesco ad aggiornare gli argomenti.</string>
+    <string name="folder_row_description">%1$s, %2$s</string>
+
+    <string name="folder_empty_title">Nessun argomento qui</string>
+    <string name="folder_empty_body">Un argomento è qualcosa che vuoi imparare, ad esempio Rust o Fotografia.</string>
+    <string name="folder_empty_cta">Crea il primo argomento</string>
+
+    <string name="folder_action_rename_folder">Rinomina cartella</string>
+    <string name="folder_action_delete_folder">Elimina cartella</string>
+
+    <string name="folder_create_topic_title">Nuovo argomento</string>
+    <string name="folder_topic_label">Titolo dell\'argomento</string>
+    <string name="folder_topic_placeholder">Es. Rust</string>
+    <string name="folder_language_label">Lingua dei contenuti</string>
+    <string name="folder_language_it">Italiano</string>
+    <string name="folder_language_en">English</string>
+    <string name="folder_language_unknown">—</string>
+    <string name="topic_language_line">Lingua: %1$s</string>
+    <string name="folder_create_confirm">Crea</string>
+    <string name="folder_create_loading">Creo…</string>
+    <string name="folder_create_topic_not_done">L\'argomento non è stato creato.</string>
+    <string name="folder_rename_topic_title">Rinomina argomento</string>
+    <string name="folder_rename_confirm">Salva</string>
+    <string name="folder_rename_loading">Salvo…</string>
+    <string name="folder_rename_topic_not_done">L\'argomento non è stato rinominato.</string>
+    <string name="folder_topic_empty">Dai un titolo all\'argomento.</string>
+    <string name="folder_topic_duplicate">In questa cartella c\'è già un argomento con questo titolo.</string>
+
+    <string name="folder_delete_topic_title">Eliminare l\'argomento «%1$s»?</string>
+    <string name="folder_delete_topic_body">Verrà eliminato insieme a tutto ciò che contiene. Non si può annullare.</string>
+    <string name="folder_delete_topic_body_mission">Verrà eliminato insieme a tutto ciò che contiene. Verranno eliminate anche la mission e le preferenze di questo argomento. Non si può annullare.</string>
+    <string name="folder_delete_topic_body_mission_turn">Verrà eliminato insieme a tutto ciò che contiene. Verranno eliminate anche la mission e le preferenze di questo argomento. Non si può annullare. La risposta del Tutor in corso andrà persa.</string>
+    <string name="folder_delete_topic_body_turn">Verrà eliminato insieme a tutto ciò che contiene. Non si può annullare. La risposta del Tutor in corso andrà persa.</string>
+    <string name="folder_delete_topic_confirm">Elimina argomento</string>
+    <string name="folder_delete_loading">Elimino…</string>
+    <string name="folder_delete_topic_not_done">L\'argomento non è stato eliminato.</string>
+
+    <string name="folder_rename_folder_title">Rinomina cartella</string>
+    <string name="folder_folder_label">Nome della cartella</string>
+    <string name="folder_folder_placeholder">Es. Lavoro</string>
+    <string name="folder_rename_folder_not_done">La cartella non è stata rinominata.</string>
+    <string name="folder_folder_empty">Dai un nome alla cartella.</string>
+    <string name="folder_folder_duplicate">Hai già una cartella con questo nome. Scegline un altro.</string>
+    <string name="folder_delete_folder_title">Eliminare la cartella «%1$s»?</string>
+    <string name="folder_delete_folder_body_many" tools:ignore="PluralsCandidate">Contiene %1$d argomenti. Verranno eliminati anche loro e tutto ciò che contengono. Non si può annullare.</string>
+    <string name="folder_delete_folder_body_one">Contiene 1 argomento. Verrà eliminato anche lui e tutto ciò che contiene. Non si può annullare.</string>
+    <string name="folder_delete_folder_body_empty">La cartella è vuota. Non si può annullare.</string>
+    <string name="folder_delete_folder_confirm_many">Elimina cartella e argomenti</string>
+    <string name="folder_delete_folder_confirm_one">Elimina cartella e argomento</string>
+    <string name="folder_delete_folder_confirm_empty">Elimina cartella</string>
+    <string name="folder_delete_folder_not_done">La cartella non è stata eliminata.</string>
+
+    <string name="folder_toast_topic_created">Argomento «%1$s» creato</string>
+    <string name="folder_toast_open">Apri</string>
+    <string name="folder_toast_topic_renamed">Argomento rinominato in «%1$s»</string>
+    <string name="folder_toast_topic_deleted">Argomento «%1$s» eliminato</string>
+    <string name="folder_toast_topic_gone">Questo argomento non esiste più.</string>
+    <string name="folder_toast_folder_renamed">Cartella rinominata in «%1$s»</string>
+
+    <string name="folder_delete_topic_extra_lessons">Verranno eliminate anche le lezioni e ciò che hai dimostrato in questo argomento.</string>
+    <string name="folder_delete_topic_extra_preparing">La lezione in preparazione andrà persa.</string>
+    <string name="topic_back_to_lesson">Torna alla lezione «%1$s»</string>
+    <string name="topic_back">Indietro</string>
+    <string name="topic_more_actions">Altre azioni</string>
+    <string name="topic_action_rename">Rinomina argomento</string>
+    <string name="topic_action_delete">Elimina argomento</string>
+    <string name="topic_loading">Sto caricando…</string>
+    <string name="topic_chip_description">Stato: %1$s</string>
+</resources>

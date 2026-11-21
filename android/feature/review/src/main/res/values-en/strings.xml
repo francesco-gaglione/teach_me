@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="review_title">Review</string>
+    <string name="review_close">Close the review</string>
+    <string name="review_more_actions">More actions</string>
+    <string name="review_menu_title">Review actions</string>
+    <string name="review_menu_undo">Undo the last rating</string>
+    <string name="review_menu_suspend">Suspend this card</string>
+
+    <string name="review_progress">%1$d of %2$d</string>
+    <string name="review_progress_a11y">Card %1$d of %2$d</string>
+    <string name="review_hint">Try to recall it before looking at the answer.</string>
+    <string name="review_caption_term_suffix">· Glossary term</string>
+    <string name="review_consolidate">To reinforce</string>
+    <string name="review_card_front_consolidate_a11y">Card %1$d of %2$d. %3$s. To reinforce: an exercise you haven\'t gotten right yet. %4$s</string>
+    <string name="review_card_front_a11y">Card %1$d of %2$d. %3$s. %4$s</string>
+    <string name="review_card_back_a11y">Answer: %1$s.</string>
+    <string name="review_origin">Lesson %1$d · %2$s</string>
+    <string name="review_origin_plain">%1$s</string>
+    <string name="review_reveal">Show answer</string>
+    <string name="review_reveal_hint">Space</string>
+    <string name="review_rate_title">How well did you remember it?</string>
+
+    <string name="review_rating_again">Forgot it</string>
+    <string name="review_rating_hard">With effort</string>
+    <string name="review_rating_good">Good</string>
+    <string name="review_rating_easy">Very easy</string>
+    <string name="review_rating_a11y">%1$s, you\'ll see it again %2$s</string>
+
+    <string name="review_undo_action">Undo</string>
+    <string name="review_undo_voted">%1$s: you\'ll see it again %2$s.</string>
+    <string name="review_undo_voted_plain">%1$s.</string>
+    <string name="review_undo_changed">This card was already reviewed or suspended.</string>
+    <string name="review_undo_gone">This rating can no longer be undone.</string>
+    <string name="review_undo_offline">I can\'t undo right now. Check your connection.</string>
+    <string name="review_undo_suspended">Card suspended. Reactivate it from Settings › Suspended cards.</string>
+
+    <string name="review_suspend_title">Suspend this card?</string>
+    <string name="review_suspend_body">You won\'t see it in the review until you reactivate it from Settings › Suspended cards. The record and the glossary stay as they are.</string>
+    <string name="review_suspend_confirm">Suspend the card</string>
+    <string name="review_suspend_loading">Suspending…</string>
+    <string name="review_suspend_not_done">The card wasn\'t suspended.</string>
+    <string name="review_suspend_announce">Card suspended</string>
+
+    <string name="review_queue_description">Ratings to send: %1$d</string>
+    <string name="review_queue_body">Some ratings haven\'t been sent yet. I\'ll send them as soon as the connection is back.</string>
+    <string name="review_queue_retry">Try now</string>
+    <string name="review_queue_sent">Ratings sent.</string>
+
+    <string name="review_loading">Loading cards</string>
+    <string name="review_title_topic">Review · %1$s</string>
+    <string name="review_title_topic_a11y">Review, topic %1$s</string>
+    <string name="review_open_lesson">Open the lesson</string>
+    <string name="review_open_lesson_hint">Alt+L</string>
+    <string name="review_open_lesson_a11y_first">Open lesson %1$d, %2$s. It opens over the review and then you come back to this card.</string>
+    <string name="review_open_lesson_a11y">Open lesson %1$d, %2$s</string>
+    <string name="review_open_lesson_a11y_plain_first">Open the lesson %1$s. It opens over the review and then you come back to this card.</string>
+    <string name="review_open_lesson_a11y_plain">Open the lesson %1$s</string>
+    <string name="review_open_lesson_a11y_untitled_first">Open the lesson. It opens over the review and then you come back to this card.</string>
+    <string name="review_topic_empty_title">No %1$s review for now</string>
+    <string name="review_topic_no_cards">This topic has no cards yet.</string>
+    <string name="review_topic_gone_title">This topic no longer exists</string>
+    <string name="review_topic_gone_body">It was deleted. You can review the other cards.</string>
+    <string name="review_topic_gone_all">Review everything</string>
+    <plurals name="review_topic_finish_count">
+        <item quantity="one">You reviewed %1$d card from %2$s.</item>
+        <item quantity="other">You reviewed %1$d cards from %2$s.</item>
+    </plurals>
+    <plurals name="review_topic_finish_backlog">
+        <item quantity="one">There\'s one more from %2$s due. Whenever you like.</item>
+        <item quantity="other">There are %1$d more from %2$s due. Whenever you like.</item>
+    </plurals>
+    <string name="review_topic_next_due_tomorrow">The next %1$s card comes up tomorrow.</string>
+    <string name="review_topic_next_due_today">The next %1$s card comes up today at %2$s.</string>
+    <string name="review_topic_next_due_on">The next %1$s card comes up %2$s.</string>
+    <string name="review_back_home">Back to Home</string>
+    <string name="review_empty_title">No review for now</string>
+    <string name="review_none_title">No cards yet</string>
+    <string name="review_none_body">Review cards are created when you complete a lesson.</string>
+
+    <string name="review_finish_title">Review done</string>
+    <plurals name="review_finish_count">
+        <item quantity="one">You reviewed %1$d card.</item>
+        <item quantity="other">You reviewed %1$d cards.</item>
+    </plurals>
+    <string name="review_finish_again_title">You\'ll see them again soon</string>
+    <plurals name="review_finish_again_more">
+        <item quantity="one">and one more</item>
+        <item quantity="other">and %1$d more</item>
+    </plurals>
+    <plurals name="review_finish_backlog">
+        <item quantity="one">There\'s one more due. Whenever you like.</item>
+        <item quantity="other">There are %1$d more due. Whenever you like.</item>
+    </plurals>
+    <string name="review_finish_more" tools:ignore="PluralsCandidate">Review %1$d more</string>
+    <string name="review_finish_last">Review the last one</string>
+    <plurals name="review_finish_conflicts">
+        <item quantity="one">One rating wasn\'t applied because the card had already changed.</item>
+        <item quantity="other">%1$d ratings weren\'t applied because the cards had already changed.</item>
+    </plurals>
+</resources>

@@ -1,0 +1,679 @@
+{
+  "suite": "generator/missing_component",
+  "prompt_dir": "generator",
+  "description": "Bisogni non esprimibili col catalogo: due positivi (grafico con assi; `code_compare` con mission «conosco già Go») attesi come `missing_component` con fallback valido, un negativo (nessun bisogno: atteso 0). Criterio: il positivo lo contiene in >= 80% delle run, il negativo in 0%. Id e URL delle fonti sono inventati.",
+  "defaults": {
+    "runs_per_case": 2,
+    "streaming": true,
+    "deterministic": {
+      "validator_pass_first_try": true,
+      "validator_pass_within_3": true,
+      "sources_copied_exactly": true,
+      "topic_glossary_copied_exactly": true,
+      "no_exclamation_in_feedback": true,
+      "language": "it",
+      "prose_words": [
+        1200,
+        2200
+      ],
+      "prose_words_target": {
+        "range": [
+          1500,
+          1900
+        ],
+        "severity": "warn"
+      },
+      "sections": [
+        3,
+        6
+      ],
+      "sections_from_plan": {
+        "description": "numero di h2 = concetti del piano + 1 (chiusura) + 1 se il piano ha almeno un prerequisito `general`",
+        "severity": "error"
+      },
+      "explanation_run_words_max": {
+        "max": 300,
+        "defect_above": 350,
+        "description": "parole di `paragraph` e `callout` (title e text) consecutive tra l'inizio di una sezione h2 (o un esercizio) e il blocco esercizio successivo; il `code` non conta e non interrompe; l'intro e la chiusura sono sezioni a parte"
+      },
+      "paragraphs_consecutive_max": 2,
+      "paragraph_words": {
+        "range": [
+          20,
+          110
+        ],
+        "severity": "warn",
+        "description": "tutti i paragrafi, richiamo compreso (il paragrafo d'invito del richiamo è di 20-40 parole, i ripassi di 25-60: per questo il minimo è 20); esclusi i paragrafi di `lang` diverso da it e le citazioni in lingua originale"
+      },
+      "concept_chain": {
+        "description": "per ogni sezione di concetto la sequenza dei tipi di blocco, ignorando `glossary_term`, deve corrispondere a: paragraph, heading(3) con testo che inizia per «Esempio:», code?, paragraph, paragraph, callout(warning)?, poi >= 1 esercizio. Nessun esercizio prima del terzo paragrafo; il callout c'è se e solo se il `pitfall` del concetto (stesso indice, nell'ordine del piano) non è vuoto; title del callout che inizia per «Errore tipico:» e <= 8 parole, text <= 300 caratteri",
+        "severity": "error"
+      },
+      "h3_per_concept_section": {
+        "description": "esattamente un heading di livello 3 in ogni sezione di concetto e nessuno in intro, richiamo e chiusura",
+        "severity": "error"
+      },
+      "callouts": {
+        "per_section_max": 1,
+        "warning_max": 5,
+        "tip_plus_info_max": 2
+      },
+      "intro": {
+        "paragraphs": [
+          1,
+          2
+        ],
+        "words_max": 100,
+        "no_exercise": true,
+        "no_h3": true
+      },
+      "recall_iff_general": {
+        "description": "la prima sezione h2 inizia per «Cosa ti serve:» se e solo se il piano ha >= 1 prerequisito `general` (case.deterministic.recall.expected lo conferma). Se c'è: >= 1 e <= 3 paragrafi di ripasso (25-60 parole, avviso fuori), esattamente 1 esercizio quiz_single o fill_blank con required false, venuto prima dei paragrafi di ripasso, nessuna flashcard, nessun h3, parole di prosa della sezione <= 300",
+        "severity": "error"
+      },
+      "closing": {
+        "words_max": 120,
+        "description": "parole di paragraph, checklist (title e items) e primary_source.why nell'ultima sezione h2"
+      },
+      "closing_active": {
+        "last_section_has_checklist": true,
+        "checklist_items": [
+          2,
+          3
+        ],
+        "closing_summary_words_max": 60
+      },
+      "forbidden_phrases": [
+        "(?i)\\b(bravo|ottimo lavoro|semplicemente|ovviamente|banale|banalmente|naturalmente|chiaramente)\\b",
+        "(?i)\\b(come è noto|è facile vedere|come abbiamo visto)\\b",
+        "(?i)\\bclicca qui\\b"
+      ],
+      "forbidden_phrases_warn": [
+        "(?i)\\bbasta\\s+\\w+(are|ere|ire)\\b"
+      ],
+      "term_first_mention_is_glossary_link": {
+        "description": "per ogni termine di `plan.terms.introduce`, la prima occorrenza (parola intera, case-insensitive, fuori dai `codice inline` e dal testo dei titoli) di `term` nella prosa è dentro un `[[key]]` o preceduta da un blocco `glossary_term` della stessa key; la prima menzione non può stare in un blocco successivo a quello che usa il termine in chiaro",
+        "severity": "error"
+      },
+      "exercises_per_concept_section": [
+        1,
+        2
+      ],
+      "objective_not_repeated_in_paragraph": true,
+      "quiz_correct_position_varies": true,
+      "quiz_option_char_ratio_max": 1.3,
+      "fill_blank_answer_not_in_adjacent_text": {
+        "severity": "error"
+      },
+      "glossary_entries_max": 12,
+      "output_tokens": {
+        "warn_above": 14000,
+        "note": "ragionamento compreso; riportare mediana e massimo per caso. Tetto di richiesta consigliato 20000"
+      },
+      "blocks_max": {
+        "max": 50,
+        "severity": "warn",
+        "description": "blocchi di primo livello (heading compresi); avviso a 50 (obiettivo del prompt). Oltre 60 fallisce già il Validator (`schema` su `/blocks`), quindi la soglia d'errore non serve: la chiave accetta una sola soglia"
+      },
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+      }
+    }
+  },
+  "pass_criteria": {
+    "missing_component_present": "`must_include_missing_component` nei due positivi in >= 80% delle run",
+    "negative": "`missing_component_max: 0` nel negativo in 100% delle run",
+    "validator_pass_within_3": "100%",
+    "rubric_mean": ">= 0.8"
+  },
+  "notes": "Il caso `code_compare_i_already_know_go` è copiato da `generator/phase6` (`go_to_rust_compare_and_code_options`).",
+  "cases": [
+    {
+      "id": "growth_curves_need_chart",
+      "description": "Argomento il cui contenuto è un grafico con assi (come il tempo cresce con la dimensione dell'input per O(n) e O(n²)). Atteso: un `missing_component` (es. `line_chart`, `chart`) con fallback ASCII o tabella in `code`, e nessuna `diagram` (non è un processo, un albero o un ciclo). Rischio: forzare un `flow`/`tree` o spiegare solo a parole senza registrare il bisogno.",
+      "topic": {
+        "title": "Complessità degli algoritmi"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio capire perché il mio ciclo annidato rallenta con molti dati.",
+        "success": [
+          "Stimo come cresce il tempo di un ciclo semplice e di uno annidato",
+          "So dire quale dei due peggiora più in fretta"
+        ],
+        "starting_point": "Scrivo cicli ogni giorno ma non ho mai misurato la crescita dei tempi.",
+        "constraints": [],
+        "out_of_scope": [
+          "notazione formale",
+          "ricorrenze"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Come cresce il tempo con i dati",
+        "objective": "Saper dire come cambia il tempo di un ciclo semplice e di uno annidato quando i dati raddoppiano.",
+        "why_now": "Primo passo verso il criterio «stimo come cresce il tempo di un ciclo»: servono la crescita lineare e quella quadratica.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa scrivere un ciclo for su una lista",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "crescita lineare",
+            "key_point": "Un ciclo che visita ogni elemento una volta impiega un tempo proporzionale a n: se i dati raddoppiano, il tempo raddoppia.",
+            "example": "Un ciclo somma i numeri di una lista da 1.000 e poi da 2.000 elementi.",
+            "steps": [
+              "Conta i passi con 1.000 elementi: 1.000.",
+              "Conta i passi con 2.000 elementi: 2.000.",
+              "Il tempo è raddoppiato come i dati."
+            ],
+            "pitfall": "Pensare che un ciclo più lungo sia lento in modo imprevedibile.",
+            "visual": "none"
+          },
+          {
+            "name": "crescita quadratica",
+            "key_point": "Due cicli annidati sullo stesso input fanno n×n passi: se i dati raddoppiano, il tempo quadruplica.",
+            "example": "Un doppio ciclo confronta ogni coppia in una lista da 100 e poi da 200 elementi.",
+            "steps": [
+              "Conta i passi con 100 elementi: 10.000.",
+              "Conta i passi con 200 elementi: 40.000.",
+              "Il tempo è quadruplicato."
+            ],
+            "pitfall": "Pensare che raddoppiare i dati raddoppi anche il tempo del doppio ciclo.",
+            "visual": "none"
+          },
+          {
+            "name": "confrontare le due curve",
+            "key_point": "Su un grafico tempo contro dimensione la retta lineare e la curva quadratica partono vicine e si allontanano: per input piccoli la differenza non si nota.",
+            "example": "Si confrontano 10, 100 e 1.000 elementi per entrambi i cicli.",
+            "steps": [
+              "Calcola i passi lineari: 10, 100, 1.000.",
+              "Calcola i passi quadratici: 100, 10.000, 1.000.000.",
+              "Osserva dove la differenza diventa evidente."
+            ],
+            "pitfall": "Pensare che un algoritmo quadratico sia sempre inaccettabile.",
+            "visual": "line_chart"
+          },
+          {
+            "name": "quando conta la differenza",
+            "key_point": "La scelta conta quando i dati crescono: con pochi elementi un ciclo annidato è spesso abbastanza veloce.",
+            "example": "Una lista di 20 elementi contro una di 200.000.",
+            "steps": [
+              "Stima i passi lineari e quadratici per 20 elementi.",
+              "Stima gli stessi per 200.000 elementi.",
+              "Decidi se vale la pena cambiare l'algoritmo."
+            ],
+            "pitfall": "",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "crescita_lineare",
+              "term": "crescita lineare",
+              "hint": "il tempo cresce in proporzione ai dati"
+            },
+            {
+              "key": "crescita_quadratica",
+              "term": "crescita quadratica",
+              "hint": "il tempo cresce con il quadrato dei dati"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f300-0000-7000-8000-000000000010",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere il tempo di un ciclo lineare quando i dati raddoppiano",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare di quanto cresce il tempo di un doppio ciclo se i dati raddoppiano",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali cicli crescono in modo quadratico",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "stimare e giustificare come cambia il tempo di un ciclo annidato su un input dieci volte più grande",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000010",
+          "title": "Big-O: crescita del tempo",
+          "url": "https://example.com/big-o",
+          "annotation": "Spiega come il tempo di esecuzione cresce con la dimensione dell'input per costante, lineare e quadratico, con i grafici delle curve a confronto.",
+          "use_for": "curve di crescita lineare e quadratica"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ],
+        "block_type_count": {
+          "diagram": [
+            0,
+            0
+          ],
+          "missing_component": [
+            1,
+            2
+          ]
+        }
+      },
+      "rubric": [
+        {
+          "id": "chart_is_missing_component",
+          "weight": 4,
+          "text": "Il confronto tra curva lineare e quadratica su assi (tempo contro dimensione) è un `missing_component` (es. `line_chart`, `chart`) con `purpose` didattico e un `fallback` che funziona da solo (disegno ASCII in `code` `language: text`, o tabella in prosa/code più un paragrafo); nessuna `diagram` inventata."
+        },
+        {
+          "id": "fallback_standalone",
+          "weight": 3,
+          "text": "Il fallback basta a capire il confronto senza il componente ideale e non ripete parola per parola un paragrafo accanto."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Le affermazioni sulle curve portano citazione della fonte; nessun numero o regola non sostenibile dalla fonte."
+        }
+      ]
+    },
+    {
+      "id": "code_compare_i_already_know_go",
+      "description": "Riproduce la lezione reale 2 (docs/design/samples/lesson-02-result-question-mark.json): confronto Go/Rust e quiz con opzioni di codice. Rischi misurati: due blocchi code in fila al posto di missing_component, opzioni corrette di 74-75 caratteri contro distrattori di 46-49, fill_blank con risposta `?` già scritta nella caption, chiusura senza azioni, output da 14k token.",
+      "topic": {
+        "title": "Gestione degli errori in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Lavoro su un backend in Rust e voglio gestire gli errori senza unwrap ovunque.",
+        "success": [
+          "Scrivo una funzione che propaga un errore con `?` e capisco quando non compila",
+          "Confronto il mio vecchio codice Go con il modo Rust"
+        ],
+        "starting_point": "Conosco bene Go.",
+        "constraints": [
+          "15 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "errori personalizzati con thiserror",
+          "async"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Propagare un errore con ?",
+        "objective": "Saper prevedere se una funzione che usa `?` compila e correggerne la firma.",
+        "why_now": "Primo passo verso il criterio «scrivo una funzione che propaga un errore con ?».",
+        "estimated_minutes": 13,
+        "prerequisites": [
+          {
+            "statement": "Sa scrivere funzioni con tipo di ritorno e gestire errori con if err != nil in Go",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "Result e Err",
+            "key_point": "Una funzione fallibile restituisce Result<T, E> invece di un valore o di un errore a parte.",
+            "example": "fn leggi(n: &str) -> Result<u32, ParseIntError> { n.parse::<u32>() } restituisce Ok(42) con \"42\" e un Err con \"x\".",
+            "steps": [
+              "Dichiara il tipo di ritorno come `Result<u32, ParseIntError>`.",
+              "Restituisci `Ok(valore)` quando va bene.",
+              "Restituisci `Err(errore)` quando fallisce.",
+              "Il chiamante deve trattare entrambe le possibilità."
+            ],
+            "pitfall": "Pensare che una funzione fallibile in Rust restituisca il valore e segnali l'errore a parte, come in Go.",
+            "visual": "none"
+          },
+          {
+            "name": "operatore ?",
+            "key_point": "`?` fa uscire dalla funzione con l'Err solo se il tipo di ritorno è compatibile.",
+            "example": "let x = a.parse::<u32>()?; dentro una funzione che restituisce Result: con un input non numerico la funzione esce subito con l'Err.",
+            "steps": [
+              "Scrivi `?` dopo la chiamata che può fallire.",
+              "Se il risultato è `Ok(v)`, prosegue con `v`.",
+              "Se è `Err(e)`, la funzione ritorna subito con `Err(e)`.",
+              "Il tipo di ritorno deve essere un `Result` con un errore compatibile."
+            ],
+            "pitfall": "Pensare che `?` funzioni in qualunque funzione, anche in una che non restituisce `Result`.",
+            "visual": "none"
+          },
+          {
+            "name": "confronto con Go",
+            "key_point": "Il controllo `if err != nil { return err }` di Go corrisponde a `?`, ma il compilatore verifica il tipo di ritorno.",
+            "example": "In Go: v, err := leggi(s); if err != nil { return err }. In Rust: let v = leggi(s)?;",
+            "steps": [
+              "Individua nel codice Go il controllo `if err != nil { return err }`.",
+              "Sostituiscilo con `?` dopo la chiamata.",
+              "Verifica che la funzione restituisca un `Result` con un errore compatibile.",
+              "Il compilatore rifiuta la funzione se il tipo di ritorno non lo è."
+            ],
+            "pitfall": "Pensare che `?` equivalga al controllo di Go senza che il tipo di ritorno conti.",
+            "visual": "code_compare"
+          },
+          {
+            "name": "unwrap e expect: quando far fermare il programma",
+            "key_point": "`unwrap` e `expect` tolgono il valore da un `Result` e, se è `Err`, fermano il programma con un panic: vanno bene per un errore che non si sa gestire.",
+            "example": "`let n: u32 = \"7\".parse().unwrap();` dà 7; con `\"x\"` il programma si ferma con un panic e il messaggio dell'errore.",
+            "steps": [
+              "`parse` restituisce un `Result`.",
+              "`unwrap` su un `Ok` restituisce il valore.",
+              "`unwrap` su un `Err` ferma il programma con un panic invece di far tornare l'errore al chiamante."
+            ],
+            "pitfall": "Pensare che `unwrap` gestisca l'errore invece di interrompere il programma.",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "result_type",
+              "term": "Result",
+              "hint": "tipo che vale Ok(valore) oppure Err(errore)"
+            },
+            {
+              "key": "question_mark_operator",
+              "term": "operatore ?",
+              "hint": "propaga l'Err al chiamante"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000010",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere se una chiamata restituisce `Ok` o `Err` con un input dato",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "classificare quali firme di funzione permettono ?",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare la riga Rust che corrisponde a un controllo `if err != nil { return err }` di Go",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere tra `?`, `unwrap` e `match` in tre situazioni",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare perché una funzione che ritorna u32 non compila con ? e correggerla",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000010",
+          "title": "The Rust Programming Language, 9.2 Recoverable Errors with Result",
+          "url": "https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html",
+          "annotation": "Capitolo del libro ufficiale: il tipo Result, match su Ok/Err, propagazione degli errori e operatore ?, dove ? può essere usato.",
+          "use_for": "Result, propagazione con ? e il vincolo sul tipo di ritorno della funzione"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent",
+          "checklist"
+        ],
+        "must_include_missing_component": "code_compare",
+        "missing_component_max": 2,
+        "block_type_count": {}
+      },
+      "rubric": [
+        {
+          "id": "compare_uses_missing_component",
+          "text": "Il confronto tra il controllo errori di Go e quello di Rust è un missing_component con wanted code_compare (o equivalente) e un fallback con i due code, ciascuno con la sua caption; non due blocchi code in fila senza missing_component.",
+          "weight": 3
+        },
+        {
+          "id": "code_options_same_shape",
+          "text": "Nel quiz con opzioni di codice, le opzioni hanno la stessa forma (stessa firma, numero di token simile): i distrattori sono varianti realistiche, non frammenti più corti, e la corretta non spicca per lunghezza o completezza.",
+          "weight": 3
+        },
+        {
+          "id": "single_win",
+          "text": "La lezione serve solo la capacità dell'obiettivo (prevedere se `?` compila e correggere la firma); niente thiserror, async o Option.",
+          "weight": 2
+        },
+        {
+          "id": "citations",
+          "text": "Le regole su Result e `?` portano una citazione e non compaiono numeri o citazioni testuali non sostenibili dalla fonte.",
+          "weight": 2
+        },
+        {
+          "id": "tone",
+          "text": "Tono sobrio, nessun complimento o giudizio.",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "no_missing_component_when_catalog_suffices",
+      "description": "Negativo: formato del messaggio di commit, elenco piatto, nessun bisogno non coperto dal catalogo. Atteso: nessun `missing_component` (e nessuna `diagram`).",
+      "topic": {
+        "title": "Conventional Commits"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio che la cronologia del mio repository sia leggibile e che i changelog si generino da soli.",
+        "success": [
+          "Scrivo messaggi di commit nel formato Conventional Commits",
+          "Scelgo il tipo giusto (`feat`, `fix`, `docs`, `refactor`) per un cambiamento"
+        ],
+        "starting_point": "Uso git ogni giorno da un anno e so fare commit, branch e merge.",
+        "constraints": [],
+        "out_of_scope": [
+          "strumenti di rilascio automatico"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Scrivere il messaggio di un commit",
+        "objective": "Saper scrivere il messaggio di un commit nel formato Conventional Commits, scegliendo il tipo e segnalando un cambiamento incompatibile.",
+        "why_now": "Primo passo verso il criterio «scrivo messaggi che il tool dei changelog capisce»: servono il formato, il significato dei tipi e il modo di segnalare un cambiamento incompatibile.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa creare un commit con `git commit -m`",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "struttura del messaggio",
+            "key_point": "Il messaggio ha un tipo, uno scope facoltativo e una descrizione, nella forma `tipo(scope): descrizione`.",
+            "example": "Un commit corregge un calcolo sbagliato dei totali nel modulo `cart`: il messaggio è `fix(cart): corregge il totale con sconto`.",
+            "steps": [
+              "Scegli il tipo che dice che cosa fa il commit: qui una correzione, quindi `fix`.",
+              "Aggiungi tra parentesi lo scope, cioè la parte toccata: `cart`.",
+              "Scrivi dopo i due punti che cosa cambia, in breve: `corregge il totale con sconto`.",
+              "Unisci le parti in `fix(cart): corregge il totale con sconto`."
+            ],
+            "pitfall": "Pensare che il tipo descriva il file toccato e non lo scopo della modifica.",
+            "visual": "none"
+          },
+          {
+            "name": "scegliere il tipo",
+            "key_point": "`feat` aggiunge una funzionalità, `fix` corregge un difetto; `docs` e `refactor` non cambiano ciò che vede chi usa il programma.",
+            "example": "Un commit sposta il codice di validazione in una funzione a parte senza cambiare il risultato per chi usa il programma.",
+            "steps": [
+              "Chiediti se per chi usa il programma cambia qualcosa: no.",
+              "Quindi non è `feat` né `fix`.",
+              "Il codice cambia struttura ma non comportamento: il tipo è `refactor`."
+            ],
+            "pitfall": "",
+            "visual": "none"
+          },
+          {
+            "name": "segnalare un cambiamento incompatibile",
+            "key_point": "Un cambiamento che rompe chi usa il programma si segnala con `!` dopo il tipo o con il piè di pagina `BREAKING CHANGE:`; il tipo resta `feat` o `fix`.",
+            "example": "Un commit rimuove il parametro `currency` dalla funzione `price` del modulo `api` e chi la chiama dovrà cambiare: serve un messaggio che lo dica.",
+            "steps": [
+              "Il tipo dice che cosa fa il commit: qui cambia il comportamento, quindi `feat`.",
+              "Aggiungi `!` subito prima dei due punti: `feat(api)!: rimuove il parametro currency`.",
+              "In alternativa, o in aggiunta, un piè di pagina `BREAKING CHANGE: currency non è più accettato`."
+            ],
+            "pitfall": "Pensare che un cambiamento incompatibile abbia un tipo suo, come `breaking`.",
+            "visual": "none"
+          },
+          {
+            "name": "un commit, un tipo",
+            "key_point": "Se una modifica fa due cose di tipo diverso (una correzione e una funzione nuova) non si sceglie il tipo «più importante»: si separa in due commit.",
+            "example": "Nello stesso lavoro si corregge un errore di arrotondamento nel modulo `cart` e si aggiunge il campo `note` all'ordine: due scopi in un solo commit.",
+            "steps": [
+              "Elenca che cosa cambia: la correzione dell'arrotondamento e il nuovo campo.",
+              "I due cambiamenti hanno tipi diversi, `fix` e `feat`: un solo messaggio non può dirli tutti.",
+              "Dividi il lavoro in due commit, ciascuno con il suo tipo e la sua descrizione."
+            ],
+            "pitfall": "Pensare che un commit con una correzione e una funzione nuova vada scritto con `feat` perché è la parte più importante.",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "conventional_commits",
+              "term": "Conventional Commits",
+              "hint": "convenzione per scrivere i messaggi di commit"
+            },
+            {
+              "key": "scope",
+              "term": "scope",
+              "hint": "la parte del progetto toccata dal commit, tra parentesi"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f200-0000-7000-8000-000000000004",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "completare il messaggio di un commit che aggiunge una funzione di esportazione al modulo `report`",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere il tipo per un commit che cambia solo il README",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali messaggi segnalano correttamente un cambiamento incompatibile",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare come si scrivono i messaggi per un lavoro che corregge un errore e aggiunge una funzione, e perché non basta un tipo",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f200-0000-7000-8000-000000000004",
+          "title": "Conventional Commits 1.0.0",
+          "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+          "annotation": "Specifica ufficiale: struttura del messaggio, tipi `feat` e `fix`, scope, breaking change (`!` e `BREAKING CHANGE:`), esempi, domande frequenti (commit con più tipi).",
+          "use_for": "formato del messaggio, significato dei tipi, cambiamenti incompatibili"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ],
+        "block_type_count": {
+          "diagram": [
+            0,
+            0
+          ]
+        },
+        "missing_component_max": 0
+      },
+      "rubric": [
+        {
+          "id": "no_invented_need",
+          "weight": 4,
+          "text": "La lezione non contiene `missing_component`: non c'è un bisogno didattico che il catalogo non copre (niente tabella o grafico necessari); un `missing_component` qui sarebbe una scappatoia."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Formato e tipi portano la citazione della specifica; nessuna regola inventata."
+        }
+      ]
+    }
+  ]
+}

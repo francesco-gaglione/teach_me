@@ -1,0 +1,11 @@
+# Install: sudo cp teach-me-backup.* /etc/systemd/system/ ; edit WorkingDirectory/User ;
+#          sudo systemctl daemon-reload && sudo systemctl enable --now teach-me-backup.timer
+[Unit]
+Description=teach_me SQLite backup
+
+[Service]
+Type=oneshot
+# The user must be able to run docker.
+User=CHANGE_ME
+WorkingDirectory=/path/to/teach_me/backend/deploy
+ExecStart=/path/to/teach_me/backend/deploy/backup.sh

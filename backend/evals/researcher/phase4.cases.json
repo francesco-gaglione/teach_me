@@ -1,0 +1,390 @@
+{
+ "suite": "researcher-phase4",
+ "prompt_dir": "backend/prompts/researcher",
+ "schema_file": "backend/prompts/researcher/output_schema.json",
+ "description": "Researcher in Fase 4: ricerca web lato server e consegna di Resource[] + gaps in JSON. Un solo turno (con eventuali continuazioni pause_turn), nessuna conversazione. Misura fedeltà a RESOURCES-FORMAT.md della skill teach: solo fonti ad alta fiducia, annotazione e use_for, gruppi knowledge/community (community solo su richiesta), gaps, opt-out delle community.",
+ "defaults": {
+  "runs_per_case": 2,
+  "search_budget": 6,
+  "deterministic": {
+   "schema_valid": true,
+   "resources_count": [
+    5,
+    12
+   ],
+   "urls_must_be_https": true,
+   "urls_must_be_in_search_results": true,
+   "no_duplicate_urls": true,
+   "max_web_searches": "search_budget",
+   "annotation_language": "it",
+   "annotation_words": [
+    12,
+    50
+   ],
+   "use_for_words": [
+    4,
+    40
+   ],
+   "annotation_must_not_match": [
+    "(?i)\\b(ottim[oaie]|fantastic[oaie]|imperdibile|completissim[oaie]|il migliore|la migliore)\\b"
+   ],
+   "use_for_must_not_match": [
+    "(?i)^\\s*(usala per\\s+)?(imparare|studiare|approfondire|conoscere)\\.?\\s*$",
+    "(?i)^\\s*usala per\\b"
+   ],
+   "community_url_must_not_match": [
+    "/comments/",
+    "/t/[^/]+/\\d+",
+    "/thread",
+    "/question[s]?/\\d+"
+   ],
+   "no_community_when_skipped": true,
+   "knowledge_before_community": true,
+   "gap_note_chars": [
+    1,
+    400
+   ],
+   "gap_note_must_not_match": [
+    "(?i)\\b(andrebbe|bisognerebbe|consiglio|conviene|da cercare|cercare a parte|si dovrebbe)\\b"
+   ],
+   "gap_note_max_words": 25
+  },
+  "notes": "urls_must_be_in_search_results: un URL è accettato se compare tra i risultati di ricerca della run OPPURE tra le existing_resources del caso (stessa regola del Validator, resources.md). Per OpenRouter in streaming i blocchi web_search_tool_result mancano: il runner usa la richiesta non in streaming o unisce gli URL delle citazioni. communities_skipped=true implica zero risorse community. Una ricerca riuscita sostituisce in blocco: l'output e l'elenco completo."
+ },
+ "cases": [
+  {
+   "id": "tech_rust_cli",
+   "description": "Mission tecnica con fonti primarie ovvie (documentazione ufficiale). Nessuna preferenza sulle community: zero community e communities_skipped=true, il budget va a fonti knowledge. Il rischio è il materiale di basso livello (blog Medium, tutorial SEO) al posto del libro ufficiale e il riempire con ridondanze. Con un punto di partenza dichiarato (programma già, non conosce Rust): le fonti non sono introduzioni alla programmazione.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission": {
+    "version": 1,
+    "why": "Voglio smettere di combattere il borrow checker nel CLI personale che sto scrivendo per gestire le mie spese.",
+    "success": [
+     "Scrivo da solo un CLI che legge un CSV senza clone() inutili",
+     "Spiego ownership e borrowing a un collega con un esempio mio"
+    ],
+    "starting_point": "Programmo in Python da cinque anni e ho scritto qualche programma in C; di Rust ho letto solo i primi capitoli del libro ufficiale, mai scritto un programma.",
+    "constraints": [
+     "Ho circa 4 ore a settimana",
+     "Leggo bene l'inglese"
+    ],
+    "out_of_scope": [
+     "async",
+     "unsafe",
+     "macro"
+    ]
+   },
+   "preferences": [],
+   "existing_resources": [],
+   "deterministic": {
+    "min_per_kind": {
+     "knowledge": 3
+    },
+    "must_include_url_matching": [
+     "(?i)doc\\.rust-lang\\.org"
+    ],
+    "must_not_include_url_matching": [
+     "(?i)(medium\\.com|dev\\.to|geeksforgeeks|w3schools|udemy|skillshare)"
+    ],
+    "communities_skipped": true,
+    "max_per_kind": {
+     "community": 0
+    }
+   },
+   "rubric": [
+    {
+     "id": "primary_first",
+     "weight": 3,
+     "criterion": "Include almeno una fonte primaria o ufficiale (documentazione o libro ufficiale del linguaggio) e la tratta come riferimento principale."
+    },
+    {
+     "id": "mission_fit",
+     "weight": 3,
+     "criterion": "Ogni use_for si collega a un obiettivo concreto della mission (CLI su CSV, evitare clone, spiegare ownership) e non a un generico 'imparare Rust'. Nessuna fonte riguarda async, unsafe o macro come scopo principale."
+    },
+    {
+     "id": "trust_reason",
+     "weight": 2,
+     "criterion": "Ogni annotation dice che cosa è la fonte e perché è affidabile (autore, ente, revisione, moderazione) senza aggettivi generici."
+    },
+    {
+     "id": "no_redundancy",
+     "weight": 2,
+     "criterion": "Non ci sono due risorse che coprono la stessa cosa nello stesso modo (es. due capitoli identici di mirror diversi dello stesso libro)."
+    },
+    {
+     "id": "honest_gaps",
+     "weight": 2,
+     "criterion": "Le lacune dichiarate sono credibili e collegate alla mission (es. manca una fonte pratica su CSV/CLI); se gaps è vuoto, la mission è davvero coperta da fonti presenti."
+    },
+    {
+     "id": "use_for_form",
+     "weight": 1,
+     "criterion": "Ogni use_for è una frase nominale che completa 'Usala per...' e non ripete 'usala per'."
+    },
+    {
+     "id": "level_fits_starting_point",
+     "weight": 2,
+     "criterion": "Il livello delle fonti è adatto al punto di partenza (programma già in Python e C, Rust no): nessuna fonte è un'introduzione alla programmazione per principianti assoluti, e nessuna presuppone già Rust; le annotazioni non citano il punto di partenza della persona."
+    },
+    {
+     "id": "second_solid_source",
+     "weight": 2,
+     "criterion": "Non cita community, forum o gruppi. Usa le ricerche per una seconda fonte solida sulla parte più difficile (borrow checker, riferimenti) o per documentazione ufficiale mancante (libro ufficiale, Rust By Example, documentazione del crate csv, Rust reference), e le lacune non elencano community."
+    }
+   ]
+  },
+  {
+   "id": "hobby_opt_out",
+   "description": "Hobby con sicurezza pratica e preferenza esplicita di non entrare in community: zero community, communities_skipped=true. Le fonti devono essere primarie (schede tecniche dei produttori, manuali), non video virali.",
+   "topic": {
+    "title": "Sviluppo di pellicola bianco e nero a casa"
+   },
+   "mission": {
+    "version": 1,
+    "why": "Ho ereditato una fotocamera a pellicola e voglio sviluppare i rullini in bagno, senza mandarli a un laboratorio.",
+    "success": [
+     "Sviluppo da solo un rullino 35mm bianco e nero e ottengo negativi nitidi e senza graffi",
+     "Scelgo tempi e temperature giusti leggendo la scheda tecnica di una pellicola"
+    ],
+    "starting_point": null,
+    "constraints": [
+     "Budget sotto i 100 euro",
+     "Casa piccola, nessuna camera oscura"
+    ],
+    "out_of_scope": [
+     "stampa in camera oscura",
+     "pellicole a colori"
+    ]
+   },
+   "preferences": [
+    {
+     "scope": "topic",
+     "text": "Non voglio entrare in community o gruppi, preferisco imparare da solo."
+    }
+   ],
+   "existing_resources": [],
+   "deterministic": {
+    "communities_skipped": true,
+    "max_per_kind": {
+     "community": 0
+    },
+    "min_per_kind": {
+     "knowledge": 3
+    },
+    "must_include_url_matching": [
+     "(?i)(ilford|kodak|fujifilm|adox|foma|harman|photographersformulary)"
+    ]
+   },
+   "rubric": [
+    {
+     "id": "opt_out",
+     "weight": 4,
+     "criterion": "Non propone né cita alcuna community, forum, gruppo o corso dal vivo, nemmeno nelle annotazioni o nelle lacune come 'consiglio di unirti a...'. Le lacune non parlano di community."
+    },
+    {
+     "id": "primary_datasheets",
+     "weight": 3,
+     "criterion": "Include fonti primarie del dominio (schede tecniche o guide dei produttori di pellicole/sviluppi) per tempi e temperature, e le annota come tali."
+    },
+    {
+     "id": "safety",
+     "weight": 2,
+     "criterion": "Se la mission richiede maneggiare prodotti chimici, almeno una risorsa o una lacuna riguarda la sicurezza o lo smaltimento; non è omessa in silenzio."
+    },
+    {
+     "id": "no_marketing",
+     "weight": 2,
+     "criterion": "Nessuna risorsa è marketing travestito da formazione (negozi che vendono kit con 'guida', video virali senza autore competente)."
+    },
+    {
+     "id": "out_of_scope",
+     "weight": 1,
+     "criterion": "Nessuna risorsa è dedicata principalmente a stampa in camera oscura o a pellicole a colori."
+    }
+   ]
+  },
+  {
+   "id": "strength_with_community",
+   "description": "Caso opt-in: la preferenza chiede una community dove far controllare la tecnica, quindi ci si aspetta almeno una community vera (online o locale) accanto alle fonti Knowledge. Rischi: bro-science, programmi in vendita, community generica o un thread al posto del luogo.",
+   "topic": {
+    "title": "Allenamento di forza per principianti"
+   },
+   "mission": {
+    "version": 1,
+    "why": "Ho 35 anni, non mi sono mai allenato con i pesi e voglio costruire forza in modo sicuro, senza infortunarmi come mi è successo a 25 anni con la schiena.",
+    "success": [
+     "Eseguo squat, panca e stacco con tecnica corretta, verificata da qualcuno di competente",
+     "Seguo da solo un programma a 3 giorni a settimana per 12 settimane e sono in grado di aggiustarlo se non progredisco"
+    ],
+    "starting_point": null,
+    "constraints": [
+     "Palestra commerciale di quartiere",
+     "Tre sessioni a settimana da 60 minuti"
+    ],
+    "out_of_scope": [
+     "integratori",
+     "bodybuilding estetico"
+    ]
+   },
+   "preferences": [
+    {
+     "scope": "topic",
+     "text": "Mi piacerebbe un forum o un gruppo dove far controllare la tecnica."
+    }
+   ],
+   "existing_resources": [],
+   "deterministic": {
+    "min_per_kind": {
+     "knowledge": 2,
+     "community": 1
+    },
+    "max_per_kind": {
+     "community": 3
+    },
+    "must_not_include_url_matching": [
+     "(?i)(muscleandfitness|bodybuilding\\.com|t-nation|menshealth|womenshealth)"
+    ],
+    "communities_skipped": false
+   },
+   "rubric": [
+    {
+     "id": "evidence_based",
+     "weight": 3,
+     "criterion": "Le fonti Knowledge sono libri, autori o testi basati su evidenza e riconosciuti (non riviste generaliste di fitness, non siti che vendono programmi) e le annotazioni lo spiegano."
+    },
+    {
+     "id": "community_real",
+     "weight": 3,
+     "criterion": "Almeno una community è un luogo reale e attivo con moderazione contro la bro-science (forum, subreddit, gruppo), e l'url punta al luogo e non a una singola discussione."
+    },
+    {
+     "id": "community_use_for",
+     "weight": 2,
+     "criterion": "Per le community use_for indica a cosa serve nella pratica (verifica della tecnica con video, critica del programma, ripresa dopo un plateau) e non per imparare definizioni."
+    },
+    {
+     "id": "technique_gap",
+     "weight": 2,
+     "criterion": "Riconosce che la tecnica va verificata da una persona (coach, corso dal vivo, community con revisione video) e lo riflette in una risorsa o in una lacuna; non pretende che un libro basti."
+    },
+    {
+     "id": "scope",
+     "weight": 1,
+     "criterion": "Nessuna risorsa è centrata su integratori o bodybuilding estetico."
+    },
+    {
+     "id": "no_invented_local",
+     "weight": 1,
+     "criterion": "Non inventa palestre o gruppi locali: se propone qualcosa di locale è un luogo reale trovato nei risultati, altrimenti lo mette tra le lacune."
+    }
+   ]
+  },
+  {
+   "id": "rerun_with_existing",
+   "description": "Nuova ricerca dopo un cambio di mission: esistono già due risorse. La ricerca sostituisce in blocco, quindi il Researcher consegna l'elenco COMPLETO finale: tiene (stesso URL) quelle ancora valide, scarta le superate, aggiunge le nuove per le lifetime e aggiorna le lacune. Nessuna preferenza sulle community: la community già salvata (il forum ufficiale) va scartata e non se ne consegnano di nuove.",
+   "topic": {
+    "title": "Ownership e borrowing in Rust"
+   },
+   "mission": {
+    "version": 2,
+    "why": "Voglio smettere di combattere il borrow checker nel CLI personale che sto scrivendo per gestire le mie spese, e ora mi servono anche le lifetime nelle struct che tengono riferimenti.",
+    "success": [
+     "Scrivo da solo un CLI che legge un CSV senza clone() inutili",
+     "Scrivo una struct con un campo &str e un'annotazione di lifetime e spiego perché serve"
+    ],
+    "starting_point": null,
+    "constraints": [
+     "Ho circa 4 ore a settimana",
+     "Leggo bene l'inglese"
+    ],
+    "out_of_scope": [
+     "async",
+     "unsafe"
+    ]
+   },
+   "preferences": [],
+   "existing_resources": [
+    {
+     "kind": "knowledge",
+     "title": "Understanding Ownership - The Rust Programming Language",
+     "url": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html",
+     "use_for": "ownership, borrowing e slice"
+    },
+    {
+     "kind": "knowledge",
+     "title": "Borrowing - Rust By Example",
+     "url": "https://doc.rust-lang.org/stable/rust-by-example/scope/borrow.html",
+     "use_for": "esempi minimi di prestito"
+    },
+    {
+     "kind": "community",
+     "source_type": "forum",
+     "title": "The Rust Programming Language Forum",
+     "url": "https://users.rust-lang.org/",
+     "use_for": "domande sul borrow checker"
+    }
+   ],
+   "deterministic": {
+    "resources_count": [
+     5,
+     12
+    ],
+    "must_include_url_matching": [
+     "(?i)(lifetime|ch10-03|doc\\.rust-lang\\.org/nomicon|rust-lang\\.org)"
+    ],
+    "existing_urls_kept_must_be_identical": true,
+    "no_equivalent_mirror_of_existing": true,
+    "communities_skipped": true,
+    "max_per_kind": {
+     "community": 0
+    }
+   },
+   "rubric": [
+    {
+     "id": "complete_list",
+     "weight": 3,
+     "criterion": "L'output è l'elenco finale completo (5-12 voci): le risorse salvate ancora valide per la mission attuale sono riproposte con lo stesso URL (almeno il capitolo sull'ownership del libro ufficiale), non omesse solo perché già presenti."
+    },
+    {
+     "id": "prunes",
+     "weight": 2,
+     "criterion": "Ogni risorsa salvata non riproposta è effettivamente superata o debole per la mission attuale; nessuna fonte valida è scartata senza motivo, e nessuna fonte debole è tenuta per inerzia."
+    },
+    {
+     "id": "targets_change",
+     "weight": 3,
+     "criterion": "Le risorse nuove coprono il cambiamento della mission (lifetime nelle struct) e gli use_for lo dicono esplicitamente."
+    },
+    {
+     "id": "no_mirror",
+     "weight": 1,
+     "criterion": "Non riporta una fonte già salvata con un altro URL equivalente (mirror o stesso capitolo altrove)."
+    },
+    {
+     "id": "gaps_updated",
+     "weight": 2,
+     "criterion": "Le lacune riguardano la mission aggiornata, sono una riga ciascuna, senza giudizi né consigli, e non ripetono lacune già coperte."
+    },
+    {
+     "id": "trust",
+     "weight": 2,
+     "criterion": "Le fonti nuove sono ad alta fiducia (ufficiali, autori riconosciuti) e annotate con il motivo."
+    },
+    {
+     "id": "no_community",
+     "weight": 1,
+     "criterion": "Non propone community, forum o gruppi (non sono state chieste) e le lacune non le citano; le ricerche sono usate per fonti knowledge sulla mission aggiornata."
+    }
+   ]
+  }
+ ],
+ "pass_criteria": {
+  "deterministic": "tutte le run di tutti i casi rispettano tutti i controlli deterministici; urls_must_be_in_search_results e opt_out e community facoltative (zero community e communities_skipped=true senza richiesta, almeno una community con richiesta) devono passare in 100% delle run, perché sono la garanzia contro fonti inventate e il rispetto delle preferenze",
+  "rubric_score": "punteggio medio pesato >= 0.75 per caso, con nessuna run sotto 0.6",
+  "stability": "tutte le run passano per hobby_opt_out; almeno 1 run su 2 per gli altri casi",
+  "cost": "web_search_requests <= search_budget in ogni run; riportare costo totale per run (usage + $10/1000 ricerche)"
+ }
+}

@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily teach_me backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

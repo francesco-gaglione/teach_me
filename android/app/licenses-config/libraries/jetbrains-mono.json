@@ -1,0 +1,8 @@
+{
+  "uniqueId": "jetbrains-mono",
+  "name": "JetBrains Mono (font)",
+  "artifactVersion": "bundled",
+  "website": "https://github.com/JetBrains/JetBrainsMono",
+  "developers": [{ "name": "The JetBrains Mono Project Authors" }],
+  "licenses": ["OFL-1.1"]
+}

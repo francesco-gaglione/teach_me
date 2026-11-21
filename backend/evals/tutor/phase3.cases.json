@@ -1,0 +1,761 @@
+{
+ "suite": "tutor-phase3",
+ "prompt_dir": "backend/prompts/tutor",
+ "tools_file": "backend/prompts/tutor/tools.json",
+ "description": "Tutor in Fase 3: intervista sulla mission, bozza, correzioni, conferma, cambio mission, preferenze. Casi multi-turno con utente scriptato.",
+ "defaults": {
+  "runs_per_case": 3,
+  "deterministic": {
+   "max_words": 150,
+   "max_question_marks": 2,
+   "language": "it",
+   "must_not_match": [
+    "(?i)\\b(ti preparo|preparer[òo]|creer[òo]|cercher[òo]|ti far[òo] una lezione)\\b",
+    "(?i)ottima domanda|ottimo!|fantastico!",
+    "(?i)\\bBravo\\b"
+   ],
+   "no_headings": true,
+   "no_tables": true,
+   "no_blockquotes": true,
+   "no_html_or_images": true,
+   "no_bare_urls": true,
+   "max_bold_spans": 3,
+   "max_list_items": 5,
+   "code_blocks_need_language": true,
+   "max_code_line_chars": 60,
+   "no_exclamation_marks": true
+  },
+  "tool_input": {
+   "criteria_must_not_match": [
+    "^(capire|capisco|conoscere|conosco|imparare|imparo|comprendere|studiare|approfondire|finire|completare)\\b"
+   ],
+   "why_min_words": 6,
+   "fields_within_schema_limits": true,
+   "preference_text_must_not_match": "(?i)^(l'utente|la persona)"
+  }
+ },
+ "cases": [
+  {
+   "id": "vague_pure",
+   "description": "Vago puro per tre turni: nessuna bozza, una domanda per turno, esempi concreti, nessuna lezione.",
+   "topic": {
+    "title": "Rust",
+    "state": "interviewing"
+   },
+   "steps": [
+    {
+     "user": "Voglio imparare Rust",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change",
+        "save_preference"
+       ]
+      },
+      "deterministic": {
+       "max_words": 110
+      },
+      "rubric": [
+       {
+        "id": "asks_why",
+        "weight": 2,
+        "criterion": "Fa una sola domanda sull'obiettivo o sul motivo, e il messaggio termina con la domanda."
+       },
+       {
+        "id": "examples",
+        "weight": 1,
+        "criterion": "Offre 2-3 esempi concreti di possibili obiettivi."
+       },
+       {
+        "id": "no_lecture",
+        "weight": 2,
+        "criterion": "Non descrive Rust né come iniziare."
+       },
+       {
+        "id": "explains_mission",
+        "weight": 1,
+        "criterion": "Se usa la parola 'mission', la spiega in mezza frase."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Boh, mi interessa e basta",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "pushback",
+        "weight": 3,
+        "criterion": "Non accetta 'mi interessa' come obiettivo: fa push-back con una domanda diversa dalla precedente, aiutando a concretizzare (cosa vorrebbe saper fare o spiegare)."
+       },
+       {
+        "id": "not_same_question",
+        "weight": 2,
+        "criterion": "Non ripete la stessa domanda del turno precedente con parole simili."
+       },
+       {
+        "id": "one_question",
+        "weight": 1,
+        "criterion": "Una sola domanda."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Non so, qualcosa di utile, magari per il lavoro",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "offers_options",
+        "weight": 3,
+        "criterion": "Aiuta a scegliere con 2-3 opzioni concrete e distinte (non generiche), per esempio in elenco A/B/C o in frase."
+       },
+       {
+        "id": "still_no_invention",
+        "weight": 2,
+        "criterion": "Non dichiara di aver capito la mission e non presenta una mission inventata."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "vague_becomes_precise",
+   "description": "Da vago a preciso: la bozza arriva solo quando c'è un criterio osservabile, non prima; dopo la conferma non si riconferma.",
+   "topic": {
+    "title": "Rust",
+    "state": "interviewing"
+   },
+   "steps": [
+    {
+     "user": "Voglio imparare Rust",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft"
+       ]
+      }
+     }
+    },
+    {
+     "user": "Nel nuovo lavoro erediterò un servizio di pagamenti scritto in Rust, e io vengo da Kotlin: lo uso da tre anni. Di Rust ho letto solo i primi capitoli del libro ufficiale, mai scritto codice.",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "asks_success",
+        "weight": 3,
+        "criterion": "Il perché è chiaro ma manca come capirà di esserci riuscito: fa una domanda su cosa dovrà saper fare concretamente (o su cosa altro manca davvero), senza richiedere il perché."
+       },
+       {
+        "id": "acknowledges",
+        "weight": 1,
+        "criterion": "Riconosce in mezza frase o una frase i dati dati (servizio di pagamenti, Kotlin) senza ripeterli tutti."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Devo riuscire a leggere e modificare il servizio, che usa axum, senza chiedere aiuto ai colleghi, e a scrivere i test per le mie modifiche.",
+     "expect": {
+      "tools": {
+       "called": [
+        "save_mission_draft"
+       ],
+       "max_calls": 1,
+       "input_checks": {
+        "success_criteria_count": [
+         1,
+         5
+        ],
+        "fields_must_match": {
+         "success_criteria": "(?i)axum|serviz|test|modific|legg",
+         "starting_point": "(?i)kotlin"
+        },
+        "fields_must_not_match": {
+         "out_of_scope": "(?i)async|embedded|web|macro",
+         "constraints": "(?i)\\b(ore|minuti)\\b|kotlin|capitoli"
+        }
+       }
+      },
+      "deterministic": {
+       "max_words_when_tool_called": 70,
+       "text_must_not_repeat_tool_fields": true,
+       "no_list_when_tool_called": true,
+       "max_question_marks": 1
+      },
+      "rubric": [
+       {
+        "id": "short_intro",
+        "weight": 2,
+        "criterion": "L'introduzione è un riassunto discorsivo di 2-3 righe (non una lista) e non ripete i criteri né elenca i campi della card."
+       },
+       {
+        "id": "no_invented",
+        "weight": 3,
+        "criterion": "I campi della bozza contengono solo ciò che la persona ha detto: nessun vincolo di tempo e nessun fuori scope inventati."
+       },
+       {
+        "id": "observable",
+        "weight": 2,
+        "criterion": "I criteri sono frasi singole 'so fare X', in prima persona, osservabili, un solo risultato per voce, legati a lettura/modifica del servizio e ai test."
+       },
+       {
+        "id": "no_confirm_question",
+        "weight": 1,
+        "criterion": "Non chiede 'ti va bene?' a parole."
+       },
+       {
+        "id": "empty_over_filler",
+        "weight": 2,
+        "criterion": "Vincoli e fuori scope sono vuoti oppure contengono solo ciò che la persona ha detto (qui: nulla), niente banalità."
+       }
+      ]
+     }
+    },
+    {
+     "event": "confirm_mission"
+    },
+    {
+     "user": "Ok, e adesso?",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "no_repropose",
+        "weight": 3,
+        "criterion": "Non riproporre la mission né rifarla; riconosce che è confermata."
+       },
+       {
+        "id": "no_false_promise",
+        "weight": 3,
+        "criterion": "Non promette lezioni o fonti come già disponibili e non fissa date; dice onestamente cosa non è ancora disponibile oppure chiede cosa fare. Nota per il giudice: dopo la conferma la ricerca delle fonti parte da sola (stato researching), quindi dire che sta cercando le fonti e che la lezione si potrà chiedere appena finisce è corretto."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "precise_first_message",
+   "description": "Già preciso al primo messaggio: nessuna domanda superflua, bozza subito.",
+   "topic": {
+    "title": "Docker",
+    "state": "new"
+   },
+   "steps": [
+    {
+     "user": "Devo mettere in produzione la nostra API Python su un server con Docker entro due mesi. Sono sviluppatore da 6 anni ma non ho mai usato container. Alla fine voglio saper scrivere da solo un Dockerfile multi-stage e un docker-compose per API e database, e fare il deploy senza aiuto. Ho circa un'ora la sera. Kubernetes non mi serve.",
+     "expect": {
+      "tools": {
+       "called": [
+        "save_mission_draft"
+       ],
+       "max_calls": 1,
+       "input_checks": {
+        "success_criteria_count": [
+         1,
+         4
+        ],
+        "fields_must_match": {
+         "success_criteria": "(?i)dockerfile|compose|deploy",
+         "out_of_scope": "(?i)kubernetes",
+         "starting_point": "(?i)sviluppatore|6 anni|sei anni|container"
+        },
+        "fields_any_match": {
+         "constraints": "(?i)due mesi"
+        },
+        "fields_must_not_match": {
+         "constraints": "(?i)sviluppatore|mai usato|container"
+        }
+       }
+      },
+      "deterministic": {
+       "max_words_when_tool_called": 70,
+       "text_must_not_repeat_tool_fields": true,
+       "no_list_when_tool_called": true,
+       "max_question_marks": 1
+      },
+      "rubric": [
+       {
+        "id": "no_extra_questions",
+        "weight": 3,
+        "criterion": "Non fa domande già risposte (perché, livello, tempo, esclusioni)."
+       },
+       {
+        "id": "short_intro",
+        "weight": 2,
+        "criterion": "L'introduzione è un riassunto discorsivo di 2-3 righe (non una lista) e non ripete i criteri né elenca i campi della card."
+       },
+       {
+        "id": "faithful",
+        "weight": 3,
+        "criterion": "I campi riflettono fedelmente il messaggio: perché = produzione API Python; criteri = Dockerfile multi-stage, compose, deploy; fuori scope = Kubernetes; vincoli = un'ora la sera, due mesi; punto di partenza = sviluppatore da 6 anni, mai usato i container. Nulla di inventato."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "skip_interview",
+   "description": "L'utente vuole saltare l'intervista: una spiegazione di una frase, una domanda facile, nessuna mission inventata.",
+   "topic": {
+    "title": "Docker",
+    "state": "interviewing"
+   },
+   "steps": [
+    {
+     "user": "Non ho voglia di rispondere a domande, fammi direttamente le lezioni su Docker.",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft"
+       ]
+      },
+      "deterministic": {
+       "max_words": 100
+      },
+      "rubric": [
+       {
+        "id": "why_in_one_sentence",
+        "weight": 2,
+        "criterion": "Spiega in una frase al massimo perché serve la mission (senza è generico), senza paternalismo."
+       },
+       {
+        "id": "easy_question",
+        "weight": 3,
+        "criterion": "Rende la risposta facile con una sola domanda a opzioni (2-3) da scegliere."
+       },
+       {
+        "id": "no_promise",
+        "weight": 2,
+        "criterion": "Non promette lezioni imminenti."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Ti ho detto di no, fai tu.",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "no_invention",
+        "weight": 4,
+        "criterion": "Non inventa né dichiara una mission; non propone una bozza con contenuti che la persona non ha detto."
+       },
+       {
+        "id": "leaves_choice",
+        "weight": 2,
+        "criterion": "Rimane cordiale, lascia la scelta alla persona e/o riduce ancora lo sforzo (una sola lettera/parola da dire)."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Va bene, la prima.",
+     "expect": {
+      "tools": {
+       "max_calls": 1
+      },
+      "rubric": [
+       {
+        "id": "uses_chosen",
+        "weight": 3,
+        "criterion": "Se salva una bozza, usa solo il contenuto dell'opzione scelta e nient'altro di inventato; se non la salva, chiede il minimo mancante. Entrambe sono accettabili."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "correction_after_proposal",
+   "description": "Correzione dopo la proposta: nuova bozza completa, solo la parte richiesta cambia; poi 'ok' a parole non richiama il tool.",
+   "topic": {
+    "title": "Rust",
+    "state": "interviewing",
+    "mission": {
+     "draft": {
+      "version": 1,
+      "why": "Mantenere il servizio di pagamenti in Rust che erediterò nel nuovo lavoro.",
+      "success_criteria": [
+       "Leggo e modifico un servizio axum esistente senza aiuto",
+       "Scrivo test per un modulo con tokio"
+      ],
+      "starting_point": "Programmo in Kotlin da tre anni; di Rust ho letto solo i primi capitoli del libro ufficiale, mai scritto codice.",
+      "constraints": [
+       "30 minuti al giorno"
+      ],
+      "out_of_scope": [
+       "Rust embedded"
+      ]
+     }
+    }
+   },
+   "history": [
+    {
+     "role": "user",
+     "text": "Devo mantenere un servizio axum nel nuovo lavoro, voglio leggerlo e modificarlo da solo e scrivere test con tokio. Ho mezz'ora al giorno, vengo da Kotlin. Embedded no."
+    },
+    {
+     "role": "assistant",
+     "text": "Mi sembra di avere abbastanza: guarda se ti torna."
+    }
+   ],
+   "steps": [
+    {
+     "user": "Il 2 non va: non devo scrivere test con tokio, devo saper fare il deploy del servizio su Kubernetes.",
+     "expect": {
+      "tools": {
+       "called": [
+        "save_mission_draft"
+       ],
+       "max_calls": 1,
+       "input_checks": {
+        "fields_must_match": {
+         "success_criteria": "(?i)kubernetes|deploy|axum",
+         "starting_point": "(?i)kotlin"
+        },
+        "fields_must_not_match": {
+         "success_criteria": "(?i)tokio|test"
+        }
+       }
+      },
+      "deterministic": {
+       "max_words_when_tool_called": 70,
+       "text_must_not_repeat_tool_fields": true,
+       "no_list_when_tool_called": true
+      },
+      "rubric": [
+       {
+        "id": "complete_draft",
+        "weight": 3,
+        "criterion": "La nuova bozza conserva le parti non toccate (primo criterio su axum, vincoli 30 minuti e Kotlin, fuori scope embedded) e cambia solo il secondo criterio."
+       },
+       {
+        "id": "short_text",
+        "weight": 2,
+        "criterion": "L'introduzione è un riassunto discorsivo di 2-3 righe (non una lista) e non ripete i criteri né elenca i campi della card."
+       },
+       {
+        "id": "resolves_number",
+        "weight": 2,
+        "criterion": "Interpreta 'il 2' come il secondo criterio dell'ultima proposta (test con tokio) e lo sostituisce, lasciando invariato il primo."
+       },
+       {
+        "id": "empty_over_filler",
+        "weight": 1,
+        "criterion": "Non aggiunge vincoli o fuori scope banali che la persona non ha detto."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Perfetto così, va bene.",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change"
+       ]
+      },
+      "deterministic": {
+       "max_words": 40
+      },
+      "rubric": [
+       {
+        "id": "points_to_button",
+        "weight": 3,
+        "criterion": "Ricorda in una frase di premere Conferma sulla card."
+       },
+       {
+        "id": "no_rewrite",
+        "weight": 2,
+        "criterion": "Non riscrive né riassume la mission."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "preference_in_passing",
+   "description": "Preferenza detta di passaggio durante l'intervista: salvata (globale), conferma breve, l'intervista continua.",
+   "topic": {
+    "title": "Algoritmi",
+    "state": "interviewing"
+   },
+   "history": [
+    {
+     "role": "user",
+     "text": "Voglio imparare gli algoritmi"
+    },
+    {
+     "role": "assistant",
+     "text": "Cosa vorresti riuscire a fare dopo? Per esempio superare un colloquio tecnico, ottimizzare codice che scrivi al lavoro, o capire meglio la teoria."
+    }
+   ],
+   "steps": [
+    {
+     "user": "Per un colloquio tecnico tra due mesi. Ah, e in generale con me funzionano solo esempi in Python, il Java proprio non lo reggo.",
+     "expect": {
+      "tools": {
+       "called": [
+        "save_preference"
+       ],
+       "max_calls": 1,
+       "not_called": [
+        "save_mission_draft"
+       ],
+       "input_checks": {
+        "preference_scope": "global",
+        "fields_must_match": {
+         "text": "(?i)python"
+        },
+        "fields_must_not_match": {
+         "text": "(?i)\\b(l'utente|la persona|preferisce|vuole)\\b"
+        }
+       }
+      },
+      "rubric": [
+       {
+        "id": "brief_ack",
+        "weight": 2,
+        "criterion": "Conferma la preferenza in mezza frase, senza ripeterla per esteso."
+       },
+       {
+        "id": "continues",
+        "weight": 3,
+        "criterion": "Prosegue con una domanda sull'obiettivo (es. cosa dovrà saper fare al colloquio) invece di fermarsi."
+       },
+       {
+        "id": "no_early_draft",
+        "weight": 2,
+        "criterion": "Non propone ancora una mission: manca un criterio di successo osservabile."
+       },
+       {
+        "id": "autonomous_text",
+        "weight": 2,
+        "criterion": "Il testo salvato è breve e autonomo (es. 'Esempi in Python, non in Java'), non nella forma 'L'utente preferisce…'."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Per questa risposta fammi solo più breve, grazie. Dovrò risolvere problemi su array e grafi alla lavagna.",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_preference"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "not_stored",
+        "weight": 3,
+        "criterion": "Rispetta la richiesta di brevità ma non la tratta come preferenza permanente (nessun 'annotato')."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "ready_change_explicit",
+   "description": "Topic ready: richiesta esplicita di cambio mission -> propose_mission_change (non save_mission_draft), partendo dalla mission confermata.",
+   "topic": {
+    "title": "Rust",
+    "state": "ready",
+    "mission": {
+     "current": {
+      "version": 1,
+      "why": "Mantenere il servizio di pagamenti in Rust che erediterò nel nuovo lavoro.",
+      "success_criteria": [
+       "Leggo e modifico un servizio axum esistente senza aiuto",
+       "Scrivo test per un modulo con tokio"
+      ],
+      "starting_point": "Programmo in Kotlin da tre anni; di Rust ho letto solo i primi capitoli del libro ufficiale, mai scritto codice.",
+      "constraints": [
+       "30 minuti al giorno"
+      ],
+      "out_of_scope": [
+       "Rust embedded"
+      ]
+     }
+    }
+   },
+   "history": [
+    {
+     "role": "user",
+     "text": "Ciao"
+    },
+    {
+     "role": "assistant",
+     "text": "Ciao. Dimmi pure."
+    }
+   ],
+   "steps": [
+    {
+     "user": "Il lavoro è cambiato: ora devo far girare Rust su microcontrollori. Aggiorna la mia mission.",
+     "expect": {
+      "tools": {
+       "called": [
+        "propose_mission_change"
+       ],
+       "not_called": [
+        "save_mission_draft"
+       ],
+       "max_calls": 1,
+       "input_checks": {
+        "fields_must_match": {
+         "why": "(?i)microcontrollor|embedded|firmware",
+         "starting_point": "(?i)kotlin"
+        }
+       }
+      },
+      "deterministic": {
+       "max_words_when_tool_called": 70,
+       "text_must_not_repeat_tool_fields": true,
+       "no_list_when_tool_called": true
+      },
+      "rubric": [
+       {
+        "id": "no_invented",
+        "weight": 3,
+        "criterion": "Non inventa criteri nuovi che la persona non ha detto: i criteri vengono dalle sue parole (es. far girare Rust su un microcontrollore) o sono quelli esistenti ancora coerenti; il perché riflette il cambio di lavoro. Il fuori scope 'Rust embedded' non può restare (contraddice)."
+       },
+       {
+        "id": "keeps_rest",
+        "weight": 2,
+        "criterion": "Conserva dalla mission confermata ciò che non è in contrasto (es. vincolo di 30 minuti al giorno, Kotlin)."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "ready_change_implicit",
+   "description": "Topic ready: cambio evidente ma non richiesto -> nessun tool, una domanda se aggiornare.",
+   "topic": {
+    "title": "Rust",
+    "state": "ready",
+    "mission": {
+     "current": {
+      "version": 1,
+      "why": "Mantenere il servizio di pagamenti in Rust che erediterò nel nuovo lavoro.",
+      "success_criteria": [
+       "Leggo e modifico un servizio axum esistente senza aiuto",
+       "Scrivo test per un modulo con tokio"
+      ],
+      "starting_point": "Programmo in Kotlin da tre anni; di Rust ho letto solo i primi capitoli del libro ufficiale, mai scritto codice.",
+      "constraints": [
+       "30 minuti al giorno"
+      ],
+      "out_of_scope": [
+       "Rust embedded"
+      ]
+     }
+    }
+   },
+   "history": [
+    {
+     "role": "user",
+     "text": "Ciao"
+    },
+    {
+     "role": "assistant",
+     "text": "Ciao. Dimmi pure."
+    }
+   ],
+   "steps": [
+    {
+     "user": "Sai, ho cambiato lavoro: adesso faccio solo firmware per sensori.",
+     "expect": {
+      "tools": {
+       "not_called": [
+        "save_mission_draft",
+        "propose_mission_change"
+       ]
+      },
+      "rubric": [
+       {
+        "id": "asks_update",
+        "weight": 4,
+        "criterion": "Chiede in una frase se vuole aggiornare la mission alla nuova situazione, senza averla già cambiata."
+       },
+       {
+        "id": "no_lecture",
+        "weight": 1,
+        "criterion": "Non fa lezione su Rust per firmware."
+       }
+      ]
+     }
+    },
+    {
+     "user": "Sì, aggiornala. Voglio saper leggere e scrivere driver per sensori I2C in Rust senza std.",
+     "expect": {
+      "tools": {
+       "called": [
+        "propose_mission_change"
+       ],
+       "not_called": [
+        "save_mission_draft"
+       ],
+       "max_calls": 1,
+       "input_checks": {
+        "fields_must_match": {
+         "success_criteria": "(?i)driver|i2c|sensor"
+        }
+       }
+      },
+      "deterministic": {
+       "max_words_when_tool_called": 70,
+       "text_must_not_repeat_tool_fields": true
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "pass_criteria": {
+  "deterministic": "tutte le run di tutti i casi rispettano tutti i controlli deterministici",
+  "rubric_score": "punteggio medio pesato >= 0.8 per caso, con nessuna run sotto 0.6",
+  "stability": "almeno 2 run su 3 passano per ogni caso",
+  "must_pass_all_runs": [
+   "vague_pure",
+   "skip_interview"
+  ],
+  "tool_expectations_pass_rate_min": 1.0
+ }
+}

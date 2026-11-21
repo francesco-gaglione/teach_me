@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Top bar -->
+    <string name="lesson_close">Chiudi lezione</string>
+    <string name="lesson_index_button">Indice, termini e fonti</string>
+    <string name="lesson_subtitle_intro">Introduzione</string>
+    <string name="lesson_subtitle_section">Sezione %1$d di %2$d</string>
+    <string name="lesson_progress_a11y">Avanzamento della lezione</string>
+    <string name="lesson_section_announce">Sezione %1$d di %2$d: %3$s</string>
+
+    <!-- Column -->
+    <string name="lesson_objective_label">Obiettivo</string>
+    <plurals name="lesson_minutes">
+        <item quantity="one">Circa %1$d minuto</item>
+        <item quantity="other">Circa %1$d minuti</item>
+    </plurals>
+    <string name="lesson_newer_catalog_title">Lezione più recente dell\'app</string>
+    <string name="lesson_newer_catalog_body">Questa lezione usa componenti più recenti dell\'app: alcune parti potrebbero mancare. Aggiorna l\'app per vederle.</string>
+
+    <!-- Quality note (quality-warnings.md section 3) -->
+    <string name="lesson_quality_title">Nota sulla lezione · %1$d</string>
+    <plurals name="lesson_quality_a11y">
+        <item quantity="one">Nota sulla lezione, %1$d osservazione</item>
+        <item quantity="other">Nota sulla lezione, %1$d osservazioni</item>
+    </plurals>
+    <string name="lesson_quality_state_closed">chiusa</string>
+    <string name="lesson_quality_state_open">aperta</string>
+    <string name="lesson_quality_action_open">Apri</string>
+    <string name="lesson_quality_action_close">Chiudi</string>
+    <string name="lesson_quality_goto">Vai al blocco</string>
+    <string name="lesson_quality_goto_a11y">Vai al blocco: %1$s</string>
+    <plurals name="lesson_quality_points">
+        <item quantity="one">%1$d punto</item>
+        <item quantity="other">%1$d punti</item>
+    </plurals>
+    <string name="lesson_quality_more">e altre %1$d</string>
+
+    <!-- Block names for "Vai al blocco: ..." -->
+    <string name="lesson_block_kind_heading">Titolo</string>
+    <string name="lesson_block_kind_paragraph">Paragrafo</string>
+    <string name="lesson_block_kind_callout">Riquadro</string>
+    <string name="lesson_block_kind_code">Codice</string>
+    <string name="lesson_block_kind_glossary_term">Termine del glossario</string>
+    <string name="lesson_block_kind_quiz_single">Quiz</string>
+    <string name="lesson_block_kind_quiz_multi">Quiz</string>
+    <string name="lesson_block_kind_fill_blank">Completamento</string>
+    <string name="lesson_block_kind_order_steps">Ordinamento</string>
+    <string name="lesson_block_kind_flashcard">Flashcard</string>
+    <string name="lesson_block_kind_open_answer">Risposta aperta</string>
+    <string name="lesson_block_kind_checklist">Lista di controllo</string>
+    <string name="lesson_block_kind_primary_source">Fonte</string>
+    <string name="lesson_block_kind_lesson_link">Collegamento a una lezione</string>
+    <string name="lesson_block_kind_ask_agent">Domanda all\'agente</string>
+    <string name="lesson_block_kind_diagram">Diagramma</string>
+    <string name="lesson_block_kind_other">Blocco</string>
+
+    <!-- Continue bar -->
+    <string name="lesson_continue">Continua</string>
+    <string name="lesson_complete">Completa lezione</string>
+    <string name="lesson_locked_one">Rispondi alla domanda per continuare.</string>
+    <plurals name="lesson_missing_count">
+        <item quantity="one">Manca ancora %1$d domanda.</item>
+        <item quantity="other">Mancano ancora %1$d domande.</item>
+    </plurals>
+    <string name="lesson_locked_pointed">Manca ancora: la domanda qui sopra.</string>
+    <string name="lesson_locked_state">Bloccato: %1$s</string>
+    <string name="lesson_unlocked_announce">Puoi continuare</string>
+
+    <!-- Context -->
+    <string name="lesson_context_index">Indice</string>
+    <string name="lesson_context_glossary">Glossario (%1$d)</string>
+    <string name="lesson_context_sources">Fonti (%1$d)</string>
+    <string name="lesson_context_glossary_empty">I termini compariranno man mano che leggi.</string>
+    <string name="lesson_context_sources_empty">Le fonti compariranno man mano che leggi.</string>
+    <string name="lesson_section_intro">Introduzione</string>
+    <string name="lesson_section_done">Completata</string>
+    <string name="lesson_section_current">In corso</string>
+    <string name="lesson_section_todo">Da fare</string>
+    <string name="lesson_section_locked_state">Si sblocca dopo la sezione precedente</string>
+    <string name="lesson_term_seen">già aperto</string>
+    <string name="lesson_close_sheet">Chiudi</string>
+    <string name="lesson_source_number">[%1$d]</string>
+    <string name="lesson_source_pdf_a11y">Fonte %1$d: %2$s. Dal tuo PDF</string>
+    <string name="lesson_source_show">Mostra la fonte</string>
+    <string name="lesson_pdf_line">Dal tuo PDF: %1$s</string>
+    <string name="lesson_pdf_line_more">Dal tuo PDF: %1$s +%2$d</string>
+
+    <!-- States -->
+    <string name="lesson_loading">Sto caricando la lezione…</string>
+    <string name="lesson_loading_slow">Sto ancora caricando…</string>
+    <string name="lesson_load_failed_title">Non riesco a caricare la lezione.</string>
+    <string name="lesson_load_failed_body">Controlla la connessione e riprova.</string>
+    <string name="lesson_retry">Riprova</string>
+    <string name="lesson_unusable_title">Questa lezione non si può aprire.</string>
+    <string name="lesson_back_to_topic">Torna all\'argomento</string>
+    <string name="lesson_ask_tutor">Chiedi al Tutor</string>
+    <string name="lesson_tutor_unavailable">La chat con il Tutor non è disponibile per le lezioni di prova.</string>
+    <string name="lesson_copied_toast">Codice copiato</string>
+
+    <!-- Summary -->
+    <string name="lesson_summary_title">Lezione completata</string>
+    <string name="lesson_summary_objective">Obiettivo</string>
+    <string name="lesson_summary_done_title">Cosa hai fatto</string>
+    <string name="lesson_summary_first_try">Corretto al primo tentativo</string>
+    <string name="lesson_summary_second_try">Corretto al secondo tentativo</string>
+    <string name="lesson_summary_review">Da rivedere</string>
+    <string name="lesson_summary_review_title">Da rivedere</string>
+    <string name="lesson_summary_review_action">Rivedi</string>
+    <string name="lesson_summary_review_action_a11y">Rivedi: %1$s</string>
+    <string name="lesson_summary_item_a11y">%1$s: %2$s</string>
+
+    <string name="lesson_gone_title">Questa lezione non esiste più.</string>
+    <string name="lesson_subtitle_completed">Completata</string>
+    <string name="lesson_sending_answers">Invio le tue risposte…</string>
+    <string name="lesson_closed_elsewhere">Questa lezione è stata completata da un altro dispositivo. Le risposte nuove non si possono più registrare.</string>
+    <string name="lesson_reread">Rileggi la lezione</string>
+    <string name="lesson_summary_open_correct">Corretto</string>
+    <string name="lesson_summary_open_pending">Risposta registrata · la valuto a breve</string>
+    <string name="lesson_summary_ask_done">Ho appena finito la lezione «%1$s». Puoi aiutarmi a ripassare i punti che non mi sono chiari?</string>
+    <string name="lesson_summary_ask_empty">Ho completato la lezione «%1$s» ma non sono sicuro di aver capito. Da dove conviene ripartire?</string>
+
+    <!-- Queue indicator -->
+    <string name="lesson_queue_description">Risposte da inviare</string>
+    <string name="lesson_queue_body">Alcune risposte non sono ancora inviate. Le invio appena torna la connessione.</string>
+    <string name="lesson_queue_retry">Riprova ora</string>
+    <string name="lesson_queue_sent">Risposte inviate.</string>
+
+    <!-- Completion block -->
+    <string name="completion_title">Cosa hai dimostrato</string>
+    <string name="completion_needs_send_title">Lezione completata, risposte da inviare</string>
+    <string name="completion_needs_send_body">Appena torna la connessione invio le tue risposte e registro cosa hai dimostrato. Non devi fare altro.</string>
+    <string name="completion_needs_send_retry">Riprova ora</string>
+    <string name="completion_needs_send_retrying">Riprovo…</string>
+    <string name="completion_step_grading">Valuto le tue risposte aperte…</string>
+    <string name="completion_step_recording">Registro cosa hai dimostrato…</string>
+    <string name="completion_step_saving">Salvo il registro…</string>
+    <string name="completion_running_footer">Puoi uscire: lo faccio comunque.</string>
+    <string name="completion_running_slow">Sta richiedendo più del solito. Puoi uscire: il registro si aggiorna comunque.</string>
+    <string name="completion_terms_title">Parole nuove nel glossario</string>
+    <plurals name="completion_cards">
+        <item quantity="one">Ho preparato %1$d scheda per il ripasso.</item>
+        <item quantity="other">Ho preparato %1$d schede per il ripasso.</item>
+    </plurals>
+    <plurals name="completion_cards_note">
+        <item quantity="one">La ritroverai nel ripasso tra circa 1 giorno.</item>
+        <item quantity="other">Le ritroverai nel ripasso tra circa 1 giorno.</item>
+    </plurals>
+    <string name="completion_see_register">Vedi tutto nel registro</string>
+    <string name="completion_empty_title">Questa volta non ho aggiunto niente al registro.</string>
+    <string name="completion_empty_body">Ci scrivo solo ciò che dimostri negli esercizi, e qui non c\'era ancora abbastanza: succede, soprattutto con un argomento nuovo.</string>
+    <string name="completion_retry">Riprova</string>
+    <string name="completion_retrying">Riprovo…</string>
+    <string name="completion_details">Dettagli</string>
+    <string name="completion_network_error">Non sono riuscito a raggiungere il backend. Controlla la connessione.</string>
+    <string name="completion_failed_invalid_title">Non sono riuscito a registrare la lezione</string>
+    <string name="completion_failed_invalid_body">La lezione è completata e le tue risposte sono al sicuro. Il registro non si è aggiornato: riprova, spesso basta.</string>
+    <string name="completion_failed_upstream_title">Registro non aggiornato</string>
+    <string name="completion_failed_upstream_body">Il servizio non ha risposto. La lezione è completata e le tue risposte sono al sicuro: puoi riprovare.</string>
+    <string name="completion_failed_rate_title">Troppe richieste</string>
+    <string name="completion_failed_rate_body">Il servizio è occupato. Aspetta un minuto e riprova.</string>
+    <string name="completion_failed_timeout_title">Il registro ha richiesto troppo tempo</string>
+    <string name="completion_failed_timeout_body">Non sono riuscito a finire in tempo. Puoi riprovare: spesso basta.</string>
+    <string name="completion_failed_interrupted_title">Registro non aggiornato</string>
+    <string name="completion_failed_interrupted_body">Il server si è riavviato più volte. Riprova.</string>
+    <string name="completion_failed_generic_title">Registro non aggiornato</string>
+    <string name="completion_failed_generic_body">Qualcosa è andato storto sul server. Riprova.</string>
+    <string name="completion_announce_done">Registro aggiornato: %1$s, %2$s.</string>
+    <string name="completion_announce_empty">Registro aggiornato: niente di nuovo questa volta.</string>
+    <string name="completion_announce_failed">Registro non aggiornato. Riprova disponibile.</string>
+    <plurals name="completion_announce_records">
+        <item quantity="one">%1$d cosa registrata</item>
+        <item quantity="other">%1$d cose registrate</item>
+    </plurals>
+    <plurals name="completion_announce_terms">
+        <item quantity="one">%1$d parola nuova</item>
+        <item quantity="other">%1$d parole nuove</item>
+    </plurals>
+
+    <!-- Records and glossary (shared by the summary and the "Cosa sai" tab) -->
+    <string name="progress_record_demonstrated">Hai dimostrato</string>
+    <string name="progress_record_corrected">Idea chiarita</string>
+    <string name="progress_record_registered">Registrato</string>
+    <string name="progress_record_superseded">Superato da una comprensione più precisa</string>
+    <string name="progress_lesson_n">Lezione %1$d</string>
+    <string name="progress_record_from_lesson_a11y">Dalla lezione %1$d.</string>
+    <string name="progress_lesson">Lezione</string>
+    <string name="progress_open_lesson_a11y">Apri la lezione: %1$s</string>
+    <string name="progress_open_lesson">Apri la lezione</string>
+    <string name="progress_evidence">Come l\'hai dimostrato</string>
+    <string name="progress_see_successor">Vedi come si è approfondito</string>
+    <string name="progress_superseded_plain">Superato</string>
+    <string name="progress_term_label">Termine</string>
+    <string name="progress_term_avoid">Evita:</string>
+    <string name="progress_term_introduced">Introdotto nella lezione %1$d</string>
+    <string name="progress_term_introduced_revised">Introdotto nella lezione %1$d · rivisto nella %2$d</string>
+    <string name="progress_term_revised">Rivisto nella lezione %1$d</string>
+    <string name="progress_open_lesson_n">Apri la lezione %1$d</string>
+    <string name="progress_open_lesson_n_a11y">Apri la lezione %1$d: %2$s</string>
+
+    <!-- Lessons tab -->
+    <string name="lessons_loading">Caricamento</string>
+    <string name="lessons_load_failed">Non riesco a caricare le lezioni.</string>
+    <string name="lessons_retry">Riprova</string>
+    <string name="lessons_retrying">Riprovo…</string>
+    <plurals name="lessons_review_cards">
+        <item quantity="one">%1$d scheda</item>
+        <item quantity="other">%1$d schede</item>
+    </plurals>
+    <plurals name="lessons_review_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minuti</item>
+    </plurals>
+    <string name="lessons_review_title">Ripassa questo argomento · %1$s</string>
+    <string name="lessons_review_minutes_line">Circa %1$s</string>
+    <string name="lessons_review_a11y">Ripassa questo argomento, %1$s, circa %2$s</string>
+    <string name="lessons_list_title">Lezioni</string>
+    <string name="lessons_card_title">Prossima lezione</string>
+    <string name="lessons_card_first_body">Scelgo io cosa insegnarti, partendo dalla tua mission e dalle fonti.</string>
+    <string name="lessons_card_next_body">Scelgo io la prossima in base alla tua mission e a ciò che hai già dimostrato.</string>
+    <string name="lessons_card_unfinished_body">Hai una lezione da finire: «%1$s». Scelgo meglio la prossima dopo che l\'hai completata, perché parto da ciò che dimostri.</string>
+    <string name="lessons_card_pdf_one">Seguo anche il tuo PDF «%1$s»: scelgo io quali pagine, partendo dalla tua mission.</string>
+    <string name="lessons_card_pdf_many">Seguo anche i tuoi PDF.</string>
+    <string name="lessons_pane_pdf_many">Studi dai tuoi PDF.</string>
+    <string name="lessons_pane_pdf">Studi dal tuo PDF «%1$s».</string>
+    <string name="lessons_pane_pdf_go">Vai ai documenti</string>
+    <string name="lessons_card_note">Di solito ci vogliono pochi minuti. Puoi lasciare l\'app: la lezione si prepara sul server.</string>
+    <string name="lessons_generate">Genera lezione</string>
+    <string name="lessons_generate_another">Genera un\'altra lezione</string>
+    <string name="lessons_starting">Avvio…</string>
+    <string name="lessons_resume">Riprendi la lezione</string>
+    <string name="lessons_start_network_error">Non sono riuscito a raggiungere il backend. Controlla la connessione.</string>
+    <string name="lessons_blocked_new_title">Prima definiamo la mission</string>
+    <string name="lessons_blocked_new_body">Scelgo cosa insegnarti partendo dal tuo scopo. Appena la mission è confermata e ho trovato le fonti, potrai generare la prima lezione.</string>
+    <string name="lessons_blocked_new_action">Definisci la mission</string>
+    <string name="lessons_blocked_proposed_title">Prima conferma la mission</string>
+    <string name="lessons_blocked_proposed_body">La lezione parte dalla mission: quando la confermi cerco le fonti e poi potrai generare la prima lezione.</string>
+    <string name="lessons_blocked_proposed_action">Vai alla proposta</string>
+    <string name="lessons_blocked_researching_title">Sto cercando le fonti</string>
+    <string name="lessons_blocked_researching_body">Le lezioni si scrivono a partire dalle fonti: appena le ho, potrai generare la prima.</string>
+    <string name="lessons_blocked_researching_action">Vedi l\'avanzamento</string>
+    <string name="lessons_blocked_failed_title">La ricerca delle fonti va riprovata</string>
+    <string name="lessons_blocked_failed_body">Senza fonti non scrivo lezioni: preferisco non inventare.</string>
+    <string name="lessons_blocked_failed_action">Vai alle fonti</string>
+    <string name="lessons_preparing_title">Sto preparando la lezione</string>
+    <string name="lessons_phase_planning">Scelgo cosa insegnare</string>
+    <string name="lessons_phase_reading">Leggo le fonti</string>
+    <string name="lessons_phase_writing">Scrivo la lezione</string>
+    <string name="lessons_phase_checking">Controllo la lezione</string>
+    <string name="lessons_phase_saving">Salvo la lezione</string>
+    <string name="lessons_phase_repairing">Correggo la lezione</string>
+    <string name="lessons_phase_generic">Sto preparando la lezione…</string>
+    <string name="lessons_phase_queued">In coda…</string>
+    <string name="lessons_repair_detail">Ho trovato qualcosa da sistemare e lo sto sistemando.</string>
+    <string name="lessons_phase_done">completata</string>
+    <string name="lessons_phase_current">in corso</string>
+    <string name="lessons_phase_todo">da fare</string>
+    <string name="lessons_preparing_footer">Puoi uscire: la lezione si prepara sul server.</string>
+    <string name="lessons_preparing_slow">Sta richiedendo più del solito. Puoi lasciare l\'app: la lezione continua sul server.</string>
+    <string name="lessons_announce_phase">Preparo la lezione: %1$s.</string>
+    <string name="lessons_announce_ready_title">Lezione pronta: %1$s.</string>
+    <string name="lessons_announce_ready">Lezione pronta.</string>
+    <string name="lessons_announce_failed">Preparazione interrotta. Riprova disponibile.</string>
+    <string name="lessons_details">Dettagli</string>
+    <string name="lessons_failed_invalid_title">Non sono riuscito a scrivere una lezione valida</string>
+    <string name="lessons_failed_invalid_body">Ho provato più volte, ma il risultato non passava i miei controlli. Non hai perso nulla: riprova, spesso basta.</string>
+    <string name="lessons_failed_upstream_title">Preparazione interrotta</string>
+    <string name="lessons_failed_upstream_body">Il servizio che scrive le lezioni non ha risposto. Non hai perso nulla: puoi riprovare.</string>
+    <string name="lessons_failed_rate_title">Troppe richieste</string>
+    <string name="lessons_failed_rate_body">Il servizio è occupato. Aspetta un minuto e riprova.</string>
+    <string name="lessons_failed_timeout_title">La lezione ha richiesto troppo tempo</string>
+    <string name="lessons_failed_timeout_body">Non sono riuscito a finire in tempo. Puoi riprovare: spesso basta.</string>
+    <string name="lessons_failed_interrupted_title">Preparazione interrotta</string>
+    <string name="lessons_failed_interrupted_body">Il server si è riavviato più volte mentre scrivevo. Riprova.</string>
+    <string name="lessons_failed_generic_title">Preparazione interrotta</string>
+    <string name="lessons_failed_generic_body">Qualcosa è andato storto sul server. Riprova.</string>
+    <string name="lessons_status_not_started">Da iniziare</string>
+    <string name="lessons_status_in_progress">In corso</string>
+    <plurals name="lessons_status_in_progress_sections">
+        <item quantity="one">In corso · %1$d di %2$d sezione</item>
+        <item quantity="other">In corso · %1$d di %2$d sezioni</item>
+    </plurals>
+    <string name="lessons_status_completed">Completata</string>
+    <string name="lessons_status_completed_register">Completata · registro da riprovare</string>
+    <plurals name="lessons_minutes">
+        <item quantity="one">Circa %1$d minuto</item>
+        <item quantity="other">Circa %1$d minuti</item>
+    </plurals>
+    <string name="lessons_new">Nuova</string>
+    <string name="lessons_open">Apri</string>
+    <string name="lessons_pdf_pages">Dal tuo PDF: pp. %1$d-%2$d</string>
+    <string name="lessons_pdf_page">Dal tuo PDF: p. %1$d</string>
+    <string name="lessons_pdf_titled_pages">«%1$s»: pp. %2$d-%3$d</string>
+    <string name="lessons_pdf_titled_page">«%1$s»: p. %2$d</string>
+    <string name="lessons_pdf_more">e altri %1$d</string>
+    <string name="lessons_pdf_a11y_pages">Dal tuo PDF, pagine %1$d-%2$d.</string>
+    <string name="lessons_pdf_a11y_page">Dal tuo PDF, pagina %1$d.</string>
+    <string name="lessons_pdf_a11y_titled_pages">Dal tuo PDF «%1$s», pagine %2$d-%3$d.</string>
+    <string name="lessons_pdf_a11y_titled_page">Dal tuo PDF «%1$s», pagina %2$d.</string>
+    <plurals name="lessons_pdf_a11y_more">
+        <item quantity="one">E un altro documento.</item>
+        <item quantity="other">E altri %1$d documenti.</item>
+    </plurals>
+    <string name="lessons_row_a11y_start">Lezione %1$d: %2$s.</string>
+    <string name="lessons_row_a11y_objective">Obiettivo: %1$s.</string>
+    <string name="lessons_more_retry">Riprova a caricare le altre</string>
+    <string name="lessons_pane_why">Perché lo studi</string>
+    <string name="lessons_pane_see_mission">Vedi la mission</string>
+    <string name="lessons_pane_show_all">Mostra tutto</string>
+    <string name="lessons_pane_show_less">Mostra meno</string>
+    <string name="lessons_pane_demonstrated">Hai già dimostrato</string>
+    <string name="lessons_pane_see_all">Vedi tutto</string>
+
+    <!-- "Cosa sai" tab -->
+    <string name="progress_loading">Caricamento</string>
+    <string name="progress_switch_register">Registro</string>
+    <string name="progress_switch_glossary">Glossario</string>
+    <string name="progress_register_title">Cosa hai dimostrato</string>
+    <string name="progress_register_intro">Quello che hai fatto negli esercizi, non quello che hai solo letto. Lo uso per scegliere le prossime lezioni.</string>
+    <string name="progress_register_error">Non riesco a caricare il registro.</string>
+    <string name="progress_register_empty_title">Il registro si riempie con le lezioni</string>
+    <string name="progress_register_empty_body">Quando completi una lezione, ci scrivo ciò che hai dimostrato negli esercizi. Ci finisce solo quello che hai fatto, non tutto quello che hai letto.</string>
+    <string name="progress_register_empty_note">Se una lezione non ha aggiunto niente, è normale: succede quando gli esercizi sono ancora difficili.</string>
+    <string name="progress_go_lessons">Vai alle lezioni</string>
+    <string name="progress_superseded_title">Come è cambiata la tua comprensione</string>
+    <string name="progress_stale">Elenco dell\'ultimo aggiornamento.</string>
+    <string name="progress_updated_announce">Registro aggiornato.</string>
+    <string name="progress_glossary_title">Glossario</string>
+    <string name="progress_glossary_intro">Le parole che hai dimostrato di saper usare.</string>
+    <string name="progress_glossary_error">Non riesco a caricare il glossario.</string>
+    <string name="progress_glossary_empty_title">Il glossario si riempie con le lezioni</string>
+    <string name="progress_glossary_empty_body">Ci finiscono i termini che dimostri di saper usare negli esercizi, non tutti quelli che incontri. Così contiene solo parole tue.</string>
+    <string name="progress_glossary_updated_announce">Glossario aggiornato.</string>
+    <string name="progress_search_label">Cerca un termine</string>
+    <string name="progress_search_none">Nessun termine con «%1$s».</string>
+    <string name="progress_search_clear">Cancella la ricerca</string>
+    <plurals name="progress_search_results">
+        <item quantity="one">%1$d risultato</item>
+        <item quantity="other">%1$d risultati</item>
+    </plurals>
+    <string name="progress_term_row_a11y">%1$s. %2$s. Apri la definizione</string>
+    <string name="progress_retry">Riprova</string>
+
+    <!-- Toasts of the Topic screen -->
+    <string name="lessons_toast_ready">La lezione %1$d è pronta.</string>
+    <string name="lessons_toast_ready_plain">La lezione è pronta.</string>
+    <string name="lessons_toast_failed">Non sono riuscito a preparare la lezione.</string>
+    <string name="lessons_toast_see">Vedi</string>
+
+    <!-- Highlighter (docs/design/components/highlight.md) -->
+    <string name="lesson_highlight_palette">Colore dell\'evidenziatore</string>
+    <string name="lesson_highlight_yellow">Giallo</string>
+    <string name="lesson_highlight_green">Verde</string>
+    <string name="lesson_highlight_blue">Blu</string>
+    <string name="lesson_highlight_pink">Rosa</string>
+    <string name="lesson_highlight_selected">scelto</string>
+    <string name="lesson_highlight_removed">Evidenziazione rimossa</string>
+    <string name="lesson_highlight_undo">Annulla</string>
+    <string name="lesson_highlight_limit">Hai raggiunto il limite di evidenziazioni per questa lezione.</string>
+    <string name="lesson_highlight_queue_description">Evidenziazioni da salvare</string>
+    <string name="lesson_highlight_queue_body">Alcune evidenziazioni non sono ancora salvate. Le invio appena torna la connessione.</string>
+    <string name="lesson_highlight_saved">Evidenziazioni salvate.</string>
+
+    <!-- Read aloud (audio.md section 6) -->
+    <string name="lesson_audio_stop">Ferma</string>
+    <string name="lesson_audio_unavailable">Audio non disponibile</string>
+    <string name="lesson_audio_listen_paragraph_a11y">Ascolta il paragrafo</string>
+    <string name="lesson_audio_listen_heading_a11y">Ascolta il titolo</string>
+    <string name="lesson_audio_listen_diagram_a11y">Ascolta la descrizione del diagramma</string>
+    <string name="lesson_audio_stop_a11y">Ferma la lettura</string>
+    <string name="lesson_audio_preparing_a11y">Ascolta, in preparazione</string>
+    <string name="lesson_audio_unavailable_a11y">Audio non disponibile per questo blocco</string>
+    <string name="lesson_audio_now_playing">In lettura</string>
+    <string name="lesson_audio_listen_lesson">Ascolta la lezione</string>
+    <string name="lesson_audio_listen_lesson_preparing">Ascolta la lezione, in preparazione</string>
+    <string name="lesson_audio_stop_reading">Ferma la lettura</string>
+    <string name="lesson_audio_playback_failed">Non riesco a riprodurre l\'audio. Riprova.</string>
+    <string name="lesson_audio_stopped_at_exercise">Ti fermo qui: ora tocca a te rispondere.</string>
+    <string name="lesson_audio_speed_075">0,75×</string>
+    <string name="lesson_audio_speed_1">1×</string>
+    <string name="lesson_audio_speed_125">1,25×</string>
+    <string name="lesson_audio_speed_15">1,5×</string>
+    <string name="lesson_audio_speed_075_a11y">Velocità 0,75 volte, tocca per cambiare</string>
+    <string name="lesson_audio_speed_1_a11y">Velocità 1 volta, tocca per cambiare</string>
+    <string name="lesson_audio_speed_125_a11y">Velocità 1,25 volte, tocca per cambiare</string>
+    <string name="lesson_audio_speed_15_a11y">Velocità 1,5 volte, tocca per cambiare</string>
+
+    <!-- Handwriting (docs/design/components/handwriting.md) -->
+    <string name="lesson_palette_tool">Strumento</string>
+    <string name="lesson_tool_highlighter">Evidenziatore</string>
+    <string name="lesson_tool_pen">Penna</string>
+    <string name="lesson_ink_color_group">Colore dell\'inchiostro</string>
+    <string name="lesson_ink_color_current">Colore dell\'inchiostro: %1$s</string>
+    <string name="lesson_ink_ink">Inchiostro</string>
+    <string name="lesson_ink_blue">Blu</string>
+    <string name="lesson_ink_red">Rosso</string>
+    <string name="lesson_ink_green">Verde</string>
+    <string name="lesson_ink_width_group">Spessore</string>
+    <string name="lesson_ink_width_current">Spessore: %1$s</string>
+    <string name="lesson_ink_thin">Sottile</string>
+    <string name="lesson_ink_medium">Medio</string>
+    <string name="lesson_ink_thick">Spesso</string>
+    <string name="lesson_ink_style">Stile della penna</string>
+    <string name="lesson_ink_style_state">%1$s, %2$s</string>
+    <string name="lesson_eraser">Gomma</string>
+    <string name="lesson_eraser_on">attiva</string>
+    <string name="lesson_eraser_off">spenta</string>
+    <string name="lesson_eraser_on_spoken">Gomma attiva: la punta cancella</string>
+    <string name="lesson_eraser_off_spoken">Gomma spenta</string>
+    <string name="lesson_ink_undo">Annulla</string>
+    <string name="lesson_ink_redo">Ripeti</string>
+    <string name="lesson_ink_undone">Tratto annullato</string>
+    <string name="lesson_ink_redone">Tratto ripristinato</string>
+    <string name="lesson_ink_limit">Hai raggiunto il limite di note a mano per questa lezione.</string>
+    <string name="lesson_ink_cleared">Note a mano eliminate</string>
+    <string name="lesson_ink_queue_description">Note a mano da salvare</string>
+    <string name="lesson_ink_queue_body">Alcune note a mano non sono ancora salvate. Le invio appena torna la connessione.</string>
+    <string name="lesson_ink_queue_too_large">Le note a mano di questa lezione sono troppe per essere salvate.</string>
+    <string name="lesson_ink_saved">Note a mano salvate.</string>
+
+    <!-- Card of a lesson requested from the chat (chat.md design 10b) -->
+    <string name="lessonreq_pane_title">Preparazione di una lezione</string>
+    <string name="lessonreq_state_in_progress">In corso</string>
+    <plurals name="lessonreq_ready_title">
+        <item quantity="one">Lezione %1$d pronta</item>
+        <item quantity="other">Lezione %1$d pronta</item>
+    </plurals>
+    <string name="lessonreq_ready_title_plain">Lezione pronta</string>
+    <string name="lessonreq_open">Apri lezione</string>
+    <string name="lessonreq_open_a11y_title">Apri lezione %1$d: %2$s</string>
+    <string name="lessonreq_open_a11y_number">Apri lezione %1$d</string>
+    <string name="lessonreq_retry_a11y">Riprova a preparare la lezione</string>
+    <string name="lessonreq_old_failed_title">Preparazione non riuscita</string>
+    <string name="lessonreq_old_failed_body">Dopo questa ne hai chiesta un\'altra: la trovi nella tab Lezioni.</string>
+    <string name="lessonreq_unknown">Richiesta di una lezione</string>
+    <string name="lessonreq_announce_step">Preparo la lezione: %1$s.</string>
+    <string name="lessonreq_verb_planning">scelgo cosa insegnare</string>
+    <string name="lessonreq_verb_reading">leggo le fonti</string>
+    <string name="lessonreq_verb_writing">scrivo</string>
+    <string name="lessonreq_verb_checking">controllo</string>
+    <string name="lessonreq_verb_saving">salvo</string>
+    <string name="lessonreq_verb_repairing">correggo</string>
+    <plurals name="lessonreq_announce_ready">
+        <item quantity="one">Lezione %1$d pronta. Apri lezione disponibile.</item>
+        <item quantity="other">Lezione %1$d pronta. Apri lezione disponibile.</item>
+    </plurals>
+    <string name="lessonreq_announce_ready_plain">Lezione pronta. Apri lezione disponibile.</string>
+    <string name="lessonreq_announce_failed_retry">Preparazione interrotta. Riprova disponibile.</string>
+    <string name="lessonreq_announce_failed">Preparazione non riuscita.</string>
+</resources>

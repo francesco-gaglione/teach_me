@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="login_title">Accedi a teach_me</string>
+    <string name="login_intro">Inserisci l\'indirizzo del backend, poi il nome utente e la password che ti ha dato il proprietario del server.</string>
+
+    <string name="login_address_label">Indirizzo del backend</string>
+    <string name="login_address_placeholder">https://teach.tailnet.ts.net</string>
+    <string name="login_address_hint">Es. https://teach.tailnet.ts.net</string>
+    <string name="login_address_row_label">Backend</string>
+    <string name="login_address_change">Cambia</string>
+    <string name="login_address_row_desc">Backend: %1$s. Cambia l\'indirizzo</string>
+    <string name="login_address_error_empty">Inserisci l\'indirizzo del backend.</string>
+    <string name="login_address_error_scheme">L\'indirizzo deve iniziare con https:// o http://.</string>
+    <string name="login_address_error_host">L\'indirizzo non è completo: controlla il nome del server.</string>
+    <string name="login_username_label">Nome utente</string>
+    <string name="login_username_error">Inserisci il nome utente.</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_password_error">Inserisci la password.</string>
+    <string name="login_password_show">Mostra password</string>
+    <string name="login_password_hide">Nascondi password</string>
+
+    <string name="login_button">Accedi</string>
+    <string name="login_button_busy">Accedo…</string>
+    <string name="login_button_available_in">Disponibile tra %1$s</string>
+    <string name="login_slow">Ci sta mettendo più del solito…</string>
+    <string name="login_no_account">Non hai un accesso? Te lo crea il proprietario del server.</string>
+
+    <string name="login_reason_title_expired">Devi accedere di nuovo</string>
+    <string name="login_reason_body_expired">La tua sessione non è più valida: è scaduta, oppure è stata chiusa dopo un cambio di password o da chi gestisce il server. I tuoi dati sono al sicuro sul server.</string>
+    <string name="login_reason_body_expired_pending">%1$s %2$s %3$s appena accedi con «%4$s».</string>
+    <string name="login_reason_pending_verb_one">resta su questo dispositivo e partirà</string>
+    <string name="login_reason_pending_verb_many">restano su questo dispositivo e partiranno</string>
+    <string name="login_reason_title_update">Ora si accede con nome utente e password</string>
+    <string name="login_reason_body_update">Il token che usavi prima non vale più. Il proprietario del server ti dà il tuo nome utente e la tua password: inseriscili qui sotto.</string>
+
+    <string name="login_panel_invalid_title">Nome utente o password non corretti</string>
+    <string name="login_panel_invalid_body">Controlla di averli scritti giusti: per sicurezza non ti dico quale dei due è sbagliato.</string>
+    <string name="login_panel_invalid_body_repeated">Controlla di averli scritti giusti: per sicurezza non ti dico quale dei due è sbagliato. Se non hai ancora un accesso, te lo crea il proprietario del server.</string>
+    <string name="login_panel_limited_title">Troppi tentativi</string>
+    <string name="login_panel_limited_body">Per proteggere l\'account ho sospeso gli accessi con questo nome utente. Potrai riprovare tra %1$s.</string>
+    <string name="login_panel_limited_body_unknown">Per proteggere l\'account ho sospeso gli accessi con questo nome utente. Potrai riprovare tra qualche minuto.</string>
+    <string name="login_announce_limited">Troppi tentativi. Potrai riprovare tra %1$s.</string>
+    <string name="login_announce_limited_unknown">Troppi tentativi. Potrai riprovare tra qualche minuto.</string>
+    <string name="login_announce_unblocked">Puoi riprovare ad accedere.</string>
+    <string name="login_panel_unreachable_title">Backend irraggiungibile</string>
+    <string name="login_panel_unreachable_body">Controlla che Tailscale sia attivo su questo dispositivo e che l\'indirizzo sia giusto.</string>
+    <string name="login_panel_unreachable_body_reason">Controlla che Tailscale sia attivo su questo dispositivo e che l\'indirizzo sia giusto. %1$s</string>
+    <string name="login_reason_timeout">Tempo scaduto.</string>
+    <string name="login_reason_unknown_host">Indirizzo non trovato.</string>
+    <string name="login_reason_refused">Connessione rifiutata.</string>
+    <string name="login_reason_tls">Certificato non valido.</string>
+    <string name="login_panel_notready_title">Il backend non è pronto</string>
+    <string name="login_panel_notready_body">Si sta avviando o è in manutenzione. Riprova fra poco.</string>
+    <string name="login_panel_unknown_title">Questo indirizzo non sembra un backend teach_me</string>
+    <string name="login_panel_unknown_body">Controlla l\'indirizzo. Se è giusto, il backend potrebbe non essere aggiornato alla versione con gli accessi per utente.</string>
+    <string name="login_panel_unexpected_title">Errore imprevisto</string>
+    <string name="login_panel_unexpected_body_code">Il backend ha risposto con il codice %1$d.</string>
+    <string name="login_panel_unexpected_body">Non sono riuscito a completare l\'accesso.</string>
+    <string name="login_panel_details">Dettagli</string>
+    <string name="login_panel_request_id">Richiesta: %1$s</string>
+
+    <string name="login_signed_out_toast">Sei uscito.</string>
+
+    <plurals name="login_wait_seconds">
+        <item quantity="one">%1$d secondo</item>
+        <item quantity="other">%1$d secondi</item>
+    </plurals>
+    <plurals name="login_wait_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minuti</item>
+    </plurals>
+    <plurals name="login_wait_hours">
+        <item quantity="one">%1$d ora</item>
+        <item quantity="other">%1$d ore</item>
+    </plurals>
+</resources>

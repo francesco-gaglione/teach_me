@@ -1,0 +1,1131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://teach-me.local/contracts/sdui-schema-v1.json",
+  "title": "Documento di lezione SDUI, catalogo v1",
+  "description": "Schema strutturale di docs/contracts/sdui.md (in caso di conflitto vale sdui.md). Le regole semantiche del §6 non esprimibili qui sono del Validator: riferimenti [^key]/[[key]] e glossary_term risolvibili, voci usate, id unici, tolleranza di parole e posizione della risposta nei quiz, segnaposto dei fill_blank, esattamente un primary_source, almeno un ask_agent e un esercizio obbligatorio, primo blocco heading 1, sezioni non vuote, ≤ 6 sezioni, ≤ 1500 parole di prosa, markdown ammesso, missing_component non annidati.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "catalog_version",
+    "title",
+    "objective",
+    "estimated_minutes",
+    "glossary",
+    "sources",
+    "blocks"
+  ],
+  "properties": {
+    "catalog_version": {
+      "const": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Una vittoria concreta, formulata come capacità (\"Saper…\")."
+    },
+    "estimated_minutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "glossary": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "$ref": "#/$defs/glossary_entry"
+      },
+      "description": "Chiavi uniche (Validator: `duplicate_id`)."
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "$ref": "#/$defs/source_entry"
+      },
+      "description": "Chiavi uniche (Validator: `duplicate_id`)."
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 60,
+      "items": {
+        "$ref": "#/$defs/block"
+      },
+      "description": "Lista piatta; l'app apre una sezione a ogni heading di livello 2."
+    }
+  },
+  "$defs": {
+    "block_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,40}$",
+      "description": "Unico nell'intero documento, fallback inclusi (Validator: `duplicate_id`)."
+    },
+    "inner_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{1,40}$",
+      "description": "Id di opzione/blank/step/item, unico nel blocco (Validator: `duplicate_id`)."
+    },
+    "entry_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]{1,40}$"
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "format": "uuid"
+    },
+    "lang": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$",
+      "description": "Tag BCP-47 se il contenuto del blocco non è nella lingua dell'argomento (ADR 0019). Assente = lingua dell'argomento."
+    },
+    "md": {
+      "type": "string",
+      "description": "Markdown inline (sdui.md §3): **grassetto**, *corsivo*, `codice`, link https, citazioni [^key], termini [[key]] / [[key|testo]]. Niente a capo, elenchi, intestazioni, immagini, HTML: verificato dal Validator (code `markdown`, `unknown_citation`, `unknown_glossary_key`)."
+    },
+    "exercise_code": {
+      "description": "Codice che la domanda di un esercizio chiede di leggere (sdui.md §4.1). L'app lo mostra nella card, sopra la domanda, senza andare a capo. Righe ≤ 60 caratteri consigliate (non verificato).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "language",
+        "code"
+      ],
+      "properties": {
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z0-9_+#-]{1,40}$"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "\\S",
+          "description": "Non fatto di soli spazi."
+        }
+      }
+    },
+    "glossary_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "term",
+        "definition"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/entry_key",
+          "description": "Unica nel glossario. Deve essere usata nel documento (Validator: `unused_entry`)."
+        },
+        "term": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "definition": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "avoid": {
+          "type": "array",
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": "\"Non confonderlo con…\""
+        }
+      }
+    },
+    "source_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "resource_id",
+        "title",
+        "url"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/entry_key",
+          "description": "Unica tra le fonti. Usata da [^key] o da primary_source (Validator: `unused_entry`)."
+        },
+        "resource_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "UUID di una Resource del Topic. null solo in fixture/prove (Validator, Fase 6: `unknown_resource`)."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "url": {
+          "type": ["string", "null"],
+          "pattern": "^https://[^\\s]+$",
+          "maxLength": 2000
+        }
+      }
+    },
+    "heading": {
+      "description": "Titolo. Il livello 2 apre una sezione. Il primo blocco del documento deve essere un heading di livello 1 (Validator: `first_block_not_title`); un heading 2 senza contenuto prima del successivo è `section_without_content`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "level",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "heading"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "level": {
+          "type": "integer",
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Testo semplice, non markdown."
+        }
+      }
+    },
+    "paragraph": {
+      "description": "Paragrafo di prosa (conta per il limite di parole, Validator: `too_long`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "paragraph"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "text": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 1200
+        }
+      }
+    },
+    "callout": {
+      "description": "Riquadro evidenziato (conta per il limite di parole).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "variant",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "callout"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "variant": {
+          "enum": [
+            "info",
+            "tip",
+            "warning"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Testo semplice."
+        },
+        "text": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 600
+        }
+      }
+    },
+    "code": {
+      "description": "Snippet di codice. Righe ≤ 100 caratteri consigliate (non verificato).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "language",
+        "code"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "code"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z0-9_+#-]{1,40}$",
+          "description": "Linguaggio per l'evidenziazione, es. rust, bash, text."
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "caption": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "highlight_lines": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Righe da evidenziare (1-based). Il Validator controlla che siano <= numero di righe di code (errore schema)."
+        }
+      }
+    },
+    "glossary_term": {
+      "description": "Presenta un termine del glossario (pre-training).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "key"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "glossary_term"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "key": {
+          "$ref": "#/$defs/entry_key",
+          "description": "Deve esistere in glossary (Validator: `unknown_glossary_key`)."
+        }
+      }
+    },
+    "quiz_single": {
+      "description": "Scelta singola. Regole del Validator: `correct` è l'id di un'opzione (`quiz_correct_missing`); scarto di parole tra le opzioni ≤ tolleranza, default 3 (`quiz_option_length`); con ≥ 3 quiz_single nella lezione la posizione della risposta corretta non è sempre la stessa (`quiz_answer_position`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "question",
+        "options",
+        "correct"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "quiz_single"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "code": {
+          "$ref": "#/$defs/exercise_code"
+        },
+        "question": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text",
+              "feedback"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "text": {
+                "$ref": "#/$defs/md",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "feedback": {
+                "$ref": "#/$defs/md",
+                "minLength": 1,
+                "maxLength": 400
+              }
+            }
+          }
+        },
+        "correct": {
+          "$ref": "#/$defs/inner_id"
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se true (default) la sezione non prosegue finché l'esercizio non è svolto. Almeno un esercizio della lezione deve essere obbligatorio (Validator: `no_required_exercise`)."
+        }
+      }
+    },
+    "quiz_multi": {
+      "description": "Scelta multipla, corretta se l'insieme scelto coincide con `correct`. Regole del Validator: `correct` contiene da 1 a n-1 id esistenti e distinti (`quiz_correct_missing`, anche se vuoto); scarto di parole ≤ tolleranza (`quiz_option_length`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "question",
+        "options",
+        "correct"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "quiz_multi"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "code": {
+          "$ref": "#/$defs/exercise_code"
+        },
+        "question": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "options": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text",
+              "feedback"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "text": {
+                "$ref": "#/$defs/md",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "feedback": {
+                "$ref": "#/$defs/md",
+                "minLength": 1,
+                "maxLength": 400
+              }
+            }
+          }
+        },
+        "correct": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/inner_id"
+          }
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se true (default) la sezione non prosegue finché l'esercizio non è svolto. Almeno un esercizio della lezione deve essere obbligatorio (Validator: `no_required_exercise`)."
+        }
+      }
+    },
+    "fill_blank": {
+      "description": "Completa la frase. Ogni {{blank_id}} nel testo deve corrispondere a un blank e ogni blank deve comparire nel testo (Validator: `fill_blank_mismatch`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "text",
+        "blanks",
+        "feedback"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "fill_blank"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "text": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 600,
+          "description": "Markdown inline (sdui.md §3): **grassetto**, *corsivo*, `codice`, link https, citazioni [^key], termini [[key]] / [[key|testo]]. Niente a capo, elenchi, intestazioni, immagini, HTML: verificato dal Validator (code `markdown`, `unknown_citation`, `unknown_glossary_key`). Contiene segnaposto {{blank_id}}."
+        },
+        "blanks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "answers"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "answers": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 60
+                }
+              },
+              "case_sensitive": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        "feedback": {
+          "description": "Feedback mostrato dopo \"Controlla\". Lunghezza 1-400 per campo (limite non fissato in sdui.md, proposto).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "correct",
+            "incorrect"
+          ],
+          "properties": {
+            "correct": {
+              "$ref": "#/$defs/md",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "incorrect": {
+              "$ref": "#/$defs/md",
+              "minLength": 1,
+              "maxLength": 400
+            }
+          }
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se true (default) la sezione non prosegue finché l'esercizio non è svolto. Almeno un esercizio della lezione deve essere obbligatorio (Validator: `no_required_exercise`)."
+        }
+      }
+    },
+    "order_steps": {
+      "description": "Metti in ordine. `steps` è nell'ordine corretto; l'app li mescola in modo deterministico per id del blocco.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "prompt",
+        "steps",
+        "feedback"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "order_steps"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "prompt": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "steps": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "text": {
+                "$ref": "#/$defs/md",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          }
+        },
+        "feedback": {
+          "description": "Feedback mostrato dopo \"Controlla\". Lunghezza 1-400 per campo (limite non fissato in sdui.md, proposto).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "correct",
+            "incorrect"
+          ],
+          "properties": {
+            "correct": {
+              "$ref": "#/$defs/md",
+              "minLength": 1,
+              "maxLength": 400
+            },
+            "incorrect": {
+              "$ref": "#/$defs/md",
+              "minLength": 1,
+              "maxLength": 400
+            }
+          }
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se true (default) la sezione non prosegue finché l'esercizio non è svolto. Almeno un esercizio della lezione deve essere obbligatorio (Validator: `no_required_exercise`)."
+        }
+      }
+    },
+    "flashcard": {
+      "description": "Domanda, rivela, autovalutazione (again/hard/good/easy).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "front",
+        "back"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "flashcard"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "code": {
+          "$ref": "#/$defs/exercise_code"
+        },
+        "front": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "back": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se true (default) la sezione non prosegue finché l'esercizio non è svolto. Almeno un esercizio della lezione deve essere obbligatorio (Validator: `no_required_exercise`)."
+        }
+      }
+    },
+    "open_answer": {
+      "description": "Risposta libera valutata dal Grader. `rubric` è obbligatoria nel documento salvato e viene rimossa dal backend prima di inviare la lezione all'app (sdui.md §7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "question",
+        "rubric"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "open_answer"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "code": {
+          "$ref": "#/$defs/exercise_code"
+        },
+        "question": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "max_chars": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 2000,
+          "default": 1000
+        },
+        "rubric": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500,
+          "description": "Solo backend: criteri per il Grader. Testo semplice."
+        },
+        "required": {
+          "type": "boolean",
+          "default": true,
+          "description": "Se true (default) la sezione non prosegue finché l'esercizio non è svolto. Almeno un esercizio della lezione deve essere obbligatorio (Validator: `no_required_exercise`)."
+        }
+      }
+    },
+    "checklist": {
+      "description": "Azioni nel mondo reale, autodichiarate. Mai obbligatoria.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "items"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "checklist"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Testo semplice."
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "text": {
+                "$ref": "#/$defs/md",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          }
+        }
+      }
+    },
+    "primary_source": {
+      "description": "La fonte principale consigliata. Esattamente una per lezione (Validator: `primary_source_count`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "source",
+        "why"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "primary_source"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "source": {
+          "$ref": "#/$defs/entry_key",
+          "description": "Chiave di sources[] (Validator: `unknown_citation`)."
+        },
+        "why": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    },
+    "lesson_link": {
+      "description": "Link a un'altra lezione dello stesso Topic (Validator, Fase 6: `invalid_lesson_link`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "lesson_id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "lesson_link"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "lesson_id": {
+          "$ref": "#/$defs/uuid"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Testo semplice."
+        }
+      }
+    },
+    "ask_agent": {
+      "description": "Apre la chat col Tutor. Almeno uno per lezione (Validator: `ask_agent_missing`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "prompt_hint"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "ask_agent"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Testo semplice. Default app: \"Hai dubbi? Chiedi al Tutor\"."
+        },
+        "prompt_hint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Testo semplice precompilato nel composer, modificabile."
+        }
+      }
+    },
+    "diagram": {
+      "description": "Figura strutturata (nodi, archi) disegnata dall'app in modo nativo (sdui.md §10). Lo schema non esprime le regole per `layout` (aciclicità, radice unica, `cycle` senza `edges` e con almeno 3 nodi, archi verso nodi esistenti): le controlla il Validator (`diagram_structure`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "layout",
+        "nodes",
+        "caption",
+        "alt"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "diagram"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "layout": {
+          "enum": [
+            "flow",
+            "tree",
+            "cycle"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Testo semplice."
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40,
+                "description": "Testo semplice."
+              },
+              "detail": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60,
+                "description": "Testo semplice."
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "to": {
+                "$ref": "#/$defs/inner_id"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 30,
+                "description": "Testo semplice."
+              }
+            }
+          }
+        },
+        "caption": {
+          "$ref": "#/$defs/md",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "alt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600,
+          "description": "Testo semplice: descrizione della figura per screen reader e fallback."
+        }
+      }
+    },
+    "missing_component": {
+      "description": "Componente desiderato ma non nel catalogo, con fallback di blocchi esistenti.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "wanted",
+        "purpose",
+        "fallback"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/block_id"
+        },
+        "type": {
+          "const": "missing_component"
+        },
+        "lang": {
+          "$ref": "#/$defs/lang"
+        },
+        "wanted": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,59}$",
+          "description": "Nome snake_case del componente desiderato."
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Testo semplice: a cosa servirebbe."
+        },
+        "fallback": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/block"
+          },
+          "description": "Blocchi di altri tipi. Lo schema accetta qualsiasi blocco: un missing_component annidato è rifiutato dal Validator con `nested_missing_component`."
+        }
+      }
+    },
+    "block": {
+      "description": "Un blocco del catalogo v1, discriminato da `type`. Il Validator controlla prima `type`: un tipo fuori dal catalogo produce `unknown_block_type` (e quel blocco non è validato contro lo schema).",
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "heading",
+            "paragraph",
+            "callout",
+            "code",
+            "glossary_term",
+            "quiz_single",
+            "quiz_multi",
+            "fill_blank",
+            "order_steps",
+            "flashcard",
+            "open_answer",
+            "checklist",
+            "primary_source",
+            "lesson_link",
+            "ask_agent",
+            "diagram",
+            "missing_component"
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/heading"
+        },
+        {
+          "$ref": "#/$defs/paragraph"
+        },
+        {
+          "$ref": "#/$defs/callout"
+        },
+        {
+          "$ref": "#/$defs/code"
+        },
+        {
+          "$ref": "#/$defs/glossary_term"
+        },
+        {
+          "$ref": "#/$defs/quiz_single"
+        },
+        {
+          "$ref": "#/$defs/quiz_multi"
+        },
+        {
+          "$ref": "#/$defs/fill_blank"
+        },
+        {
+          "$ref": "#/$defs/order_steps"
+        },
+        {
+          "$ref": "#/$defs/flashcard"
+        },
+        {
+          "$ref": "#/$defs/open_answer"
+        },
+        {
+          "$ref": "#/$defs/checklist"
+        },
+        {
+          "$ref": "#/$defs/primary_source"
+        },
+        {
+          "$ref": "#/$defs/lesson_link"
+        },
+        {
+          "$ref": "#/$defs/ask_agent"
+        },
+        {
+          "$ref": "#/$defs/diagram"
+        },
+        {
+          "$ref": "#/$defs/missing_component"
+        }
+      ]
+    }
+  }
+}

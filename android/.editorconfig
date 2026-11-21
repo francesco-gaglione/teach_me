@@ -1,0 +1,11 @@
+root = true
+
+[*.{kt,kts}]
+indent_size = 4
+max_line_length = 120
+ktlint_code_style = ktlint_official
+# Composable functions are PascalCase by convention.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# Keep trailing commas consistent with the Compose style.
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true

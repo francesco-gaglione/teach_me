@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="app_name">teach_me</string>
+    <string name="library_pick_folder">Pick a folder to see its topics.</string>
+    <string name="home_open_settings">Settings</string>
+    <string name="review_channel_name">Reviews</string>
+    <string name="review_channel_description">Alerts when review cards are due.</string>
+    <plurals name="review_notification_title">
+        <item quantity="one">You have %d card to review</item>
+        <item quantity="other">You have %d cards to review</item>
+    </plurals>
+    <plurals name="review_notification_minutes">
+        <item quantity="one">About %d minute</item>
+        <item quantity="other">About %d minutes</item>
+    </plurals>
+</resources>

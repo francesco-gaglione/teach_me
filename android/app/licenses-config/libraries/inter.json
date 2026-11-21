@@ -1,0 +1,8 @@
+{
+  "uniqueId": "inter",
+  "name": "Inter (font)",
+  "artifactVersion": "bundled",
+  "website": "https://github.com/rsms/inter",
+  "developers": [{ "name": "The Inter Project Authors" }],
+  "licenses": ["OFL-1.1"]
+}

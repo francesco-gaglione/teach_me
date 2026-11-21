@@ -1,0 +1,44 @@
+{
+  "version": "researcher-phase4-v3",
+  "name": "researcher_output",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["resources", "gaps", "communities_skipped"],
+    "properties": {
+      "resources": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "source_type", "title", "url", "language", "annotation", "use_for"],
+          "properties": {
+            "kind": { "type": "string", "enum": ["knowledge", "community"] },
+            "source_type": {
+              "type": "string",
+              "enum": ["book", "paper", "article", "documentation", "video", "course", "standard", "forum", "social_group", "live_class", "local_group", "other"]
+            },
+            "title": { "type": "string" },
+            "url": { "type": ["string", "null"] },
+            "language": { "type": "string" },
+            "annotation": { "type": "string" },
+            "use_for": { "type": "string" }
+          }
+        }
+      },
+      "gaps": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["area", "note"],
+          "properties": {
+            "area": { "type": "string" },
+            "note": { "type": "string" }
+          }
+        }
+      },
+      "communities_skipped": { "type": "boolean" }
+    }
+  }
+}

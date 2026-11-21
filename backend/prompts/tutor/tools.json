@@ -1,0 +1,166 @@
+{
+  "version": "tutor-tools-phase17-v4",
+  "tools": [
+    {
+      "name": "save_mission_draft",
+      "description": "Salva una bozza di mission per questo argomento e la mostra alla persona come card con i bottoni Conferma e Modifica. Usalo solo quando hai un perché concreto, almeno un criterio di successo osservabile e il punto di partenza (che cosa la persona sa già), detti dalla persona. Ammesso solo se l'argomento NON ha ancora una mission confermata; usalo anche per correggere una bozza già proposta (invia tutti i campi aggiornati). Chiamalo subito, senza testo prima: l'esito ti dice di scrivere dopo una o due frasi (massimo 40 parole) sull'obiettivo; la card mostra tutti i campi con i criteri numerati. Scadenze e tempo disponibile detti dalla persona vanno in `constraints`. Invia sempre la bozza completa, anche per una correzione (l'app evidenzia le differenze). Al massimo una volta per turno. Non conferma nulla: la conferma la dà la persona col bottone.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "why",
+          "success_criteria",
+          "starting_point",
+          "constraints",
+          "out_of_scope"
+        ],
+        "properties": {
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Il motivo concreto per cui la persona impara questo argomento: il risultato reale nella sua vita o nel suo lavoro (1-3 frasi, massimo 500 caratteri). Usa le sue parole. Non scrivere 'per capire X' o 'per imparare X'."
+          },
+          "success_criteria": {
+            "type": "array",
+            "description": "Da 1 a 5 cose osservabili che la persona saprà fare quando ci sarà riuscita, ciascuna di massimo 200 caratteri, una frase nella forma 'so fare X', in prima persona e con un verbo di azione ('Leggo e modifico un servizio axum senza aiuto'), un solo risultato per voce così la persona può citarla per numero. Vietati 'capire', 'conoscere', 'imparare', 'finire il corso'. Solo cose che la persona ha detto o scelto.",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "starting_point": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600,
+            "description": "Che cosa la persona sa già e sa fare di rilevante per questo argomento, e che cosa non ha mai visto (1-3 frasi, da 1 a 600 caratteri). È la base da cui partono le lezioni: ciò che qui è dichiarato non viene rispiegato, ciò che manca viene spiegato per intero. Usa le sue parole quando possibile ('Programmo in Kotlin da tre anni; di Rust ho letto solo i primi capitoli, mai scritto codice'). Se parte da zero scrivilo esplicitamente ('Parto da zero: mai programmato'): mai vuoto, mai inventato. Niente tempo o scadenze (vanno in constraints)."
+          },
+          "constraints": {
+            "type": "array",
+            "description": "Da 0 a 5 vincoli pratici che limitano l'approccio: tempo disponibile, strumenti, scadenze, perimetro (per esempio i capitoli di un documento da seguire). Le conoscenze di partenza NON vanno qui: stanno in starting_point. Array vuoto se non ne ha detti: meglio vuoto che una banalità. Non inventarli.",
+            "minItems": 0,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "out_of_scope": {
+            "type": "array",
+            "description": "Da 0 a 5 cose che la persona ha escluso per ora. Array vuoto se non ne ha escluse: meglio vuoto che una banalità. Non aggiungerne tu.",
+            "minItems": 0,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "propose_mission_change",
+      "description": "Propone una nuova versione della mission quando l'argomento ha GIÀ una mission confermata. Usalo solo se la persona chiede esplicitamente di cambiarla, oppure dopo che ha detto di sì alla tua domanda 'vuoi aggiornare la mission?'. Non usarlo di tua iniziativa. Se la richiesta esplicita dice già che cosa è cambiato, chiamalo subito senza intervistare prima la persona: la card chiede comunque conferma. Unica eccezione: vedi sotto il punto di partenza «non dichiarato». Invia la mission completa partendo da quella confermata: cambia solo ciò che è cambiato (anche `starting_point` si mantiene, salvo che la persona abbia detto altro). Se la confermata ha il punto di partenza «non dichiarato» e la persona non ha ancora detto che cosa sa già, non chiamarlo ancora: fai una sola domanda su che cosa sa già, poi chiamalo (vale anche se la richiesta di cambio è esplicita). La persona la vede come card e deve confermarla; fino ad allora resta valida la mission precedente. Chiamalo senza testo prima: dopo l'esito scrivi 1-2 righe di introduzione.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "why",
+          "success_criteria",
+          "starting_point",
+          "constraints",
+          "out_of_scope"
+        ],
+        "properties": {
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Il motivo concreto per cui la persona impara questo argomento: il risultato reale nella sua vita o nel suo lavoro (1-3 frasi, massimo 500 caratteri). Usa le sue parole. Non scrivere 'per capire X' o 'per imparare X'."
+          },
+          "success_criteria": {
+            "type": "array",
+            "description": "Da 1 a 5 cose osservabili che la persona saprà fare quando ci sarà riuscita, ciascuna di massimo 200 caratteri, una frase nella forma 'so fare X', in prima persona e con un verbo di azione ('Leggo e modifico un servizio axum senza aiuto'), un solo risultato per voce così la persona può citarla per numero. Vietati 'capire', 'conoscere', 'imparare', 'finire il corso'. Solo cose che la persona ha detto o scelto.",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "starting_point": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600,
+            "description": "Che cosa la persona sa già e sa fare di rilevante per questo argomento, e che cosa non ha mai visto (1-3 frasi, da 1 a 600 caratteri). È la base da cui partono le lezioni: ciò che qui è dichiarato non viene rispiegato, ciò che manca viene spiegato per intero. Usa le sue parole quando possibile ('Programmo in Kotlin da tre anni; di Rust ho letto solo i primi capitoli, mai scritto codice'). Se parte da zero scrivilo esplicitamente ('Parto da zero: mai programmato'): mai vuoto, mai inventato. Niente tempo o scadenze (vanno in constraints)."
+          },
+          "constraints": {
+            "type": "array",
+            "description": "Da 0 a 5 vincoli pratici che limitano l'approccio: tempo disponibile, strumenti, scadenze, perimetro (per esempio i capitoli di un documento da seguire). Le conoscenze di partenza NON vanno qui: stanno in starting_point. Array vuoto se non ne ha detti: meglio vuoto che una banalità. Non inventarli.",
+            "minItems": 0,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "out_of_scope": {
+            "type": "array",
+            "description": "Da 0 a 5 cose che la persona ha escluso per ora. Array vuoto se non ne ha escluse: meglio vuoto che una banalità. Non aggiungerne tu.",
+            "minItems": 0,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "request_lesson",
+      "description": "Mette in coda la generazione della prossima lezione di questo argomento; la scelta di che cosa insegnare spetta al sistema, non a te. Usalo solo quando la persona ti chiede in chat la prossima lezione, oppure quando risponde di sì a una tua proposta di generarla. Non usarlo di tua iniziativa e non usarlo per una lezione su un argomento scelto dalla persona: se chiede un tema preciso, dille che la prossima lezione la sceglie il sistema in base alla sua mission. Non usarlo nello stesso turno di save_mission_draft o propose_mission_change, e al massimo una volta per turno. Chiamalo subito, senza testo prima e con input vuoto `{}`: non restituisce dati né avanzamento, ti dice solo se la generazione è partita, quindi una chiamata basta. Dopo l'esito scrivi tu una sola riga breve; la chat mostra poi una card con l'avanzamento e il bottone «Apri lezione», quindi non promettere tempi e non descrivere il contenuto della lezione.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    {
+      "name": "save_preference",
+      "description": "Salva una preferenza stabile della persona su come vuole essere istruita (stile degli esempi, linguaggio, tono, ritmo), da rispettare nelle prossime risposte e lezioni. Non usarlo per richieste valide solo per un messaggio, per fatti sul suo obiettivo (vanno nella mission) o per cose che hai dedotto tu. Scrivi la preferenza come istruzione breve e autonoma, comprensibile senza la chat ('Esempi in Python, non in Java'); mai nella forma 'L'utente preferisce…'. Dopo averlo chiamato, conferma in mezza frase e continua.",
+      "input_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "scope",
+          "text"
+        ],
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "global",
+              "topic"
+            ],
+            "description": "'global' se la preferenza vale per qualsiasi argomento (es. 'spiegazioni brevi'); 'topic' se riguarda solo questo argomento (es. un linguaggio di programmazione). Nel dubbio 'topic'."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "La preferenza, massimo 300 caratteri, nelle parole della persona quando possibile."
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="ui_error_network_title">Non riesco a raggiungere il backend</string>
+    <string name="ui_error_network_retry_hint">Riprova quando sei di nuovo collegato.</string>
+    <string name="ui_error_unexpected_title">Qualcosa è andato storto</string>
+    <string name="ui_error_unexpected_retry_hint">Riprova fra poco.</string>
+    <string name="ui_error_open_settings">Impostazioni</string>
+    <string name="ui_too_long_server" tools:ignore="PluralsCandidate">Al massimo %1$d caratteri.</string>
+    <string name="ui_too_long_live" tools:ignore="PluralsCandidate">Al massimo %1$d caratteri: ora sono %2$d.</string>
+    <string name="ui_cancel">Annulla</string>
+
+    <string name="ui_load_network_title">Non riesco a raggiungere il backend</string>
+    <string name="ui_load_network_body">Controlla che il dispositivo sia collegato alla rete e che il backend sia acceso.</string>
+    <string name="ui_load_server_title">Il backend ha avuto un problema</string>
+    <string name="ui_load_server_body">Riprova fra poco. Se continua, controlla i log del backend.</string>
+    <string name="ui_load_retry">Riprova</string>
+    <string name="ui_load_open_settings">Apri le impostazioni</string>
+    <string name="ui_load_dismiss">Chiudi</string>
+    <string name="ui_still_loading">Sto ancora caricando…</string>
+    <string name="ui_loading_state">Caricamento</string>
+
+    <string name="ui_topic_count_none">Nessun argomento</string>
+    <plurals name="ui_topic_count">
+        <item quantity="one">%1$d argomento</item>
+        <item quantity="other">%1$d argomenti</item>
+    </plurals>
+
+    <string name="ui_state_prefix">stato: %1$s</string>
+    <string name="ui_state_define_mission">Definiamo la mission</string>
+    <string name="ui_state_confirm_mission">Conferma la mission</string>
+    <string name="ui_state_mission_confirmed">Mission confermata</string>
+    <string name="ui_state_researching">Cerco le fonti…</string>
+    <string name="ui_state_research_retry">Ricerca da riprovare</string>
+    <string name="ui_state_ready">Pronto per le lezioni</string>
+    <string name="ui_state_unknown">Stato non riconosciuto</string>
+
+    <string name="ui_action_rename">Rinomina</string>
+    <string name="ui_action_delete">Elimina</string>
+    <string name="ui_more_actions_for">Altre azioni per %1$s</string>
+    <string name="ui_actions_for">Azioni per %1$s</string>
+
+    <plurals name="ui_interval_minutes">
+        <item quantity="one">tra %1$d minuto</item>
+        <item quantity="other">tra %1$d minuti</item>
+    </plurals>
+    <plurals name="ui_interval_hours">
+        <item quantity="one">tra %1$d ora</item>
+        <item quantity="other">tra %1$d ore</item>
+    </plurals>
+    <plurals name="ui_interval_days">
+        <item quantity="one">tra %1$d giorno</item>
+        <item quantity="other">tra %1$d giorni</item>
+    </plurals>
+    <plurals name="ui_interval_months">
+        <item quantity="one">tra %1$d mese</item>
+        <item quantity="other">tra %1$d mesi</item>
+    </plurals>
+    <plurals name="ui_interval_years">
+        <item quantity="one">tra %1$d anno</item>
+        <item quantity="other">tra %1$d anni</item>
+    </plurals>
+    <string name="ui_next_due_today">La prossima scheda arriva oggi alle %1$s.</string>
+    <string name="ui_next_due_tomorrow">La prossima scheda arriva domani.</string>
+    <string name="ui_next_due_on">La prossima scheda arriva %1$s.</string>
+    <string name="ui_next_due_date">il %1$s</string>
+
+    <!-- LlmKeyNotice (llm-key.md) -->
+    <string name="llmkey_button_missing">Inserisci la chiave</string>
+    <string name="llmkey_button_rejected">Sostituisci la chiave</string>
+    <string name="llmkey_button_missing_desc">Inserisci la chiave nelle Impostazioni</string>
+    <string name="llmkey_button_rejected_desc">Sostituisci la chiave nelle Impostazioni</string>
+    <string name="llmkey_retry">Riprova</string>
+    <string name="llmkey_title_missing">Manca la tua chiave LLM</string>
+    <string name="llmkey_title_rejected">Il servizio non accetta la tua chiave</string>
+    <string name="llmkey_request_missing">Per %1$s serve la chiave del servizio LLM, e non ne hai ancora salvata una. %2$s Inseriscila nelle Impostazioni: ci vuole un minuto.</string>
+    <string name="llmkey_request_rejected">Per %1$s ho usato la tua chiave, ma il servizio l\'ha rifiutata: può essere sbagliata, scaduta o non abilitata a questo uso. %2$s Sostituiscila nelle Impostazioni.</string>
+    <string name="llmkey_failure_missing">Mentre lavoravo la chiave è stata tolta, quindi non ho potuto %1$s. %2$s Salvane una nelle Impostazioni e riprova.</string>
+    <string name="llmkey_failure_rejected">Ho provato a %1$s, ma il servizio ha rifiutato la tua chiave: può essere sbagliata, scaduta o non abilitata a questo uso. %2$s Sostituiscila nelle Impostazioni e riprova.</string>
+    <string name="llm_credit_title">Credito del servizio LLM esaurito</string>
+    <string name="llm_credit_body_request">Per %1$s ho usato la tua chiave: il servizio l\'ha accettata, ma il credito è esaurito. %2$s Ricaricalo presso il provider e riprova.</string>
+    <string name="llm_credit_body_failure">Ho provato a %1$s, ma il credito del servizio LLM è esaurito: la tua chiave è a posto. %2$s Ricaricalo presso il provider e riprova.</string>
+    <string name="llm_credit_retry">Riprova</string>
+    <string name="llm_credit_retrying">Riprovo…</string>
+    <string name="llm_credit_retry_cd">Riprova: %1$s</string>
+    <string name="llm_credit_announce_again">Credito ancora esaurito.</string>
+    <string name="llmkey_fixed_title">Chiave salvata</string>
+    <string name="llmkey_fixed_body">Ora puoi riprovare.</string>
+
+    <string name="llmkey_ctx_chat_action">parlare con il Tutor</string>
+    <string name="llmkey_ctx_chat_reassure">Il tuo messaggio è ancora nel campo.</string>
+    <string name="llmkey_ctx_mission_action">confermare la mission e cercare le fonti</string>
+    <string name="llmkey_ctx_mission_reassure">La mission non è stata confermata: la proposta è ancora lì.</string>
+    <string name="llmkey_ctx_research_action">cercare le fonti</string>
+    <string name="llmkey_ctx_research_reassure">Le fonti che hai restano come sono.</string>
+    <string name="llmkey_ctx_research_reassure_empty">La mission è al sicuro.</string>
+    <string name="llmkey_ctx_generate_action">scrivere la lezione</string>
+    <string name="llmkey_ctx_generate_reassure">Non hai perso nulla.</string>
+    <string name="llmkey_ctx_complete_action">chiudere la lezione e aggiornare il registro</string>
+    <string name="llmkey_ctx_complete_reassure">La lezione non è stata chiusa e le tue risposte sono al sicuro.</string>
+
+    <string name="llmkey_fail_reply_action_missing">rispondere</string>
+    <string name="llmkey_fail_reply_action_rejected">rispondere al tuo messaggio</string>
+    <string name="llmkey_fail_reply_reassure">Il tuo messaggio è al sicuro.</string>
+    <string name="llmkey_fail_reply_reassure_partial">Il tuo messaggio è al sicuro. Sopra c\'è la parte arrivata prima dell\'interruzione.</string>
+    <string name="llmkey_fail_research_action">cercare le fonti</string>
+    <string name="llmkey_fail_research_reassure">La mission è al sicuro.</string>
+    <string name="llmkey_fail_generate_action">scrivere la lezione</string>
+    <string name="llmkey_fail_generate_reassure">Non hai perso nulla.</string>
+    <string name="llmkey_fail_complete_action">chiudere la lezione</string>
+    <string name="llmkey_fail_complete_reassure">La lezione è completata e le tue risposte sono al sicuro.</string>
+
+    <string name="llmkey_hint_home_missing_title">Manca la chiave per le lezioni</string>
+    <string name="llmkey_hint_home_missing_body">Puoi già creare cartelle e argomenti e ripassare le schede. Per parlare con il Tutor, scrivere le lezioni e valutare le risposte aperte serve la chiave del servizio LLM.</string>
+    <string name="llmkey_hint_home_rejected_body">Puoi continuare a ripassare e a rileggere le lezioni. Per tutto il resto serve una chiave valida.</string>
+    <string name="llmkey_hint_chat_missing_title">Prima di scrivere: manca la chiave LLM</string>
+    <string name="llmkey_hint_chat_missing_body">Il Tutor risponde con la tua chiave del servizio LLM. Inseriscila nelle Impostazioni, poi torna qui: quello che stai scrivendo resta nel campo.</string>
+    <string name="llmkey_hint_chat_rejected_body">Il Tutor non può rispondere finché non la sostituisci. Quello che scrivi resta nel campo.</string>
+    <string name="llmkey_hint_complete_missing_title">Per chiudere la lezione serve la chiave LLM</string>
+    <string name="llmkey_hint_complete_missing_body">Le tue risposte sono al sicuro. Il registro si aggiorna con la tua chiave del servizio LLM: inseriscila nelle Impostazioni, poi torna a chiudere la lezione.</string>
+    <string name="llmkey_hint_complete_rejected_body">Le tue risposte sono al sicuro. Sostituiscila nelle Impostazioni, poi torna a chiudere la lezione.</string>
+
+    <!-- Queued data of the user (login.md, settings.md) -->
+    <plurals name="ui_pending_reviews">
+        <item quantity="one">%1$d voto di ripasso</item>
+        <item quantity="other">%1$d voti di ripasso</item>
+    </plurals>
+    <plurals name="ui_pending_answers">
+        <item quantity="one">%1$d risposta di una lezione</item>
+        <item quantity="other">%1$d risposte di lezioni</item>
+    </plurals>
+    <plurals name="ui_pending_highlights">
+        <item quantity="one">le evidenziazioni di %1$d lezione</item>
+        <item quantity="other">le evidenziazioni di %1$d lezioni</item>
+    </plurals>
+    <plurals name="ui_pending_strokes">
+        <item quantity="one">le note a mano di %1$d lezione</item>
+        <item quantity="other">le note a mano di %1$d lezioni</item>
+    </plurals>
+    <string name="ui_pending_both">%1$s e %2$s</string>
+</resources>

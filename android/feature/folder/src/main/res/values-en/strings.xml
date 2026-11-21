@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+<string name="folder_back">Back</string>
+    <string name="folder_more_actions">More actions for the folder</string>
+    <string name="folder_section_topics">Topics</string>
+    <string name="folder_pane_title">Topics in %1$s</string>
+    <string name="folder_new_topic">New topic</string>
+    <string name="folder_loading_topics">Loading topics</string>
+    <string name="folder_refresh_failed">Can\'t refresh the topics.</string>
+    <string name="folder_row_description">%1$s, %2$s</string>
+
+    <string name="folder_empty_title">No topics here</string>
+    <string name="folder_empty_body">A topic is something you want to learn, such as Rust or Photography.</string>
+    <string name="folder_empty_cta">Create your first topic</string>
+
+    <string name="folder_action_rename_folder">Rename folder</string>
+    <string name="folder_action_delete_folder">Delete folder</string>
+
+    <string name="folder_create_topic_title">New topic</string>
+    <string name="folder_topic_label">Topic title</string>
+    <string name="folder_topic_placeholder">E.g. Rust</string>
+    <string name="folder_language_label">Content language</string>
+    <string name="folder_language_it">Italiano</string>
+    <string name="folder_language_en">English</string>
+    <string name="folder_language_unknown">—</string>
+    <string name="topic_language_line">Language: %1$s</string>
+    <string name="folder_create_confirm">Create</string>
+    <string name="folder_create_loading">Creating…</string>
+    <string name="folder_create_topic_not_done">The topic wasn\'t created.</string>
+    <string name="folder_rename_topic_title">Rename topic</string>
+    <string name="folder_rename_confirm">Save</string>
+    <string name="folder_rename_loading">Saving…</string>
+    <string name="folder_rename_topic_not_done">The topic wasn\'t renamed.</string>
+    <string name="folder_topic_empty">Give the topic a title.</string>
+    <string name="folder_topic_duplicate">This folder already has a topic with this title.</string>
+
+    <string name="folder_delete_topic_title">Delete the topic “%1$s”?</string>
+    <string name="folder_delete_topic_body">It will be deleted along with everything in it. This can\'t be undone.</string>
+    <string name="folder_delete_topic_body_mission">It will be deleted along with everything in it. The mission and preferences of this topic will be deleted too. This can\'t be undone.</string>
+    <string name="folder_delete_topic_body_mission_turn">It will be deleted along with everything in it. The mission and preferences of this topic will be deleted too. This can\'t be undone. The Tutor\'s reply in progress will be lost.</string>
+    <string name="folder_delete_topic_body_turn">It will be deleted along with everything in it. This can\'t be undone. The Tutor\'s reply in progress will be lost.</string>
+    <string name="folder_delete_topic_confirm">Delete topic</string>
+    <string name="folder_delete_loading">Deleting…</string>
+    <string name="folder_delete_topic_not_done">The topic wasn\'t deleted.</string>
+
+    <string name="folder_rename_folder_title">Rename folder</string>
+    <string name="folder_folder_label">Folder name</string>
+    <string name="folder_folder_placeholder">E.g. Work</string>
+    <string name="folder_rename_folder_not_done">The folder wasn\'t renamed.</string>
+    <string name="folder_folder_empty">Give the folder a name.</string>
+    <string name="folder_folder_duplicate">You already have a folder with this name. Pick another one.</string>
+    <string name="folder_delete_folder_title">Delete the folder “%1$s”?</string>
+    <string name="folder_delete_folder_body_many" tools:ignore="PluralsCandidate">It contains %1$d topics. They will be deleted too, along with everything in them. This can\'t be undone.</string>
+    <string name="folder_delete_folder_body_one">It contains 1 topic. It will be deleted too, along with everything in it. This can\'t be undone.</string>
+    <string name="folder_delete_folder_body_empty">The folder is empty. This can\'t be undone.</string>
+    <string name="folder_delete_folder_confirm_many">Delete folder and topics</string>
+    <string name="folder_delete_folder_confirm_one">Delete folder and topic</string>
+    <string name="folder_delete_folder_confirm_empty">Delete folder</string>
+    <string name="folder_delete_folder_not_done">The folder wasn\'t deleted.</string>
+
+    <string name="folder_toast_topic_created">Topic “%1$s” created</string>
+    <string name="folder_toast_open">Open</string>
+    <string name="folder_toast_topic_renamed">Topic renamed to “%1$s”</string>
+    <string name="folder_toast_topic_deleted">Topic “%1$s” deleted</string>
+    <string name="folder_toast_topic_gone">This topic no longer exists.</string>
+    <string name="folder_toast_folder_renamed">Folder renamed to “%1$s”</string>
+
+    <string name="folder_delete_topic_extra_lessons">The lessons and what you\'ve shown you know in this topic will be deleted too.</string>
+    <string name="folder_delete_topic_extra_preparing">The lesson being prepared will be lost.</string>
+    <string name="topic_back_to_lesson">Back to the lesson “%1$s”</string>
+    <string name="topic_back">Back</string>
+    <string name="topic_more_actions">More actions</string>
+    <string name="topic_action_rename">Rename topic</string>
+    <string name="topic_action_delete">Delete topic</string>
+    <string name="topic_loading">Loading…</string>
+    <string name="topic_chip_description">Status: %1$s</string>
+</resources>

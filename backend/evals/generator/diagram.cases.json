@@ -1,0 +1,936 @@
+{
+  "suite": "generator/diagram",
+  "prompt_dir": "generator",
+  "description": "Issue #3: il blocco SDUI `diagram` (`docs/contracts/sdui.md` §4 e §10, `generator-phase12-v6`). Quattro casi con piano fisso (input), come `generator/phase12`: tre argomenti che HANNO una struttura (`flow` con diramazione, `tree`, `cycle`: ciascuno atteso con almeno una figura valida, al massimo 2) e uno che NON ne ha (atteso nessuna figura). Controlli deterministici: il Validator reale (`validator_pass_*`, che comprende `diagram_structure`), `must_include_block_types: [\"diagram\"]` e `block_type_count` (`{\"diagram\": [1, 2]}` nei positivi, `[0, 0]` nel negativo: nel caso senza struttura una figura è per definizione decorativa, quindi niente `[0, 1]`), più tutti i controlli di forma e lunghezza di `generator/phase12`, `concept_chain` compreso (ignora `diagram`, come i `glossary_term`). La qualità della figura (struttura reale, posizione, testi, risposta non anticipata) resta alla rubrica del giudice (`figure_*`).",
+  "defaults": {
+    "runs_per_case": 2,
+    "streaming": true,
+    "deterministic": {
+      "validator_pass_first_try": true,
+      "validator_pass_within_3": true,
+      "sources_copied_exactly": true,
+      "topic_glossary_copied_exactly": true,
+      "no_exclamation_in_feedback": true,
+      "language": "it",
+      "prose_words": [
+        1200,
+        2200
+      ],
+      "prose_words_target": {
+        "range": [
+          1500,
+          1900
+        ],
+        "severity": "warn"
+      },
+      "sections": [
+        3,
+        6
+      ],
+      "sections_from_plan": {
+        "description": "numero di h2 = concetti del piano + 1 (chiusura) + 1 se il piano ha almeno un prerequisito `general`",
+        "severity": "error"
+      },
+      "explanation_run_words_max": {
+        "max": 300,
+        "defect_above": 350,
+        "description": "parole di `paragraph` e `callout` (title e text) consecutive tra l'inizio di una sezione h2 (o un esercizio) e il blocco esercizio successivo; il `code` non conta e non interrompe; l'intro e la chiusura sono sezioni a parte"
+      },
+      "paragraphs_consecutive_max": 2,
+      "paragraph_words": {
+        "range": [
+          20,
+          110
+        ],
+        "severity": "warn",
+        "description": "tutti i paragrafi, richiamo compreso (il paragrafo d'invito del richiamo è di 20-40 parole, i ripassi di 25-60: per questo il minimo è 20); esclusi i paragrafi di `lang` diverso da it e le citazioni in lingua originale"
+      },
+      "concept_chain": {
+        "description": "per ogni sezione di concetto la sequenza dei tipi di blocco, ignorando `glossary_term`, deve corrispondere a: paragraph, heading(3) con testo che inizia per «Esempio:», code?, paragraph, paragraph, callout(warning)?, poi >= 1 esercizio. Nessun esercizio prima del terzo paragrafo; il callout c'è se e solo se il `pitfall` del concetto (stesso indice, nell'ordine del piano) non è vuoto; title del callout che inizia per «Errore tipico:» e <= 8 parole, text <= 300 caratteri",
+        "severity": "error"
+      },
+      "h3_per_concept_section": {
+        "description": "esattamente un heading di livello 3 in ogni sezione di concetto e nessuno in intro, richiamo e chiusura",
+        "severity": "error"
+      },
+      "callouts": {
+        "per_section_max": 1,
+        "warning_max": 5,
+        "tip_plus_info_max": 2
+      },
+      "intro": {
+        "paragraphs": [
+          1,
+          2
+        ],
+        "words_max": 100,
+        "no_exercise": true,
+        "no_h3": true
+      },
+      "recall_iff_general": {
+        "description": "la prima sezione h2 inizia per «Cosa ti serve:» se e solo se il piano ha >= 1 prerequisito `general` (case.deterministic.recall.expected lo conferma). Se c'è: >= 1 e <= 3 paragrafi di ripasso (25-60 parole, avviso fuori), esattamente 1 esercizio quiz_single o fill_blank con required false, venuto prima dei paragrafi di ripasso, nessuna flashcard, nessun h3, parole di prosa della sezione <= 300",
+        "severity": "error"
+      },
+      "closing": {
+        "words_max": 120,
+        "description": "parole di paragraph, checklist (title e items) e primary_source.why nell'ultima sezione h2"
+      },
+      "closing_active": {
+        "last_section_has_checklist": true,
+        "checklist_items": [
+          2,
+          3
+        ],
+        "closing_summary_words_max": 60
+      },
+      "forbidden_phrases": [
+        "(?i)\\b(bravo|ottimo lavoro|semplicemente|ovviamente|banale|banalmente|naturalmente|chiaramente)\\b",
+        "(?i)\\b(come è noto|è facile vedere|come abbiamo visto)\\b",
+        "(?i)\\bclicca qui\\b"
+      ],
+      "forbidden_phrases_warn": [
+        "(?i)\\bbasta\\s+\\w+(are|ere|ire)\\b"
+      ],
+      "term_first_mention_is_glossary_link": {
+        "description": "per ogni termine di `plan.terms.introduce`, la prima occorrenza (parola intera, case-insensitive, fuori dai `codice inline` e dal testo dei titoli) di `term` nella prosa è dentro un `[[key]]` o preceduta da un blocco `glossary_term` della stessa key; la prima menzione non può stare in un blocco successivo a quello che usa il termine in chiaro",
+        "severity": "error"
+      },
+      "exercises_per_concept_section": [
+        1,
+        2
+      ],
+      "objective_not_repeated_in_paragraph": true,
+      "quiz_correct_position_varies": true,
+      "quiz_option_char_ratio_max": 1.3,
+      "fill_blank_answer_not_in_adjacent_text": {
+        "severity": "error"
+      },
+      "glossary_entries_max": 12,
+      "output_tokens": {
+        "warn_above": 14000,
+        "note": "ragionamento compreso; riportare mediana e massimo per caso. Tetto di richiesta consigliato 20000"
+      },
+      "blocks_max": {
+        "max": 50,
+        "severity": "warn",
+        "description": "blocchi di primo livello (heading compresi); avviso a 50 (obiettivo del prompt). Oltre 60 fallisce già il Validator (`schema` su `/blocks`), quindi la soglia d'errore non serve: la chiave accetta una sola soglia"
+      },
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+      }
+    }
+  },
+  "pass_criteria": {
+    "validator_pass_within_3": "100% delle run (include `diagram_structure`)",
+    "validator_pass_first_try": ">= 50% delle run; i codici `diagram_structure` incontrati si riportano a parte (misurano se le regole di struttura sono chiare)",
+    "diagram_present_in_positive_cases": "`block_type_count: {\"diagram\": [1, 2]}` (e `must_include_block_types` con `diagram`) in >= 80% delle run dei tre casi positivi (`flow_http_cache_branch`, `tree_python_exception_hierarchy`, `cycle_tdd_red_green_refactor`)",
+    "no_decorative_figure": "`list_of_types_no_decorative_figure`: `block_type_count: {\"diagram\": [0, 0]}` in 100% delle run, più la rubrica `no_decorative_figure`",
+    "figure_quality": "rubriche `figure_adds_structure`, `figure_position`, `figure_text_quality`, `figure_no_answer_leak`, `figure_count`, e quella di layout di ciascun caso: media >= 0.8",
+    "regression": "i controlli di `generator/phase12` (lunghezze, sezioni, `concept_chain`, callout, quiz, citazioni) non peggiorano rispetto alla baseline di quella suite",
+    "rubric_mean": ">= 0.8"
+  },
+  "cases": [
+    {
+      "id": "flow_http_cache_branch",
+      "description": "Argomento che HA una struttura: un processo con diramazione (richiesta -> cache fresca? -> validazione -> 304 o 200). Atteso: almeno una `diagram` con `layout: flow` valida (nessun ciclo, connessa), nel concetto 3 («il percorso completo di una richiesta»), dopo la regola e prima degli esercizi; `caption` con citazione. Rischi: figura che ripete in nodi l'elenco dei passaggi appena scritto; arco di ritorno (ciclo in un `flow`); nodi frase intera; risposta dell'esercizio fill_blank (il codice di stato `304`) già scritta in un'etichetta di arco o in `alt`; più di 2 figure.",
+      "topic": {
+        "title": "Cache HTTP: fresca, scaduta, validata"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio capire perché il mio sito a volte mostra pagine vecchie e quando il browser contatta il server.",
+        "success": [
+          "Prevedo se una richiesta viene servita dalla cache o dal server",
+          "Scelgo la direttiva `Cache-Control` adatta a una risposta"
+        ],
+        "starting_point": "So che cos'è una richiesta HTTP e leggo gli header nelle DevTools del browser.",
+        "constraints": [],
+        "out_of_scope": [
+          "CDN",
+          "service worker"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Che cosa succede a una richiesta con la cache",
+        "objective": "Saper prevedere se una richiesta HTTP viene servita dalla cache, validata o rifatta al server.",
+        "why_now": "Primo passo verso il criterio «prevedo se la richiesta arriva al server»: servono freschezza, validazione e il percorso completo.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa leggere la richiesta e la risposta HTTP nelle DevTools",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "risposta fresca o scaduta",
+            "key_point": "Una risposta in cache è fresca finché non scade il tempo di `max-age`: da fresca viene riusata senza contattare il server.",
+            "example": "Una risposta arrivata 30 secondi fa con `Cache-Control: max-age=60` viene chiesta di nuovo dopo 20 secondi.",
+            "steps": [
+              "Leggi `max-age=60`: la risposta è fresca per 60 secondi dall'arrivo.",
+              "Sono passati 30 + 20 = 50 secondi: meno di 60.",
+              "La risposta è ancora fresca, quindi la cache la usa senza chiedere nulla al server."
+            ],
+            "pitfall": "Pensare che `max-age` conti dal momento della richiesta e non da quello in cui la risposta è arrivata.",
+            "visual": "none"
+          },
+          {
+            "name": "validare una risposta scaduta",
+            "key_point": "Una risposta scaduta non si butta: la cache chiede al server se è ancora buona con `If-None-Match` e il valore di `ETag`; il server risponde `304` (riusa la copia) o `200` (nuovo contenuto).",
+            "example": "Una risposta scaduta ha `ETag: \"v7\"`; la cache la rivalida e il server non l'ha modificata.",
+            "steps": [
+              "La risposta è scaduta, quindi la cache non la riusa subito.",
+              "Invia la richiesta con `If-None-Match: \"v7\"`.",
+              "Il server confronta e vede che la risorsa è ancora la v7: risponde `304` senza corpo.",
+              "La cache tiene la copia e la riusa, rinnovandone la freschezza."
+            ],
+            "pitfall": "Pensare che una risposta scaduta venga sempre riscaricata per intero.",
+            "visual": "none"
+          },
+          {
+            "name": "il percorso completo di una richiesta",
+            "key_point": "Ogni richiesta segue un percorso: se la copia è fresca si usa subito; se è scaduta si valida; se il server risponde `304` si riusa la copia, se risponde `200` la si sostituisce.",
+            "example": "Una pagina è in cache, scaduta, con `ETag: \"v7\"`; sul server nel frattempo è diventata la v8.",
+            "steps": [
+              "La copia è scaduta: non si usa subito.",
+              "La cache valida con `If-None-Match: \"v7\"`.",
+              "Il server ha la v8, quindi risponde `200` con il nuovo contenuto.",
+              "La cache sostituisce la copia con la v8 e mostra quella."
+            ],
+            "pitfall": "nessuno",
+            "visual": "flow"
+          },
+          {
+            "name": "`no-cache` e `no-store`",
+            "key_point": "`no-cache` obbliga a validare ogni volta ma la risposta resta in cache; `no-store` vieta di tenerne una copia.",
+            "example": "Una pagina con dati personali va servita sempre aggiornata e non deve restare sul disco.",
+            "steps": [
+              "`no-cache` non basta: la copia si tiene e si valida.",
+              "`no-store` impedisce di salvare la risposta.",
+              "Per dati personali si sceglie `no-store`."
+            ],
+            "pitfall": "Pensare che `no-cache` significhi «non mettere in cache».",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "cache_freschezza",
+              "term": "freschezza",
+              "hint": "una risposta in cache riusabile senza contattare il server"
+            },
+            {
+              "key": "validazione",
+              "term": "validazione",
+              "hint": "la domanda con cui la cache chiede al server se la copia è ancora buona"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f300-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "prevedere se una risposta con `max-age` scaduto viene riusata subito",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare quale codice di stato permette di riusare la copia dopo la validazione",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali direttive impediscono di salvare la risposta",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "prevedere e spiegare il percorso di una richiesta per una copia scaduta con ETag cambiato",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000001",
+          "title": "HTTP caching - MDN Web Docs",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching",
+          "annotation": "Guida di riferimento: risposte fresche e scadute, `Cache-Control` (`max-age`, `no-cache`, `no-store`), validazione con `ETag` e `If-None-Match`, risposta `304`.",
+          "use_for": "freschezza, validazione condizionale, direttive di `Cache-Control`"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "diagram",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ],
+        "block_type_count": {
+          "diagram": [
+            1,
+            2
+          ]
+        }
+      },
+      "rubric": [
+        {
+          "id": "figure_adds_structure",
+          "weight": 3,
+          "text": "La figura (`diagram`) mostra una struttura che la prosa da sola renderebbe faticosa da tenere a mente: i suoi nodi e archi non ripetono un elenco già chiaro nel testo vicino, e la prosa non la ridescrive nodo per nodo."
+        },
+        {
+          "id": "figure_position",
+          "weight": 2,
+          "text": "La figura sta nella sezione del concetto che ha quella struttura, dopo il paragrafo della regola e prima dell'errore tipico e degli esercizi; non è nell'intro né nella chiusura, e ogni termine che compare in un nodo è stato introdotto nella prosa prima di lei."
+        },
+        {
+          "id": "figure_text_quality",
+          "weight": 2,
+          "text": "`label` di 2-4 parole (nomi, non frasi), `detail` presente solo dove aggiunge un esempio o una precisazione, `caption` dice che cosa guardare o concludere senza ripetere `title`, `alt` descrive la figura da sola (quanti elementi, in che ordine, che cosa collega cosa) in modo che chi non la vede la capisca."
+        },
+        {
+          "id": "figure_no_answer_leak",
+          "weight": 3,
+          "text": "Né i nodi, né le etichette degli archi, né `caption`, né `alt` contengono la risposta di un esercizio della stessa sezione (il caso dell'esercizio è nuovo e la figura non lo risolve)."
+        },
+        {
+          "id": "figure_count",
+          "weight": 1,
+          "text": "Al massimo 2 figure in tutta la lezione, nessuna decorativa."
+        },
+        {
+          "id": "flow_valid_branch",
+          "weight": 3,
+          "text": "La figura ha `layout: flow` con almeno un bivio (due archi uscenti dallo stesso nodo) e nessun arco che torni indietro; ogni nodo ha almeno un arco."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ogni sezione di concetto ha intuizione, esempio svolto con tutti i passaggi del piano e regola; la figura non sostituisce nessun passaggio."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Le regole riportate portano la citazione della fonte, anche quando compaiono solo nei nodi: la `caption` porta `[^key]`; nessun nome, passo o numero «a memoria» che la fonte non sostiene."
+        }
+      ]
+    },
+    {
+      "id": "tree_python_exception_hierarchy",
+      "description": "Argomento che HA una struttura: una gerarchia di classi (BaseException -> Exception -> ArithmeticError / LookupError -> ...). Atteso: una `diagram` con `layout: tree` valida (una sola radice, archi genitore -> figlio, `nodes - 1` archi, nessun nodo con due genitori), nel concetto 1 o 2, dopo la regola e prima degli esercizi. Rischi: archi figlio -> genitore invertiti; due radici (ad esempio `Exception` e `BaseException` senza arco tra loro); `edges` mancante; nodi con più di 8 elementi (limite) che spingono a inventare classi non nella fonte; risposta dell'esercizio (quale `except` cattura `KeyError`) già deducibile dalla figura.",
+      "topic": {
+        "title": "Python: la gerarchia delle eccezioni"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio smettere di scrivere `except:` generici e catturare solo ciò che so gestire.",
+        "success": [
+          "Scelgo la classe giusta in un `except`",
+          "So prevedere quali eccezioni cattura un `except` dato"
+        ],
+        "starting_point": "Scrivo script Python da due anni e uso `try` ed `except`, ma quasi sempre con `except Exception`.",
+        "constraints": [],
+        "out_of_scope": [
+          "eccezioni personalizzate",
+          "gruppi di eccezioni"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Quali eccezioni cattura un except",
+        "objective": "Saper prevedere quali eccezioni cattura un `except` guardando la gerarchia delle classi.",
+        "why_now": "Primo passo verso il criterio «catturo solo ciò che so gestire»: serve capire che le classi sono in gerarchia.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa scrivere un blocco `try` con `except`",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "eccezioni in gerarchia",
+            "key_point": "Le eccezioni sono classi: `ZeroDivisionError` deriva da `ArithmeticError`, che deriva da `Exception`, che deriva da `BaseException`.",
+            "example": "`ZeroDivisionError` è un tipo di `ArithmeticError`, a sua volta un tipo di `Exception`.",
+            "steps": [
+              "Parti da `ZeroDivisionError`: è la classe più specifica.",
+              "Sali di un livello: la sua classe madre è `ArithmeticError`.",
+              "Sali ancora: `ArithmeticError` deriva da `Exception`.",
+              "In cima c'è `BaseException`, da cui derivano tutte."
+            ],
+            "pitfall": "Pensare che ogni eccezione sia una classe separata, senza parentela con le altre.",
+            "visual": "tree"
+          },
+          {
+            "name": "`except` cattura anche le classi derivate",
+            "key_point": "Un `except` con una classe cattura quella classe e tutte le sue derivate.",
+            "example": "Un `try` divide per zero; l'`except` nomina `ArithmeticError`.",
+            "steps": [
+              "Il codice solleva `ZeroDivisionError`.",
+              "`ZeroDivisionError` deriva da `ArithmeticError`.",
+              "Quindi l'`except ArithmeticError` lo cattura."
+            ],
+            "pitfall": "Pensare che l'`except` catturi solo la classe esatta che nomina.",
+            "visual": "none"
+          },
+          {
+            "name": "l'ordine degli `except`",
+            "key_point": "Python prova gli `except` dall'alto: il primo che corrisponde vince, quindi le classi specifiche vanno prima di quelle generali.",
+            "example": "Un `try` ha prima `except Exception` e poi `except KeyError`; il codice solleva `KeyError`.",
+            "steps": [
+              "Il codice solleva `KeyError`.",
+              "Python guarda il primo `except`: `Exception`.",
+              "`KeyError` deriva da `LookupError`, che deriva da `Exception`: il primo corrisponde.",
+              "Il secondo `except` non verrà mai eseguito."
+            ],
+            "pitfall": "Pensare che Python scelga l'`except` più specifico, qualunque sia l'ordine.",
+            "visual": "none"
+          },
+          {
+            "name": "che cosa `except Exception` non cattura",
+            "key_point": "`KeyboardInterrupt` e `SystemExit` derivano da `BaseException` e non da `Exception`, quindi `except Exception` non li cattura.",
+            "example": "Un ciclo infinito dentro un `try` con `except Exception`: l'utente preme Ctrl+C.",
+            "steps": [
+              "Ctrl+C solleva `KeyboardInterrupt`.",
+              "`KeyboardInterrupt` deriva da `BaseException`, non da `Exception`.",
+              "L'`except Exception` non corrisponde e il programma si interrompe."
+            ],
+            "pitfall": "nessuno",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "eccezione_base",
+              "term": "BaseException",
+              "hint": "la classe da cui derivano tutte le eccezioni"
+            },
+            {
+              "key": "classe_derivata",
+              "term": "classe derivata",
+              "hint": "una classe che eredita da un'altra"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f300-0000-7000-8000-000000000002",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere quale `except` cattura un `KeyError`",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare la classe madre di un'eccezione data",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali eccezioni cattura `except LookupError`",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "prevedere quale `except` viene eseguito con due clausole in un certo ordine e spiegare perché",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000002",
+          "title": "Built-in Exceptions - The Python Standard Library",
+          "url": "https://docs.python.org/3/library/exceptions.html",
+          "annotation": "Elenco delle eccezioni incorporate e della loro gerarchia: `BaseException`, `Exception`, `ArithmeticError`, `LookupError`; quali eccezioni derivano da quali.",
+          "use_for": "gerarchia delle eccezioni, che cosa cattura `except`"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "diagram",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ],
+        "block_type_count": {
+          "diagram": [
+            1,
+            2
+          ]
+        }
+      },
+      "rubric": [
+        {
+          "id": "figure_adds_structure",
+          "weight": 3,
+          "text": "La figura (`diagram`) mostra una struttura che la prosa da sola renderebbe faticosa da tenere a mente: i suoi nodi e archi non ripetono un elenco già chiaro nel testo vicino, e la prosa non la ridescrive nodo per nodo."
+        },
+        {
+          "id": "figure_position",
+          "weight": 2,
+          "text": "La figura sta nella sezione del concetto che ha quella struttura, dopo il paragrafo della regola e prima dell'errore tipico e degli esercizi; non è nell'intro né nella chiusura, e ogni termine che compare in un nodo è stato introdotto nella prosa prima di lei."
+        },
+        {
+          "id": "figure_text_quality",
+          "weight": 2,
+          "text": "`label` di 2-4 parole (nomi, non frasi), `detail` presente solo dove aggiunge un esempio o una precisazione, `caption` dice che cosa guardare o concludere senza ripetere `title`, `alt` descrive la figura da sola (quanti elementi, in che ordine, che cosa collega cosa) in modo che chi non la vede la capisca."
+        },
+        {
+          "id": "figure_no_answer_leak",
+          "weight": 3,
+          "text": "Né i nodi, né le etichette degli archi, né `caption`, né `alt` contengono la risposta di un esercizio della stessa sezione (il caso dell'esercizio è nuovo e la figura non lo risolve)."
+        },
+        {
+          "id": "figure_count",
+          "weight": 1,
+          "text": "Al massimo 2 figure in tutta la lezione, nessuna decorativa."
+        },
+        {
+          "id": "tree_valid",
+          "weight": 3,
+          "text": "La figura ha `layout: tree` con una sola radice, archi nel verso genitore -> figlio (dalla classe madre alla derivata), un solo genitore per nodo e solo classi che la fonte nomina (nessuna eccezione aggiunta a memoria)."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ogni sezione di concetto ha intuizione, esempio svolto con tutti i passaggi del piano e regola; la figura non sostituisce nessun passaggio."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Le regole riportate portano la citazione della fonte, anche quando compaiono solo nei nodi: la `caption` porta `[^key]`; nessun nome, passo o numero «a memoria» che la fonte non sostiene."
+        }
+      ]
+    },
+    {
+      "id": "cycle_tdd_red_green_refactor",
+      "description": "Argomento con un CICLO che si ripete (rosso, verde, refactor, poi di nuovo rosso). Atteso: una `diagram` con `layout: cycle` valida: nodi nell'ordine del ciclo, almeno 3, nessun `edges` (l'ultimo torna al primo da solo). Rischi: `edges` presenti (`diagram_structure`); ordine dei nodi sbagliato; scelta di `flow` con un arco di ritorno (ciclo: `diagram_structure`); figura che ripete le tre frasi della prosa.",
+      "topic": {
+        "title": "TDD: il ciclo rosso, verde, refactor"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio scrivere i test prima del codice senza perdermi nei passaggi.",
+        "success": [
+          "Applico il ciclo rosso-verde-refactor a una funzione piccola",
+          "So dire in quale fase del ciclo mi trovo"
+        ],
+        "starting_point": "Scrivo test unitari dopo il codice, mai prima.",
+        "constraints": [],
+        "out_of_scope": [
+          "mock",
+          "TDD a livello di sistema"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Il ciclo del TDD",
+        "objective": "Saper dire in quale fase del ciclo TDD ci si trova e che cosa fare nella fase successiva.",
+        "why_now": "Primo passo verso il criterio «applico il ciclo a una funzione piccola»: servono le tre fasi e il modo in cui si ripetono.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa scrivere un test unitario che verifica un valore",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "rosso: un test che fallisce",
+            "key_point": "Si comincia scrivendo un test per un comportamento che non esiste ancora e lo si vede fallire.",
+            "example": "Serve una funzione `somma(a, b)` che ancora non c'è: si scrive il test `somma(2, 3) == 5`.",
+            "steps": [
+              "Scrivi il test `somma(2, 3) == 5`.",
+              "Eseguilo: fallisce perché la funzione non esiste.",
+              "Il fallimento conferma che il test controlla davvero qualcosa."
+            ],
+            "pitfall": "Pensare che un test che passa subito sia un buon inizio.",
+            "visual": "none"
+          },
+          {
+            "name": "verde: il codice più semplice",
+            "key_point": "Si scrive il codice più semplice che fa passare il test, senza pulirlo.",
+            "example": "Il test `somma(2, 3) == 5` è rosso.",
+            "steps": [
+              "Scrivi `def somma(a, b): return 5`.",
+              "Esegui il test: passa.",
+              "Il codice è brutto ma il test è verde; la pulizia viene dopo."
+            ],
+            "pitfall": "Pensare che in questa fase si debba già scrivere il codice «giusto» e generale.",
+            "visual": "none"
+          },
+          {
+            "name": "refactor e ripetizione",
+            "key_point": "Con i test verdi si migliora il codice senza cambiarne il comportamento, poi si ricomincia con un nuovo test rosso.",
+            "example": "La funzione restituisce sempre 5, il test è verde.",
+            "steps": [
+              "Aggiungi un secondo test `somma(1, 1) == 2`: è rosso.",
+              "Rendi la funzione `return a + b`: i due test sono verdi.",
+              "Ripulisci i nomi senza cambiare il risultato e riesegui i test.",
+              "Scegli il prossimo comportamento e ricomincia da un test rosso."
+            ],
+            "pitfall": "nessuno",
+            "visual": "cycle"
+          },
+          {
+            "name": "passi piccoli",
+            "key_point": "Ogni giro del ciclo aggiunge un solo comportamento: se un passo diventa grande si torna indietro e lo si divide.",
+            "example": "Si vuole una funzione `media(lista)` con tre casi: lista vuota, un elemento, molti elementi.",
+            "steps": [
+              "Elenca i tre comportamenti.",
+              "Scrivi il test del solo caso lista vuota.",
+              "Fai il ciclo completo per quel caso prima di passare al successivo."
+            ],
+            "pitfall": "Pensare che più test insieme siano più efficienti di uno alla volta.",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "ciclo_tdd",
+              "term": "ciclo TDD",
+              "hint": "la sequenza di fasi (test che fallisce, codice minimo, pulizia) che si ripete"
+            },
+            {
+              "key": "refactor",
+              "term": "refactor",
+              "hint": "modifica della struttura del codice che non cambia il comportamento"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f300-0000-7000-8000-000000000003",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "riconoscere in quale fase del ciclo ci si trova dato lo stato dei test",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "completare il nome della fase che segue un test verde con codice migliorabile",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali azioni sono ammesse in fase verde",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "descrivere il giro successivo del ciclo per una nuova funzione e giustificare ogni passo",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f300-0000-7000-8000-000000000003",
+          "title": "Test Driven Development - Martin Fowler",
+          "url": "https://martinfowler.com/bliki/TestDrivenDevelopment.html",
+          "annotation": "Descrive il ciclo del TDD: scrivere un test che fallisce, farlo passare con il codice più semplice, ripulire il codice con i test verdi, ripetere.",
+          "use_for": "le tre fasi del ciclo e perché si ripete"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "diagram",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ],
+        "block_type_count": {
+          "diagram": [
+            1,
+            2
+          ]
+        }
+      },
+      "rubric": [
+        {
+          "id": "figure_adds_structure",
+          "weight": 3,
+          "text": "La figura (`diagram`) mostra una struttura che la prosa da sola renderebbe faticosa da tenere a mente: i suoi nodi e archi non ripetono un elenco già chiaro nel testo vicino, e la prosa non la ridescrive nodo per nodo."
+        },
+        {
+          "id": "figure_position",
+          "weight": 2,
+          "text": "La figura sta nella sezione del concetto che ha quella struttura, dopo il paragrafo della regola e prima dell'errore tipico e degli esercizi; non è nell'intro né nella chiusura, e ogni termine che compare in un nodo è stato introdotto nella prosa prima di lei."
+        },
+        {
+          "id": "figure_text_quality",
+          "weight": 2,
+          "text": "`label` di 2-4 parole (nomi, non frasi), `detail` presente solo dove aggiunge un esempio o una precisazione, `caption` dice che cosa guardare o concludere senza ripetere `title`, `alt` descrive la figura da sola (quanti elementi, in che ordine, che cosa collega cosa) in modo che chi non la vede la capisca."
+        },
+        {
+          "id": "figure_no_answer_leak",
+          "weight": 3,
+          "text": "Né i nodi, né le etichette degli archi, né `caption`, né `alt` contengono la risposta di un esercizio della stessa sezione (il caso dell'esercizio è nuovo e la figura non lo risolve)."
+        },
+        {
+          "id": "figure_count",
+          "weight": 1,
+          "text": "Al massimo 2 figure in tutta la lezione, nessuna decorativa."
+        },
+        {
+          "id": "cycle_valid",
+          "weight": 3,
+          "text": "La figura ha `layout: cycle` con almeno 3 nodi scritti nell'ordine del ciclo (rosso, verde, refactor) e nessun `edges`; non è un `flow` con un arco di ritorno."
+        },
+        {
+          "id": "complete_explanation",
+          "weight": 3,
+          "text": "Ogni sezione di concetto ha intuizione, esempio svolto con tutti i passaggi del piano e regola; la figura non sostituisce nessun passaggio."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Le regole riportate portano la citazione della fonte, anche quando compaiono solo nei nodi: la `caption` porta `[^key]`; nessun nome, passo o numero «a memoria» che la fonte non sostiene."
+        }
+      ]
+    },
+    {
+      "id": "list_of_types_no_decorative_figure",
+      "description": "Argomento che NON ha struttura da disegnare: il piano è quello di `generator/phase12` `narrow_plan_four_concepts_no_filler` (formato del messaggio di commit, un elenco piatto di tipi, un suffisso `!`, una regola «un commit, un tipo»). Atteso: nessuna figura, oppure al massimo una sola e non decorativa. Rischio: un albero o un flusso dei tipi di commit che ripete l'elenco già scritto in prosa («figura decorativa», Mayer: principio di coerenza), o un `flow` di due nodi. Questo caso misura la dimensione opposta degli altri tre: la lezione non peggiora per una figura inutile.",
+      "topic": {
+        "title": "Conventional Commits"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio che la cronologia del mio repository sia leggibile e che i changelog si generino da soli.",
+        "success": [
+          "Scrivo messaggi di commit nel formato Conventional Commits",
+          "Scelgo il tipo giusto (`feat`, `fix`, `docs`, `refactor`) per un cambiamento"
+        ],
+        "starting_point": "Uso git ogni giorno da un anno e so fare commit, branch e merge.",
+        "constraints": [],
+        "out_of_scope": [
+          "strumenti di rilascio automatico"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "Scrivere il messaggio di un commit",
+        "objective": "Saper scrivere il messaggio di un commit nel formato Conventional Commits, scegliendo il tipo e segnalando un cambiamento incompatibile.",
+        "why_now": "Primo passo verso il criterio «scrivo messaggi che il tool dei changelog capisce»: servono il formato, il significato dei tipi e il modo di segnalare un cambiamento incompatibile.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Sa creare un commit con `git commit -m`",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "struttura del messaggio",
+            "key_point": "Il messaggio ha un tipo, uno scope facoltativo e una descrizione, nella forma `tipo(scope): descrizione`.",
+            "example": "Un commit corregge un calcolo sbagliato dei totali nel modulo `cart`: il messaggio è `fix(cart): corregge il totale con sconto`.",
+            "steps": [
+              "Scegli il tipo che dice che cosa fa il commit: qui una correzione, quindi `fix`.",
+              "Aggiungi tra parentesi lo scope, cioè la parte toccata: `cart`.",
+              "Scrivi dopo i due punti che cosa cambia, in breve: `corregge il totale con sconto`.",
+              "Unisci le parti in `fix(cart): corregge il totale con sconto`."
+            ],
+            "pitfall": "Pensare che il tipo descriva il file toccato e non lo scopo della modifica.",
+            "visual": "none"
+          },
+          {
+            "name": "scegliere il tipo",
+            "key_point": "`feat` aggiunge una funzionalità, `fix` corregge un difetto; `docs` e `refactor` non cambiano ciò che vede chi usa il programma.",
+            "example": "Un commit sposta il codice di validazione in una funzione a parte senza cambiare il risultato per chi usa il programma.",
+            "steps": [
+              "Chiediti se per chi usa il programma cambia qualcosa: no.",
+              "Quindi non è `feat` né `fix`.",
+              "Il codice cambia struttura ma non comportamento: il tipo è `refactor`."
+            ],
+            "pitfall": "",
+            "visual": "none"
+          },
+          {
+            "name": "segnalare un cambiamento incompatibile",
+            "key_point": "Un cambiamento che rompe chi usa il programma si segnala con `!` dopo il tipo o con il piè di pagina `BREAKING CHANGE:`; il tipo resta `feat` o `fix`.",
+            "example": "Un commit rimuove il parametro `currency` dalla funzione `price` del modulo `api` e chi la chiama dovrà cambiare: serve un messaggio che lo dica.",
+            "steps": [
+              "Il tipo dice che cosa fa il commit: qui cambia il comportamento, quindi `feat`.",
+              "Aggiungi `!` subito prima dei due punti: `feat(api)!: rimuove il parametro currency`.",
+              "In alternativa, o in aggiunta, un piè di pagina `BREAKING CHANGE: currency non è più accettato`."
+            ],
+            "pitfall": "Pensare che un cambiamento incompatibile abbia un tipo suo, come `breaking`.",
+            "visual": "none"
+          },
+          {
+            "name": "un commit, un tipo",
+            "key_point": "Se una modifica fa due cose di tipo diverso (una correzione e una funzione nuova) non si sceglie il tipo «più importante»: si separa in due commit.",
+            "example": "Nello stesso lavoro si corregge un errore di arrotondamento nel modulo `cart` e si aggiunge il campo `note` all'ordine: due scopi in un solo commit.",
+            "steps": [
+              "Elenca che cosa cambia: la correzione dell'arrotondamento e il nuovo campo.",
+              "I due cambiamenti hanno tipi diversi, `fix` e `feat`: un solo messaggio non può dirli tutti.",
+              "Dividi il lavoro in due commit, ciascuno con il suo tipo e la sua descrizione."
+            ],
+            "pitfall": "Pensare che un commit con una correzione e una funzione nuova vada scritto con `feat` perché è la parte più importante.",
+            "visual": "none"
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "conventional_commits",
+              "term": "Conventional Commits",
+              "hint": "convenzione per scrivere i messaggi di commit"
+            },
+            {
+              "key": "scope",
+              "term": "scope",
+              "hint": "la parte del progetto toccata dal commit, tra parentesi"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193f200-0000-7000-8000-000000000004",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "completare il messaggio di un commit che aggiunge una funzione di esportazione al modulo `report`",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "scegliere il tipo per un commit che cambia solo il README",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "riconoscere quali messaggi segnalano correttamente un cambiamento incompatibile",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "spiegare come si scrivono i messaggi per un lavoro che corregge un errore e aggiunge una funzione, e perché non basta un tipo",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193f200-0000-7000-8000-000000000004",
+          "title": "Conventional Commits 1.0.0",
+          "url": "https://www.conventionalcommits.org/en/v1.0.0/",
+          "annotation": "Specifica ufficiale: struttura del messaggio, tipi `feat` e `fix`, scope, breaking change (`!` e `BREAKING CHANGE:`), esempi, domande frequenti (commit con più tipi).",
+          "use_for": "formato del messaggio, significato dei tipi, cambiamenti incompatibili"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "records": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ],
+        "recall": {
+          "expected": false
+        },
+        "sections": [
+          5,
+          5
+        ],
+        "block_type_count": {
+          "diagram": [
+            0,
+            0
+          ]
+        }
+      },
+      "rubric": [
+        {
+          "id": "no_decorative_figure",
+          "weight": 4,
+          "text": "La lezione non contiene nessuna `diagram`; se ce n'è una, mostra una struttura che il testo non rende (non un elenco piatto dei tipi `feat`, `fix`, `docs`, `refactor`, non due nodi, non la struttura `tipo(scope): descrizione` già scritta nel paragrafo) ed è l'unica."
+        },
+        {
+          "id": "complete_not_padded",
+          "weight": 3,
+          "text": "La lezione raggiunge la lunghezza spiegando ogni passaggio dell'esempio, senza aggiungere sezioni, callout o figure come riempitivo."
+        },
+        {
+          "id": "pitfall_only_where_planned",
+          "weight": 2,
+          "text": "Il callout «Errore tipico» c'è nei concetti 1, 3 e 4 e non nel concetto 2 (pitfall vuoto)."
+        },
+        {
+          "id": "citations",
+          "weight": 2,
+          "text": "Formato e tipi portano la citazione della specifica; nessuna regola inventata."
+        }
+      ]
+    }
+  ],
+  "notes": "Id delle risorse e URL delle fonti sono inventati a scopo di test (`0193f300-…`; URL di documentazione plausibili, non verificati): non sono fonti. Nessuna esecuzione reale al momento della scrittura."
+}

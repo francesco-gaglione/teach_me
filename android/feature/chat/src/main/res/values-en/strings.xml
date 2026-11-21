@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Messages -->
+    <string name="chat_tutor_label">Tutor</string>
+    <string name="chat_user_description">You: %1$s</string>
+    <string name="chat_unknown_content">This message contains something this version of the app can\'t show yet.</string>
+    <string name="chat_state_streaming">Typing</string>
+    <string name="chat_copy_message">Copy message</string>
+    <string name="chat_copy_code">Copy code</string>
+    <string name="chat_copy_action">Copy</string>
+    <string name="chat_copied">Copied</string>
+    <string name="chat_copied_toast">Message copied</string>
+    <string name="chat_code_description">%1$s code</string>
+    <string name="chat_code_description_plain">Code</string>
+    <string name="chat_day_today">Today</string>
+    <string name="chat_day_yesterday">Yesterday</string>
+
+    <!-- Activity indicator -->
+    <string name="chat_typing">The Tutor is typing…</string>
+    <string name="chat_typing_slow">The Tutor is taking longer than usual…</string>
+    <string name="chat_connection_lost">Connection lost. Reconnecting…</string>
+    <string name="chat_unreachable">Can\'t reach the backend. The reply keeps being prepared on the server and you\'ll find it here.</string>
+    <string name="chat_reconnect_now">Try now</string>
+
+    <!-- List -->
+    <string name="chat_pill_new">New messages</string>
+    <string name="chat_older_loading">Loading earlier messages…</string>
+    <string name="chat_older_failed">Can\'t load earlier messages.</string>
+    <string name="chat_older_retry">Try again</string>
+    <string name="chat_loading">Loading</string>
+    <string name="chat_loading_long">Still loading…</string>
+
+    <!-- Empty state -->
+    <string name="chat_empty_title">Let\'s start with you</string>
+    <string name="chat_empty_body">Tell me why you want to learn “%1$s”. The Tutor will ask a few questions and your mission will come from there: the purpose that guides every lesson.</string>
+    <string name="chat_empty_examples">For example, you could start with:</string>
+    <string name="chat_suggestion_work">I need it for work…</string>
+    <string name="chat_suggestion_project">I have a project in mind…</string>
+    <string name="chat_suggestion_exam">It\'s for an exam or a course…</string>
+
+    <!-- Context pane -->
+    <string name="chat_context_title">Your mission</string>
+    <string name="chat_context_draft_body">A proposal is waiting (version %1$d). Read it in the chat and decide whether to confirm it.</string>
+    <string name="chat_context_change_pending">Change proposal pending.</string>
+    <string name="chat_context_go_proposal">Go to the proposal</string>
+    <string name="chat_context_open_mission">Open the mission</string>
+    <string name="chat_context_version">Version %1$d</string>
+    <string name="chat_context_criteria">How you\'ll know you\'ve made it</string>
+    <string name="chat_context_criterion">Criterion %1$d of %2$d: %3$s</string>
+    <string name="chat_context_body">Still to be defined. The mission is the purpose for which you learn “%1$s”: it guides what I teach you and in what order.</string>
+
+    <!-- Composer -->
+    <string name="chat_composer_hint">Write a message…</string>
+    <string name="chat_composer_label">Write a message to the Tutor</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_send_disabled_empty">Send, write a message first</string>
+    <string name="chat_send_disabled_busy">Send, the Tutor is replying</string>
+    <string name="chat_reason_turn">The Tutor is replying. You can send once it\'s done.</string>
+    <string name="chat_composer_hint_starting_point">What do you already know about this topic, and what have you never seen?</string>
+    <string name="chat_composer_hint_mission">What do you want to change in the mission? You can mention the criterion number.</string>
+    <string name="chat_reason_confirming">Confirming the mission…</string>
+    <string name="chat_notice_updated">The chat was updated. Check the message and send it again.</string>
+    <string name="chat_counter">%1$s / %2$s</string>
+    <string name="chat_counter_over">The message is longer than %1$s characters: shorten it by %2$s.</string>
+    <string name="chat_counter_threshold_announce">You\'ve passed %1$s of %2$s characters.</string>
+
+    <!-- Errors -->
+    <string name="chat_send_error_title">Message not sent</string>
+    <string name="chat_send_error_network">Couldn\'t reach the backend. Your text is still in the field.</string>
+    <string name="chat_send_error_server">The server ran into a problem. Your text is still in the field.</string>
+    <string name="chat_send_error_retry">Try again</string>
+    <string name="chat_dismiss">Close</string>
+    <string name="chat_failed_title_interrupted">Reply interrupted</string>
+    <string name="chat_failed_title_rate">Too many requests</string>
+    <string name="chat_failed_body_upstream">The model service didn\'t respond. Try again in a moment.</string>
+    <string name="chat_failed_body_rate">The model service is busy. Wait a minute and try again.</string>
+    <string name="chat_failed_body_internal">Something went wrong on the server. Try again.</string>
+    <string name="chat_failed_body_other">Couldn\'t complete the reply. Try again.</string>
+    <string name="chat_failed_partial">Above is the part that arrived before the interruption.</string>
+    <string name="chat_failed_old">This reply wasn\'t completed.</string>
+    <string name="chat_retry">Try again</string>
+    <string name="chat_retry_loading">Trying again…</string>
+    <string name="chat_toast_updated">The chat was updated.</string>
+    <string name="chat_toast_retry_failed">Couldn\'t try again. Check your connection.</string>
+
+    <!-- Accessibility announcements -->
+    <string name="chat_announce_writing">The Tutor is typing.</string>
+    <string name="chat_announce_answered">The Tutor has replied.</string>
+    <string name="chat_announce_failed">Reply interrupted. Try again is available.</string>
+    <string name="chat_announce_mission">The Tutor proposed a mission for %1$s. Read the success criteria and choose whether to confirm it.</string>
+    <string name="chat_announce_lesson_request">The Tutor started preparing a lesson.</string>
+    <string name="chat_messages_list">Conversation with the Tutor</string>
+
+    <!-- Chat opened from a lesson (ask_agent.md) -->
+    <string name="chat_lesson_chip">About lesson %1$d: %2$s</string>
+    <string name="chat_lesson_chip_a11y">Context: lesson %1$d, %2$s</string>
+    <string name="chat_lesson_chip_remove">Remove the lesson from the context</string>
+    <string name="chat_lesson_title">Lesson</string>
+    <string name="chat_lesson_meta">Lesson %1$d</string>
+    <string name="chat_lesson_meta_minutes">Lesson %1$d · %2$s</string>
+    <plurals name="chat_lesson_minutes">
+        <item quantity="one">About %1$d minute</item>
+        <item quantity="other">About %1$d minutes</item>
+    </plurals>
+    <string name="chat_lesson_back">Back to the lesson</string>
+    <string name="chat_prefilled_announce">Question prefilled in the message field. Edit it and send it whenever you like.</string>
+</resources>

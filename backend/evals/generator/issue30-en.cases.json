@@ -1,0 +1,478 @@
+{
+  "suite": "generator/issue30-en",
+  "prompt_dir": "backend/prompts/generator",
+  "description": "Issue #30 (ADR 0019): English versions of two phase6 cases (the plan is English: language of the Topic en).",
+  "defaults": {
+    "runs_per_case": 1,
+    "streaming": true,
+    "deterministic": {
+      "validator_pass_first_try": true,
+      "validator_pass_within_3": true,
+      "sources_copied_exactly": true,
+      "topic_glossary_copied_exactly": true,
+      "lesson_links_must_be_in": "cases[].lessons[].id",
+      "no_exclamation_in_feedback": true,
+      "prose_words": [
+        1200,
+        2200
+      ],
+      "sections": [
+        3,
+        6
+      ],
+      "forbidden_phrases": [
+        "(?i)\\b(well done|great job|simply|obviously|trivial)\\b",
+        "(?i)\\bas we have seen\\b|\\bas we saw\\b",
+        "(?i)\\bclick here\\b"
+      ],
+      "objective_not_repeated_in_paragraph": true,
+      "open_answer_rubric_words": [
+        25,
+        250
+      ],
+      "quiz_correct_position_varies": true,
+      "no_nearly_all_or_none_of_the_above": [
+        "(?i)none of the above",
+        "(?i)all of the above"
+      ],
+      "exercise_types_subset_of_plan": "warn",
+      "quiz_option_char_ratio_max": 1.3,
+      "quiz_correct_not_longest_in_chars": "metrica per run: quota di quiz con la corretta strettamente più lunga in caratteri; atteso <= 1/3 dei quiz (con meno di 3 quiz: 0)",
+      "fill_blank_answer_not_in_adjacent_text": {
+        "description": "nessuna risposta di un blank (word-boundary, case-insensitive; per risposte di 1-2 caratteri non alfabetici come `?` basta la presenza dentro `codice inline` o nel testo) compare in: heading di sezione, caption e code del blocco code precedente, paragrafi (e callout) nei 2 blocchi non-exercise precedenti e nel blocco successivo",
+        "severity": "error"
+      },
+      "closing_active": {
+        "last_section_has_checklist": true,
+        "checklist_items": [
+          2,
+          3
+        ],
+        "closing_summary_words_max": 60,
+        "summary_not_repeating_answers": "rubrica (closing_active)"
+      },
+      "consecutive_code_blocks_need_missing_component": {
+        "description": "due blocchi code adiacenti (stessa sezione, senza altro blocco in mezzo) fuori da un fallback sono ammessi solo se il secondo non confronta con il primo; euristica: caption o paragrafo vicino con \"invece|rispetto|confronto|mentre|contro|vs|Go|prima|dopo\". Se scatta, atteso un missing_component wanted=code_compare",
+        "severity": "warn"
+      },
+      "glossary_entries_max": 12,
+      "output_tokens": {
+        "warn_above": 14000,
+        "note": "includere il ragionamento; baseline reale: 3,5k (lezione 1) e 14k (lezione 2) con Sonnet 5.5 prima di phase9. Riportare mediana e massimo per caso"
+      },
+      "estimated_minutes_range": {
+        "range": [
+          10,
+          15
+        ],
+        "severity": "warn",
+        "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
+      },
+      "language": "en"
+    },
+    "notes": "Ogni run: Context Assembler reale -> Generator -> Validator -> (repair)*. Si registra quanti documenti sono serviti (1-3), i codici di errore incontrati per run (indicano regole del prompt poco chiare) e l'usage con cache_read_tokens. sources_copied_exactly: resource_id, title e url identici a quelli del caso. topic_glossary_copied_exactly: ogni voce del documento con la stessa key di una del Topic ha key, term, definition e avoid identici. numbers_need_citation: ogni paragrafo, callout o feedback che contiene una cifra fuori da `codice` porta almeno una citazione [^key] oppure la cifra compare nella formulazione di un esempio ipotetico segnalato (controllo euristico, da rivedere a mano sui falliti). Fase 9: aggiunti controlli sui difetti trovati nelle due lezioni reali (docs/design/review-mvp.md, problemi 1, 2, 6, 7): rapporto in caratteri delle opzioni, risposta del vuoto nel testo adiacente, chiusura attiva, confronto di codice con missing_component, budget di token. Il Validator reale oggi ammette 3 parole di differenza e non guarda i caratteri: i controlli qui sono più severi di proposito, per misurare se il prompt basta. Run reale 2026-11-09: prosa osservata ~160 parole con la lezione completa, quindi il minimo è 150. Falsi positivi noti del runner (risposte cortissime come `si`, `r`): non inseguirli nel prompt. Fase 12: i piani fissi sono stati portati alla forma nuova (concetti con `example`, `steps`, `pitfall`; `document_sections: []`; `estimated_minutes` dalla formula) mantenendo il contenuto didattico; dove c'era un solo concetto ne è stato aggiunto un secondo coerente con la fonte (rust_second_lesson_recall_and_link: `&mut`; strength_thin_sources: recupero tra le sedute; preference_more_practice: modifiche dopo `git add`; fill_blank_no_leak: copia dei tipi semplici). Le soglie di lunghezza sono quelle della Fase 12 (`prose_words` 1200-2200, `sections` 3-6, `closing_summary_words_max` 60, `glossary_entries_max` 12, `output_tokens` 14000; il caso preference_more_practice 1200-1700), con il conteggio §9; i controlli di contenuto sono invariati. Il caso strength_thin_sources ha ora un prerequisito `general`: la lezione avrà la sezione di richiamo. Dal 2026-11-11 (decisione del proprietario) i piani fissi hanno 4-5 concetti (4 con un prerequisito `general`) con concetti aggiunti coerenti con la fonte del caso; i controlli di contenuto sono invariati, `sections` e `min_exercises` sono stati adattati. `estimated_minutes` lo calcola il backend."
+  },
+  "cases": [
+    {
+      "id": "rust_first_lesson_en",
+      "description": "English version of rust_first_lesson: first lesson of a technical Topic, no records, no glossary. Risks: too much theory before the exercise, exercise case equal to the example, quizzes with uneven option length, terms used before being defined.",
+      "topic": {
+        "title": "Ownership and borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "I want to stop fighting the compiler and understand its error messages.",
+        "success": [
+          "I read a \"borrow of moved value\" message and can tell which line moved the value",
+          "I choose between passing by value and passing a reference"
+        ],
+        "starting_point": "I already know how to program in Python.",
+        "constraints": [
+          "20 minutes a day"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "explicit lifetimes"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "When a variable stops being valid",
+        "objective": "Be able to predict whether a Rust variable is still usable after an assignment.",
+        "why_now": "First step toward the criterion \"read the borrow of moved value message\": you need to know what moves the value.",
+        "estimated_minutes": 12,
+        "prerequisites": [
+          {
+            "statement": "Can declare variables and call functions in an imperative language",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "move",
+            "key_point": "Assigning a String moves ownership: the original variable is no longer usable.",
+            "example": "let a = String::from(\"hello\"); let b = a; println!(\"{}\", a); does not compile: the value was moved into `b`.",
+            "steps": [
+              "`String::from` creates a value that owns its bytes on the heap, and `a` is its owner.",
+              "`let b = a;` transfers ownership to `b`.",
+              "From then on `a` is no longer usable and the compiler rejects any later use."
+            ],
+            "pitfall": "Thinking that `let b = a;` makes a copy of the String and leaves `a` valid."
+          },
+          {
+            "name": "copying simple types",
+            "key_point": "Types like i32 are duplicated and stay valid.",
+            "example": "let n = 7; let m = n; println!(\"{}\", n); compiles: `n` is still 7 after the assignment.",
+            "steps": [
+              "`i32` is a simple type that lives entirely on the stack.",
+              "`let m = n;` duplicates its value.",
+              "Both variables stay valid."
+            ],
+            "pitfall": "Thinking that copying applies to every type, `String` included."
+          },
+          {
+            "name": "passing a String to a function",
+            "key_point": "Passing a `String` to a function moves it into the parameter: after the call the caller's variable is no longer usable.",
+            "example": "`fn consume(s: String) { println!(\"{}\", s); }` called with `let name = String::from(\"Ada\"); consume(name); println!(\"{}\", name);`: the last line does not compile.",
+            "steps": [
+              "`name` owns the string before the call.",
+              "`consume(name)` moves ownership into the parameter `s`.",
+              "At the end of the function `s` goes out of scope and the string is freed.",
+              "Using `name` after the call is using a moved variable: error."
+            ],
+            "pitfall": "Thinking that a function that receives a `String` only looks at it and the caller finds it intact."
+          },
+          {
+            "name": "duplicating with clone",
+            "key_point": "`clone` makes an explicit copy of the value: afterwards original and copy are both valid, but the copy has a cost.",
+            "example": "`let a = String::from(\"sea\"); let b = a.clone(); println!(\"{} {}\", a, b);` compiles and prints `sea sea`.",
+            "steps": [
+              "`a.clone()` allocates a new string with the same bytes.",
+              "`b` owns the copy, `a` owns the original: no move.",
+              "Both variables stay usable, at the price of one more allocation."
+            ],
+            "pitfall": "Thinking that `clone` is free and should be put everywhere to silence the compiler."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "ownership",
+              "term": "ownership",
+              "hint": "rule that every value has a single owner"
+            },
+            {
+              "key": "move",
+              "term": "move",
+              "hint": "transfer of ownership"
+            },
+            {
+              "key": "copy_trait",
+              "term": "Copy",
+              "hint": "types duplicated on assignment"
+            },
+            {
+              "key": "clone",
+              "term": "clone",
+              "hint": "explicit copy of a value"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "quiz_single",
+            "purpose": "predict the outcome of a String assignment",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "tell move and copy apart",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "predict which lines after the call of a function that takes a `String` compile",
+            "verifies_objective": true
+          },
+          {
+            "type": "open_answer",
+            "purpose": "explain why after `clone` both variables stay valid and after a move they do not",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "annotation": "Chapter of the official book of the Rust project, written by the language maintainers: ownership rules, move and copying of simple types, with examples.",
+          "use_for": "ownership rules, move and the difference between Copy and non-Copy types"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "sections": [
+          5,
+          5
+        ],
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "code",
+          "open_answer",
+          "primary_source",
+          "ask_agent"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "single_win",
+          "text": "The lesson serves a single capability (predicting validity after an assignment); no borrowing, lifetimes or other topics.",
+          "weight": 3
+        },
+        {
+          "id": "exercise_matches_objective",
+          "text": "At least one required exercise asks to predict (not just recognise a definition).",
+          "weight": 3
+        },
+        {
+          "id": "transfer",
+          "text": "The case of at least one exercise differs from the example shown in the explanation's code.",
+          "weight": 2
+        },
+        {
+          "id": "distractors",
+          "text": "Quiz distractors represent plausible misconceptions and every feedback says why the option looked reasonable.",
+          "weight": 2
+        },
+        {
+          "id": "pretraining",
+          "text": "Every new term is defined in the glossary and used as [[key]] at first mention, before the concept that needs it.",
+          "weight": 2
+        },
+        {
+          "id": "citations",
+          "text": "Claims about the rules of Rust carry a citation and no details (version numbers, verbatim quotes) appear that the given sources cannot support.",
+          "weight": 3
+        },
+        {
+          "id": "open_answer_rubric",
+          "text": "The open_answer rubric is self-sufficient: it lists key points, typical mistakes with the wrong belief they reveal, and how to treat partial answers; the question does not depend on blocks the grader cannot see.",
+          "weight": 3
+        },
+        {
+          "id": "tone",
+          "text": "Sober tone: no praise, no judgement, no \"simply/obviously\".",
+          "weight": 1
+        },
+        {
+          "id": "no_answer_in_context",
+          "text": "No exercise has its answer in the surrounding text: for every fill_blank, the code caption, the section title and the adjacent paragraph say what to observe but do not contain the value of the blank; no quiz has the correct answer given verbatim above.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "The final section closes with a checklist of 2-3 concrete actions to take in one's own code (tied to the mission, not repetitions of the exercises) and a summary of at most 2 sentences that does not repeat the exercise answers.",
+          "weight": 2
+        },
+        {
+          "id": "economy",
+          "text": "The lesson contains nothing beyond the plan: no superfluous section, callout, glossary term or exercise, and no explanation repeated in two places.",
+          "weight": 2
+        },
+        {
+          "id": "in_english",
+          "text": "All learner-facing text (headings, paragraphs, captions, quiz options, feedback, checklist) is in English; only code and identifiers are not.",
+          "weight": 3
+        }
+      ],
+      "content_language": "en"
+    },
+    {
+      "id": "fill_blank_no_leak_en",
+      "description": "English version of fill_blank_no_leak: the plan asks for a fill_blank that repeats a concept just shown; the caption or the previous paragraph must not contain the answer.",
+      "topic": {
+        "title": "Ownership and borrowing in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "I want to stop fighting the compiler and understand its error messages.",
+        "success": [
+          "I choose between passing by value and passing a reference"
+        ],
+        "starting_point": null,
+        "constraints": [
+          "20 minutes a day"
+        ],
+        "out_of_scope": [
+          "unsafe",
+          "explicit lifetimes"
+        ]
+      },
+      "preferences": [],
+      "plan": {
+        "title": "When a variable stops being valid",
+        "objective": "Be able to predict whether a Rust variable is still usable after an assignment.",
+        "why_now": "First step toward the criterion \"read borrow of moved value\".",
+        "estimated_minutes": 10,
+        "prerequisites": [
+          {
+            "statement": "Can declare variables and call functions",
+            "basis": "mission",
+            "record_numbers": []
+          }
+        ],
+        "concepts": [
+          {
+            "name": "move",
+            "key_point": "Assigning a String moves ownership: the original variable is no longer usable.",
+            "example": "let s1 = String::from(\"rust\"); let s2 = s1; println!(\"{}\", s1); does not compile: the value was moved into `s2`.",
+            "steps": [
+              "`s1` owns the value on the heap.",
+              "`let s2 = s1;` transfers ownership to `s2`.",
+              "A later use of `s1` is rejected by the compiler."
+            ],
+            "pitfall": "Thinking that `let s2 = s1;` makes a copy of the String and leaves `s1` valid."
+          },
+          {
+            "name": "copying simple types",
+            "key_point": "Types like `i32` are duplicated on assignment and the original variable stays valid.",
+            "example": "let n = 7; let m = n; println!(\"{}\", n); compiles: `n` is still 7.",
+            "steps": [
+              "`i32` lives entirely on the stack.",
+              "`let m = n;` duplicates its value.",
+              "Both variables stay valid."
+            ],
+            "pitfall": "Thinking that copying applies to every type, `String` included."
+          },
+          {
+            "name": "passing a String to a function",
+            "key_point": "Passing a `String` to a function moves it into the parameter: after the call the caller's variable is no longer usable.",
+            "example": "`fn show(t: String) { println!(\"{}\", t); }` called with `let title = String::from(\"Dune\"); show(title); println!(\"{}\", title);`: the last line does not compile.",
+            "steps": [
+              "`title` owns the string before the call.",
+              "`show(title)` moves ownership into the parameter `t`.",
+              "After the call `title` is moved: using it is an error."
+            ],
+            "pitfall": "Thinking that a function that receives a `String` only looks at it and the caller finds it intact."
+          },
+          {
+            "name": "duplicating with clone",
+            "key_point": "`clone` makes an explicit copy: afterwards original and copy are both valid, but the copy has a cost.",
+            "example": "`let a = String::from(\"sail\"); let b = a.clone(); println!(\"{} {}\", a, b);` compiles and prints `sail sail`.",
+            "steps": [
+              "`a.clone()` allocates a new string with the same bytes.",
+              "`a` and `b` each have their own value: no move.",
+              "Both stay usable, at the price of one more allocation."
+            ],
+            "pitfall": "Thinking that `clone` is free and should be put everywhere to silence the compiler."
+          }
+        ],
+        "terms": {
+          "introduce": [
+            {
+              "key": "move",
+              "term": "move",
+              "hint": "transfer of ownership"
+            },
+            {
+              "key": "clone",
+              "term": "clone",
+              "hint": "explicit copy of a value"
+            }
+          ],
+          "reuse": []
+        },
+        "document_sections": [],
+        "primary_source_id": "0193a000-0000-7000-8000-000000000001",
+        "other_source_ids": [],
+        "exercises": [
+          {
+            "type": "fill_blank",
+            "purpose": "say which variable is no longer usable in a new case",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_multi",
+            "purpose": "recognise which variables stay usable after a series of `String` and `i32` assignments",
+            "verifies_objective": true
+          },
+          {
+            "type": "quiz_single",
+            "purpose": "predict whether a function that takes a String by value compiles",
+            "verifies_objective": true
+          },
+          {
+            "type": "fill_blank",
+            "purpose": "complete the call that lets you still use the string after passing it to a function",
+            "verifies_objective": true
+          }
+        ],
+        "lesson_links": []
+      },
+      "sources": [
+        {
+          "resource_id": "0193a000-0000-7000-8000-000000000001",
+          "title": "The Rust Programming Language, 4.1 What is Ownership?",
+          "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+          "annotation": "Chapter of the official book of the Rust project, written by the language maintainers: ownership rules, move and copying of simple types, with examples.",
+          "use_for": "ownership rules, move and the difference between Copy and non-Copy types"
+        }
+      ],
+      "excerpts": [],
+      "topic_glossary": [],
+      "lessons": [],
+      "deterministic": {
+        "min_exercises": 4,
+        "must_include_block_types": [
+          "code",
+          "primary_source",
+          "ask_agent",
+          "checklist"
+        ],
+        "fill_blank_answer_not_in_adjacent_text": {
+          "severity": "error"
+        },
+        "quiz_option_char_ratio_max": 1.25
+      },
+      "rubric": [
+        {
+          "id": "new_case",
+          "text": "The fill_blank case is structurally different from the example shown (not the same code with other names) and asks for a prediction.",
+          "weight": 3
+        },
+        {
+          "id": "caption_observe_not_result",
+          "text": "Captions and nearby paragraphs say what to observe (e.g. \"look at line 2\") without saying which variable becomes unusable or who the new owner is.",
+          "weight": 3
+        },
+        {
+          "id": "closing_active",
+          "text": "It closes with a checklist of actions to take in one's own code and a summary of at most 2 sentences.",
+          "weight": 2
+        },
+        {
+          "id": "in_english",
+          "text": "All learner-facing text is in English; only code and identifiers are not.",
+          "weight": 3
+        }
+      ],
+      "content_language": "en"
+    }
+  ],
+  "pass_criteria": {
+    "validator_pass_within_3": "100% delle run (altrimenti il job fallirebbe)",
+    "validator_pass_first_try": ">= 60% delle run; il dato guida le correzioni al prompt",
+    "rubric_mean": ">= 0.8 (somma dei pesi soddisfatti / somma dei pesi, media sulle run)",
+    "regression": "nessun controllo deterministico peggiora rispetto alla baseline",
+    "phase9_defects": "quiz_option_char_ratio_max e fill_blank_answer_not_in_adjacent_text: 0 violazioni in >= 90% delle run (baseline: lezione 2 q3 a 1,6 e 2 fill_blank su 2 violati nelle lezioni reali); closing_active: >= 90% delle run; output_tokens: mediana <= 14000 con effort medium (soglia di Fase 12; baseline Fase 9 10-17k)"
+  }
+}

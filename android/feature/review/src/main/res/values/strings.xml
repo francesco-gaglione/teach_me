@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="review_title">Ripasso</string>
+    <string name="review_close">Chiudi il ripasso</string>
+    <string name="review_more_actions">Altre azioni</string>
+    <string name="review_menu_title">Azioni del ripasso</string>
+    <string name="review_menu_undo">Annulla l\'ultimo voto</string>
+    <string name="review_menu_suspend">Sospendi questa scheda</string>
+
+    <string name="review_progress">%1$d di %2$d</string>
+    <string name="review_progress_a11y">Scheda %1$d di %2$d</string>
+    <string name="review_hint">Prova a ricordare prima di guardare la risposta.</string>
+    <string name="review_caption_term_suffix">· Parola del glossario</string>
+    <string name="review_consolidate">Da consolidare</string>
+    <string name="review_card_front_consolidate_a11y">Scheda %1$d di %2$d. %3$s. Da consolidare: un esercizio che non ti è ancora riuscito. %4$s</string>
+    <string name="review_card_front_a11y">Scheda %1$d di %2$d. %3$s. %4$s</string>
+    <string name="review_card_back_a11y">Risposta: %1$s.</string>
+    <string name="review_origin">Lezione %1$d · %2$s</string>
+    <string name="review_origin_plain">%1$s</string>
+    <string name="review_reveal">Mostra risposta</string>
+    <string name="review_reveal_hint">Spazio</string>
+    <string name="review_rate_title">Quanto ti è venuta in mente?</string>
+
+    <string name="review_rating_again">Non la ricordavo</string>
+    <string name="review_rating_hard">Con fatica</string>
+    <string name="review_rating_good">Bene</string>
+    <string name="review_rating_easy">Facilissima</string>
+    <string name="review_rating_a11y">%1$s, la rivedrai %2$s</string>
+
+    <string name="review_undo_action">Annulla</string>
+    <string name="review_undo_voted">%1$s: la rivedrai %2$s.</string>
+    <string name="review_undo_voted_plain">%1$s.</string>
+    <string name="review_undo_changed">Questa scheda era già stata ripassata o sospesa.</string>
+    <string name="review_undo_gone">Non si può più annullare questo voto.</string>
+    <string name="review_undo_offline">Non riesco ad annullare ora. Controlla la connessione.</string>
+    <string name="review_undo_suspended">Scheda sospesa. La riattivi da Impostazioni › Schede sospese.</string>
+
+    <string name="review_suspend_title">Sospendere questa scheda?</string>
+    <string name="review_suspend_body">Non la rivedrai nel ripasso finché non la riattivi da Impostazioni › Schede sospese. Il registro e il glossario restano come sono.</string>
+    <string name="review_suspend_confirm">Sospendi la scheda</string>
+    <string name="review_suspend_loading">Sospendo…</string>
+    <string name="review_suspend_not_done">La scheda non è stata sospesa.</string>
+    <string name="review_suspend_announce">Scheda sospesa</string>
+
+    <string name="review_queue_description">Voti da inviare: %1$d</string>
+    <string name="review_queue_body">Alcuni voti non sono ancora inviati. Li invio appena torna la connessione.</string>
+    <string name="review_queue_retry">Riprova ora</string>
+    <string name="review_queue_sent">Voti inviati.</string>
+
+    <string name="review_loading">Caricamento delle schede</string>
+    <string name="review_title_topic">Ripasso · %1$s</string>
+    <string name="review_title_topic_a11y">Ripasso, argomento %1$s</string>
+    <string name="review_open_lesson">Apri la lezione</string>
+    <string name="review_open_lesson_hint">Alt+L</string>
+    <string name="review_open_lesson_a11y_first">Apri la lezione %1$d, %2$s. Si apre sopra il ripasso e poi torni a questa scheda.</string>
+    <string name="review_open_lesson_a11y">Apri la lezione %1$d, %2$s</string>
+    <string name="review_open_lesson_a11y_plain_first">Apri la lezione %1$s. Si apre sopra il ripasso e poi torni a questa scheda.</string>
+    <string name="review_open_lesson_a11y_plain">Apri la lezione %1$s</string>
+    <string name="review_open_lesson_a11y_untitled_first">Apri la lezione. Si apre sopra il ripasso e poi torni a questa scheda.</string>
+    <string name="review_topic_empty_title">Nessun ripasso di %1$s per ora</string>
+    <string name="review_topic_no_cards">Questo argomento non ha ancora schede.</string>
+    <string name="review_topic_gone_title">Questo argomento non c\'è più</string>
+    <string name="review_topic_gone_body">È stato eliminato. Puoi ripassare le altre schede.</string>
+    <string name="review_topic_gone_all">Ripassa tutto</string>
+    <plurals name="review_topic_finish_count">
+        <item quantity="one">Hai ripassato %1$d scheda di %2$s.</item>
+        <item quantity="other">Hai ripassato %1$d schede di %2$s.</item>
+    </plurals>
+    <plurals name="review_topic_finish_backlog">
+        <item quantity="one">Ce n\'è un\'altra di %2$s in scadenza. Quando vuoi.</item>
+        <item quantity="other">Ce ne sono altre %1$d di %2$s in scadenza. Quando vuoi.</item>
+    </plurals>
+    <string name="review_topic_next_due_tomorrow">La prossima scheda di %1$s arriva domani.</string>
+    <string name="review_topic_next_due_today">La prossima scheda di %1$s arriva oggi alle %2$s.</string>
+    <string name="review_topic_next_due_on">La prossima scheda di %1$s arriva %2$s.</string>
+    <string name="review_back_home">Torna alla Home</string>
+    <string name="review_empty_title">Nessun ripasso per ora</string>
+    <string name="review_none_title">Ancora nessuna scheda</string>
+    <string name="review_none_body">Le schede di ripasso si creano quando completi una lezione.</string>
+
+    <string name="review_finish_title">Ripasso finito</string>
+    <plurals name="review_finish_count">
+        <item quantity="one">Hai ripassato %1$d scheda.</item>
+        <item quantity="other">Hai ripassato %1$d schede.</item>
+    </plurals>
+    <string name="review_finish_again_title">Le rivedrai a breve</string>
+    <plurals name="review_finish_again_more">
+        <item quantity="one">e un\'altra</item>
+        <item quantity="other">e altre %1$d</item>
+    </plurals>
+    <plurals name="review_finish_backlog">
+        <item quantity="one">Ce n\'è un\'altra in scadenza. Quando vuoi.</item>
+        <item quantity="other">Ce ne sono altre %1$d in scadenza. Quando vuoi.</item>
+    </plurals>
+    <string name="review_finish_more">Ripassa altre %1$d</string>
+    <string name="review_finish_last">Ripassa l\'ultima</string>
+    <plurals name="review_finish_conflicts">
+        <item quantity="one">Un voto non è stato applicato perché la scheda era già cambiata.</item>
+        <item quantity="other">%1$d voti non sono stati applicati perché le schede erano già cambiate.</item>
+    </plurals>
+</resources>

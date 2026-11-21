@@ -1,0 +1,32 @@
+{
+  "version": "grader-phase9-v5",
+  "name": "grade",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "verdict",
+      "feedback",
+      "misconception"
+    ],
+    "properties": {
+      "verdict": {
+        "type": "string",
+        "enum": [
+          "correct",
+          "partial",
+          "incorrect"
+        ]
+      },
+      "feedback": {
+        "type": "string"
+      },
+      "misconception": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  }
+}

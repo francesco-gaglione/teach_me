@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- Accessibility strings used by design-system components. -->
+    <string name="teach_state_busy">In progress</string>
+    <string name="teach_state_error_icon">Error</string>
+    <string name="teach_state_open">Open</string>
+    <string name="teach_state_closed">Closed</string>
+</resources>

@@ -1,0 +1,880 @@
+{
+  "suite": "planner-phase10",
+  "prompt_dir": "backend/prompts/planner",
+  "description": "Fase 10 (PDF da studiare). Il Planner riceve l'indice di un documento caricato (titoli delle sezioni con le pagine, mai il testo) e deve scegliere le sezioni giuste: poche, nell'ordine del libro se la mission lo chiede, senza ripetere quelle già coperte, entro circa 10 pagine, senza forzare il documento quando non copre l'obiettivo. Il runner esegue il job reale di generazione fino al piano (il Generator è rifiutato: costo zero) e controlla i riferimenti come il backend.",
+  "defaults": {
+    "runs_per_case": 3,
+    "deterministic": {
+      "title_not_a_chapter_number": true,
+      "concepts_count": [
+        4,
+        5
+      ]
+    },
+    "notes": "I documenti sono finti, scritti a mano (libro di fantasia «Systems Programming with Rust», id `0193d100-…` e `0193e100-…`); gli URL delle fonti web sono plausibili ma non verificati. `plan_valid_first_try` è un avviso (una riparazione costa una chiamata); `plan_valid` controlla i riferimenti come `validate_plan` del backend (che è privato al crate `application`). Il giudice vede l'indice, le lezioni precedenti e il piano. Fase 12: `planner_calls_max` sale da 1 a 2 (il piano ha più campi e regole, `validate_plan` rifiuta di più: una riparazione è ammessa; `plan_valid_first_try` resta l'avviso che misura il primo tentativo). Dal 2026-11-11 ogni piano ha 4-5 concetti (4 con un `general`): `plan_valid` lo impone e `concepts_count` [4,5] lo misura. `estimated_minutes` lo calcola il backend."
+  },
+  "pass_criteria": {
+    "deterministic": "tutti i controlli duri in 3/3 run per `book_does_not_cover_the_goal` e `whole_chapter_is_too_big` (regole di sobrietà); in almeno 2/3 per gli altri",
+    "plan_valid_first_try": ">= 90% delle run",
+    "rubric_mean": ">= 0.8"
+  },
+  "cases": [
+    {
+      "id": "follow_book_in_order_after_two_lessons",
+      "description": "La mission dice di seguire i capitoli 3-5 in ordine. Due lezioni hanno già coperto 3.1 e 3.2 (si capisce solo dai titoli e dagli obiettivi). Atteso: la sezione successiva del libro (3.3), non le già coperte, non fuori perimetro, una sezione piccola.",
+      "topic": {
+        "title": "Rust per il servizio al lavoro"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Tra sei settimane devo mantenere un servizio Rust al lavoro e voglio capire il codice che erediterò senza chiedere aiuto ai colleghi.",
+        "success": [
+          "Leggo una funzione con riferimenti e dico chi possiede cosa",
+          "Correggo da solo un errore del borrow checker nel servizio"
+        ],
+        "starting_point": "Vengo da Go e C++.",
+        "constraints": [
+          "Studio dal libro «Systems Programming with Rust» che ho caricato, capitoli 3-5, nell'ordine del libro",
+          "30 minuti al giorno"
+        ],
+        "out_of_scope": [
+          "Concorrenza e async",
+          "unsafe"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193a100-0000-7000-8000-000000000001",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "The Rust Programming Language, 4 Understanding Ownership",
+          "url": "https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html",
+          "language": "en",
+          "annotation": "Capitolo del libro ufficiale del progetto Rust, scritto dai manutentori del linguaggio: ownership, move, riferimenti e slice, con esempi.",
+          "use_for": "regole di ownership, move e differenza tra tipi Copy e non Copy"
+        }
+      ],
+      "documents": [
+        {
+          "document_id": "0193d100-0000-7000-8000-000000000001",
+          "resource_id": "0193e100-0000-7000-8000-000000000001",
+          "title": "Systems Programming with Rust",
+          "language": "en",
+          "page_count": 206,
+          "sections": [
+            {
+              "id": "s1",
+              "title": "1 Why Rust",
+              "level": 1,
+              "page_start": 1,
+              "page_end": 18
+            },
+            {
+              "id": "s2",
+              "title": "2 Tooling and a first program",
+              "level": 1,
+              "page_start": 19,
+              "page_end": 40
+            },
+            {
+              "id": "s3",
+              "title": "3 Ownership",
+              "level": 1,
+              "page_start": 41,
+              "page_end": 70
+            },
+            {
+              "id": "s4",
+              "title": "3.1 Stack, heap and values",
+              "level": 2,
+              "page_start": 41,
+              "page_end": 50
+            },
+            {
+              "id": "s5",
+              "title": "3.2 Moves",
+              "level": 2,
+              "page_start": 51,
+              "page_end": 60
+            },
+            {
+              "id": "s6",
+              "title": "3.3 Copy and Clone",
+              "level": 2,
+              "page_start": 61,
+              "page_end": 70
+            },
+            {
+              "id": "s7",
+              "title": "4 Borrowing and references",
+              "level": 1,
+              "page_start": 71,
+              "page_end": 100
+            },
+            {
+              "id": "s8",
+              "title": "4.1 Shared references",
+              "level": 2,
+              "page_start": 71,
+              "page_end": 80
+            },
+            {
+              "id": "s9",
+              "title": "4.2 Mutable references",
+              "level": 2,
+              "page_start": 81,
+              "page_end": 92
+            },
+            {
+              "id": "s10",
+              "title": "4.3 Reading borrow checker errors",
+              "level": 2,
+              "page_start": 93,
+              "page_end": 100
+            },
+            {
+              "id": "s11",
+              "title": "5 Lifetimes",
+              "level": 1,
+              "page_start": 101,
+              "page_end": 130
+            },
+            {
+              "id": "s12",
+              "title": "5.1 Why lifetimes exist",
+              "level": 2,
+              "page_start": 101,
+              "page_end": 110
+            },
+            {
+              "id": "s13",
+              "title": "5.2 Annotating functions",
+              "level": 2,
+              "page_start": 111,
+              "page_end": 122
+            },
+            {
+              "id": "s14",
+              "title": "5.3 Lifetimes in structs",
+              "level": 2,
+              "page_start": 123,
+              "page_end": 130
+            },
+            {
+              "id": "s15",
+              "title": "6 Error handling",
+              "level": 1,
+              "page_start": 131,
+              "page_end": 160
+            },
+            {
+              "id": "s16",
+              "title": "7 Concurrency",
+              "level": 1,
+              "page_start": 161,
+              "page_end": 200
+            },
+            {
+              "id": "s17",
+              "title": "Appendix A Installing the toolchain",
+              "level": 1,
+              "page_start": 201,
+              "page_end": 206
+            }
+          ]
+        }
+      ],
+      "lessons": [
+        {
+          "id": "0193b100-0000-7000-8000-000000000001",
+          "number": 1,
+          "title": "Dove vivono i dati: stack e heap",
+          "objective": "Saper dire se un valore Rust sta sullo stack o sull'heap guardando il suo tipo."
+        },
+        {
+          "id": "0193b100-0000-7000-8000-000000000002",
+          "number": 2,
+          "title": "Quando `a` smette di essere valida",
+          "objective": "Saper prevedere se una variabile è ancora utilizzabile dopo un assegnamento o una chiamata di funzione."
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Distingue stack e heap",
+          "body": "Dice che una `String` tiene i byte sull'heap e un `i32` sullo stack."
+        },
+        {
+          "number": 2,
+          "kind": "demonstrated",
+          "lesson_number": 2,
+          "title": "Prevede l'uso dopo un move",
+          "body": "Dice che dopo `let b = a;` con `a: String` la variabile `a` non è più utilizzabile."
+        }
+      ],
+      "deterministic": {
+        "planner_calls_max": 2,
+        "document_sections_include_one_of": [
+          "s6"
+        ],
+        "document_sections_exclude": [
+          "s1",
+          "s2",
+          "s3",
+          "s4",
+          "s5",
+          "s15",
+          "s16",
+          "s17"
+        ],
+        "document_sections_max": 3,
+        "document_sections_max_pages": 14,
+        "no_parent_and_child": true,
+        "document_sections_in_book_order": true,
+        "primary_is_document": true,
+        "title_not_a_chapter_number": true,
+        "exercises_not_about_layout": [
+          "(?i)pagin",
+          "(?i)\\bpp?\\.\\s*\\d",
+          "(?i)\\bcapitol[oi]\\s+\\d",
+          "(?i)titolo del capitolo"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "next_in_book",
+          "weight": 3,
+          "text": "Il piano prosegue il libro dopo ciò che le lezioni 1 e 2 hanno coperto (stack/heap e move): non ripete quegli argomenti e non salta oltre il capitolo 3 senza motivo."
+        },
+        {
+          "id": "why_now_anchored",
+          "weight": 2,
+          "text": "`why_now` cita la mission (seguire il libro, capitoli 3-5) o i record e dice perché questa parte del libro viene adesso."
+        },
+        {
+          "id": "no_invented_content",
+          "weight": 2,
+          "text": "I `key_point` dei concetti restano all'altezza del titolo della sezione scelta e della mission: non dichiarano contenuti specifici del libro (esempi, numeri, nomi di listati) che l'indice non può dare."
+        }
+      ]
+    },
+    {
+      "id": "borrow_error_goal_picks_narrow_sections",
+      "description": "Mission mirata a un errore del borrow checker, nessun vincolo di ordine, nessuna lezione. Atteso: una o due sezioni piccole del capitolo 4 (mai il capitolo intero, 30 pagine), documento come fonte primaria.",
+      "topic": {
+        "title": "Rust per il servizio al lavoro"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Il compilatore mi blocca con «cannot borrow as mutable more than once» nel servizio Rust che mantengo e perdo ore ogni volta.",
+        "success": [
+          "Leggo un errore di doppio prestito mutabile e dico quali due riferimenti si scontrano",
+          "Scelgo la correzione giusta tra riordinare il codice e clonare"
+        ],
+        "starting_point": "Vengo da C++.",
+        "constraints": [
+          "Ho caricato il libro «Systems Programming with Rust»"
+        ],
+        "out_of_scope": [
+          "lifetime espliciti",
+          "concorrenza"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193a100-0000-7000-8000-000000000002",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Rust by Example, Scoping rules",
+          "url": "https://doc.rust-lang.org/rust-by-example/scope.html",
+          "language": "en",
+          "annotation": "Raccolta di esempi eseguibili del progetto Rust su ownership, borrowing e lifetime, con brevi spiegazioni.",
+          "use_for": "vedere ownership e borrowing in esempi minimi"
+        }
+      ],
+      "documents": [
+        {
+          "document_id": "0193d100-0000-7000-8000-000000000001",
+          "resource_id": "0193e100-0000-7000-8000-000000000001",
+          "title": "Systems Programming with Rust",
+          "language": "en",
+          "page_count": 206,
+          "sections": [
+            {
+              "id": "s1",
+              "title": "1 Why Rust",
+              "level": 1,
+              "page_start": 1,
+              "page_end": 18
+            },
+            {
+              "id": "s2",
+              "title": "2 Tooling and a first program",
+              "level": 1,
+              "page_start": 19,
+              "page_end": 40
+            },
+            {
+              "id": "s3",
+              "title": "3 Ownership",
+              "level": 1,
+              "page_start": 41,
+              "page_end": 70
+            },
+            {
+              "id": "s4",
+              "title": "3.1 Stack, heap and values",
+              "level": 2,
+              "page_start": 41,
+              "page_end": 50
+            },
+            {
+              "id": "s5",
+              "title": "3.2 Moves",
+              "level": 2,
+              "page_start": 51,
+              "page_end": 60
+            },
+            {
+              "id": "s6",
+              "title": "3.3 Copy and Clone",
+              "level": 2,
+              "page_start": 61,
+              "page_end": 70
+            },
+            {
+              "id": "s7",
+              "title": "4 Borrowing and references",
+              "level": 1,
+              "page_start": 71,
+              "page_end": 100
+            },
+            {
+              "id": "s8",
+              "title": "4.1 Shared references",
+              "level": 2,
+              "page_start": 71,
+              "page_end": 80
+            },
+            {
+              "id": "s9",
+              "title": "4.2 Mutable references",
+              "level": 2,
+              "page_start": 81,
+              "page_end": 92
+            },
+            {
+              "id": "s10",
+              "title": "4.3 Reading borrow checker errors",
+              "level": 2,
+              "page_start": 93,
+              "page_end": 100
+            },
+            {
+              "id": "s11",
+              "title": "5 Lifetimes",
+              "level": 1,
+              "page_start": 101,
+              "page_end": 130
+            },
+            {
+              "id": "s12",
+              "title": "5.1 Why lifetimes exist",
+              "level": 2,
+              "page_start": 101,
+              "page_end": 110
+            },
+            {
+              "id": "s13",
+              "title": "5.2 Annotating functions",
+              "level": 2,
+              "page_start": 111,
+              "page_end": 122
+            },
+            {
+              "id": "s14",
+              "title": "5.3 Lifetimes in structs",
+              "level": 2,
+              "page_start": 123,
+              "page_end": 130
+            },
+            {
+              "id": "s15",
+              "title": "6 Error handling",
+              "level": 1,
+              "page_start": 131,
+              "page_end": 160
+            },
+            {
+              "id": "s16",
+              "title": "7 Concurrency",
+              "level": 1,
+              "page_start": 161,
+              "page_end": 200
+            },
+            {
+              "id": "s17",
+              "title": "Appendix A Installing the toolchain",
+              "level": 1,
+              "page_start": 201,
+              "page_end": 206
+            }
+          ]
+        }
+      ],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "planner_calls_max": 2,
+        "document_sections_include_one_of": [
+          "s8",
+          "s9",
+          "s10"
+        ],
+        "document_sections_exclude": [
+          "s1",
+          "s2",
+          "s7",
+          "s11",
+          "s12",
+          "s13",
+          "s14",
+          "s15",
+          "s16",
+          "s17"
+        ],
+        "document_sections_max": 3,
+        "document_sections_max_pages": 14,
+        "no_parent_and_child": true,
+        "primary_is_document": true,
+        "title_not_a_chapter_number": true,
+        "exercises_not_about_layout": [
+          "(?i)pagin",
+          "(?i)\\bpp?\\.\\s*\\d",
+          "(?i)\\bcapitol[oi]\\s+\\d",
+          "(?i)titolo del capitolo"
+        ]
+      },
+      "rubric": [
+        {
+          "id": "serves_the_error",
+          "weight": 3,
+          "text": "L'obiettivo e le sezioni scelte portano direttamente a leggere e correggere un errore di doppio prestito mutabile (riferimenti mutabili o lettura degli errori), con un solo passo piccolo."
+        },
+        {
+          "id": "web_completes",
+          "weight": 1,
+          "text": "Se il piano usa la fonte web, la usa per completare il documento (altro esempio o spiegazione), non come fonte primaria al posto di sezioni pertinenti del libro."
+        }
+      ]
+    },
+    {
+      "id": "book_does_not_cover_the_goal",
+      "description": "Il PDF caricato non tratta l'obiettivo della mission (serializzazione JSON con serde). Atteso: nessuna sezione del documento, fonte primaria web: il Planner non forza il libro.",
+      "topic": {
+        "title": "JSON in Rust con serde"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Il servizio che mantengo legge e scrive JSON e voglio modificare le strutture senza rompere il formato.",
+        "success": [
+          "Aggiungo un campo opzionale a una struct serializzata con serde senza rompere i vecchi JSON"
+        ],
+        "starting_point": null,
+        "constraints": [
+          "Ho caricato il libro «Systems Programming with Rust» ma serve anche altro"
+        ],
+        "out_of_scope": []
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193a100-0000-7000-8000-000000000003",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Serde, Overview",
+          "url": "https://serde.rs/",
+          "language": "en",
+          "annotation": "Documentazione ufficiale di Serde: derive di Serialize e Deserialize, formati, attributi e gestione degli errori.",
+          "use_for": "serializzare e deserializzare JSON con le derive di Serde"
+        }
+      ],
+      "documents": [
+        {
+          "document_id": "0193d100-0000-7000-8000-000000000001",
+          "resource_id": "0193e100-0000-7000-8000-000000000001",
+          "title": "Systems Programming with Rust",
+          "language": "en",
+          "page_count": 206,
+          "sections": [
+            {
+              "id": "s1",
+              "title": "1 Why Rust",
+              "level": 1,
+              "page_start": 1,
+              "page_end": 18
+            },
+            {
+              "id": "s2",
+              "title": "2 Tooling and a first program",
+              "level": 1,
+              "page_start": 19,
+              "page_end": 40
+            },
+            {
+              "id": "s3",
+              "title": "3 Ownership",
+              "level": 1,
+              "page_start": 41,
+              "page_end": 70
+            },
+            {
+              "id": "s4",
+              "title": "3.1 Stack, heap and values",
+              "level": 2,
+              "page_start": 41,
+              "page_end": 50
+            },
+            {
+              "id": "s5",
+              "title": "3.2 Moves",
+              "level": 2,
+              "page_start": 51,
+              "page_end": 60
+            },
+            {
+              "id": "s6",
+              "title": "3.3 Copy and Clone",
+              "level": 2,
+              "page_start": 61,
+              "page_end": 70
+            },
+            {
+              "id": "s7",
+              "title": "4 Borrowing and references",
+              "level": 1,
+              "page_start": 71,
+              "page_end": 100
+            },
+            {
+              "id": "s8",
+              "title": "4.1 Shared references",
+              "level": 2,
+              "page_start": 71,
+              "page_end": 80
+            },
+            {
+              "id": "s9",
+              "title": "4.2 Mutable references",
+              "level": 2,
+              "page_start": 81,
+              "page_end": 92
+            },
+            {
+              "id": "s10",
+              "title": "4.3 Reading borrow checker errors",
+              "level": 2,
+              "page_start": 93,
+              "page_end": 100
+            },
+            {
+              "id": "s11",
+              "title": "5 Lifetimes",
+              "level": 1,
+              "page_start": 101,
+              "page_end": 130
+            },
+            {
+              "id": "s12",
+              "title": "5.1 Why lifetimes exist",
+              "level": 2,
+              "page_start": 101,
+              "page_end": 110
+            },
+            {
+              "id": "s13",
+              "title": "5.2 Annotating functions",
+              "level": 2,
+              "page_start": 111,
+              "page_end": 122
+            },
+            {
+              "id": "s14",
+              "title": "5.3 Lifetimes in structs",
+              "level": 2,
+              "page_start": 123,
+              "page_end": 130
+            },
+            {
+              "id": "s15",
+              "title": "6 Error handling",
+              "level": 1,
+              "page_start": 131,
+              "page_end": 160
+            },
+            {
+              "id": "s16",
+              "title": "7 Concurrency",
+              "level": 1,
+              "page_start": 161,
+              "page_end": 200
+            },
+            {
+              "id": "s17",
+              "title": "Appendix A Installing the toolchain",
+              "level": 1,
+              "page_start": 201,
+              "page_end": 206
+            }
+          ]
+        }
+      ],
+      "lessons": [],
+      "records": [],
+      "deterministic": {
+        "planner_calls_max": 2,
+        "document_sections_empty": true,
+        "primary_is_document": false,
+        "title_not_a_chapter_number": true
+      },
+      "rubric": [
+        {
+          "id": "no_forcing",
+          "weight": 3,
+          "text": "Il piano non appoggia l'obiettivo su sezioni del libro che l'indice non mostra pertinenti a serde o JSON; la fonte primaria è quella web su serde."
+        },
+        {
+          "id": "grounded",
+          "weight": 1,
+          "text": "L'obiettivo è una capacità osservabile coperta dalla fonte web e legata alla mission (campo opzionale senza rompere i vecchi JSON)."
+        }
+      ]
+    },
+    {
+      "id": "whole_chapter_is_too_big",
+      "description": "La mission chiede di studiare il capitolo 5 (30 pagine) per intero. Una lezione regge una sola idea e il Generator riceve circa 8-10 pagine: atteso un primo passo piccolo (5.1), mai il capitolo intero né capitolo e sottosezioni insieme.",
+      "topic": {
+        "title": "Lifetime in Rust"
+      },
+      "mission": {
+        "version": 1,
+        "why": "Voglio capire i lifetime perché nel codice del servizio compaiono ovunque e non so cosa dicano.",
+        "success": [
+          "Leggo una firma con `'a` e dico quali riferimenti restano validi per quanto tempo"
+        ],
+        "starting_point": "Conosco già ownership e borrowing.",
+        "constraints": [
+          "Seguo il capitolo 5 del libro «Systems Programming with Rust» che ho caricato, dall'inizio"
+        ],
+        "out_of_scope": [
+          "unsafe"
+        ]
+      },
+      "preferences": [],
+      "sources": [
+        {
+          "resource_id": "0193a100-0000-7000-8000-000000000002",
+          "kind": "knowledge",
+          "source_type": "documentation",
+          "title": "Rust by Example, Scoping rules",
+          "url": "https://doc.rust-lang.org/rust-by-example/scope.html",
+          "language": "en",
+          "annotation": "Raccolta di esempi eseguibili del progetto Rust su ownership, borrowing e lifetime, con brevi spiegazioni.",
+          "use_for": "vedere ownership e borrowing in esempi minimi"
+        }
+      ],
+      "documents": [
+        {
+          "document_id": "0193d100-0000-7000-8000-000000000001",
+          "resource_id": "0193e100-0000-7000-8000-000000000001",
+          "title": "Systems Programming with Rust",
+          "language": "en",
+          "page_count": 206,
+          "sections": [
+            {
+              "id": "s1",
+              "title": "1 Why Rust",
+              "level": 1,
+              "page_start": 1,
+              "page_end": 18
+            },
+            {
+              "id": "s2",
+              "title": "2 Tooling and a first program",
+              "level": 1,
+              "page_start": 19,
+              "page_end": 40
+            },
+            {
+              "id": "s3",
+              "title": "3 Ownership",
+              "level": 1,
+              "page_start": 41,
+              "page_end": 70
+            },
+            {
+              "id": "s4",
+              "title": "3.1 Stack, heap and values",
+              "level": 2,
+              "page_start": 41,
+              "page_end": 50
+            },
+            {
+              "id": "s5",
+              "title": "3.2 Moves",
+              "level": 2,
+              "page_start": 51,
+              "page_end": 60
+            },
+            {
+              "id": "s6",
+              "title": "3.3 Copy and Clone",
+              "level": 2,
+              "page_start": 61,
+              "page_end": 70
+            },
+            {
+              "id": "s7",
+              "title": "4 Borrowing and references",
+              "level": 1,
+              "page_start": 71,
+              "page_end": 100
+            },
+            {
+              "id": "s8",
+              "title": "4.1 Shared references",
+              "level": 2,
+              "page_start": 71,
+              "page_end": 80
+            },
+            {
+              "id": "s9",
+              "title": "4.2 Mutable references",
+              "level": 2,
+              "page_start": 81,
+              "page_end": 92
+            },
+            {
+              "id": "s10",
+              "title": "4.3 Reading borrow checker errors",
+              "level": 2,
+              "page_start": 93,
+              "page_end": 100
+            },
+            {
+              "id": "s11",
+              "title": "5 Lifetimes",
+              "level": 1,
+              "page_start": 101,
+              "page_end": 130
+            },
+            {
+              "id": "s12",
+              "title": "5.1 Why lifetimes exist",
+              "level": 2,
+              "page_start": 101,
+              "page_end": 110
+            },
+            {
+              "id": "s13",
+              "title": "5.2 Annotating functions",
+              "level": 2,
+              "page_start": 111,
+              "page_end": 122
+            },
+            {
+              "id": "s14",
+              "title": "5.3 Lifetimes in structs",
+              "level": 2,
+              "page_start": 123,
+              "page_end": 130
+            },
+            {
+              "id": "s15",
+              "title": "6 Error handling",
+              "level": 1,
+              "page_start": 131,
+              "page_end": 160
+            },
+            {
+              "id": "s16",
+              "title": "7 Concurrency",
+              "level": 1,
+              "page_start": 161,
+              "page_end": 200
+            },
+            {
+              "id": "s17",
+              "title": "Appendix A Installing the toolchain",
+              "level": 1,
+              "page_start": 201,
+              "page_end": 206
+            }
+          ]
+        }
+      ],
+      "lessons": [
+        {
+          "id": "0193b100-0000-7000-8000-000000000003",
+          "number": 1,
+          "title": "Prestare un valore: riferimenti condivisi e mutabili",
+          "objective": "Saper dire quali riferimenti possono coesistere su uno stesso valore."
+        }
+      ],
+      "records": [
+        {
+          "number": 1,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Usa i riferimenti condivisi",
+          "body": "Scrive una funzione che prende `&String` e dice perché non può modificarla."
+        },
+        {
+          "number": 2,
+          "kind": "demonstrated",
+          "lesson_number": 1,
+          "title": "Distingue prestito mutabile e condiviso",
+          "body": "Spiega che con un `&mut` attivo non può esistere nessun altro riferimento."
+        }
+      ],
+      "deterministic": {
+        "planner_calls_max": 2,
+        "document_sections_include_one_of": [
+          "s12"
+        ],
+        "document_sections_exclude": [
+          "s11",
+          "s1",
+          "s2",
+          "s3",
+          "s7",
+          "s15",
+          "s16",
+          "s17"
+        ],
+        "document_sections_max": 2,
+        "document_sections_max_pages": 14,
+        "no_parent_and_child": true,
+        "document_sections_in_book_order": true,
+        "primary_is_document": true,
+        "title_not_a_chapter_number": true
+      },
+      "rubric": [
+        {
+          "id": "small_first_step",
+          "weight": 3,
+          "text": "Il piano parte dall'inizio del capitolo 5 con una sola capacità piccola (perché esistono i lifetime), non tenta di coprire annotazioni di funzioni e struct nella stessa lezione."
+        },
+        {
+          "id": "uses_records",
+          "weight": 1,
+          "text": "I prerequisiti con basis `record` citano numeri di record presenti (1, 2) o la mission."
+        }
+      ]
+    }
+  ]
+}

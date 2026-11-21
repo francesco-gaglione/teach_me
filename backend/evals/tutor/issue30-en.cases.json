@@ -1,0 +1,138 @@
+{
+  "suite": "tutor/issue30-en",
+  "prompt_dir": "backend/prompts/tutor",
+  "description": "Issue #30 (ADR 0019): English versions of two phase2 cases. Topic language en.",
+  "defaults": {
+    "runs_per_case": 1,
+    "deterministic": {
+      "max_words": 150,
+      "max_question_marks": 2,
+      "language": "en",
+      "must_not_match": [
+        "(?i)\\b(i'll prepare|i will prepare|i'll create|i'll search|i'll save|i'll remember|i'll make you a lesson)\\b",
+        "(?i)great question|great!|fantastic!|awesome!",
+        "(?i)\\bwell done\\b|\\bnice job\\b"
+      ],
+      "no_headings": true,
+      "no_tables": true,
+      "no_blockquotes": true,
+      "no_html_or_images": true,
+      "no_bare_urls": true,
+      "max_bold_spans": 3,
+      "max_list_items": 5,
+      "code_blocks_need_language": true,
+      "max_code_line_chars": 60,
+      "no_exclamation_marks": true
+    }
+  },
+  "cases": [
+    {
+      "id": "vague_start_en",
+      "content_language": "en",
+      "description": "English version of vague_start: the Tutor does not lecture, asks why and offers concrete examples.",
+      "topic": {
+        "title": "Rust",
+        "state": "interviewing"
+      },
+      "messages": [
+        {
+          "role": "user",
+          "text": "I want to learn Rust"
+        }
+      ],
+      "deterministic": {
+        "max_words": 110,
+        "language": "en"
+      },
+      "rubric": [
+        {
+          "id": "one_question",
+          "weight": 2,
+          "criterion": "The message contains one question (two only if the second clarifies the first), ends with the question, and is about the goal or the reason the person wants to learn."
+        },
+        {
+          "id": "concrete_examples",
+          "weight": 1,
+          "criterion": "It proposes 2-3 concrete examples of possible goals to help the person answer."
+        },
+        {
+          "id": "no_lecture",
+          "weight": 2,
+          "criterion": "It does not describe Rust, its advantages or how to get started."
+        },
+        {
+          "id": "explains_mission",
+          "weight": 1,
+          "criterion": "If it uses the word 'mission', it explains it in half a sentence."
+        },
+        {
+          "id": "short_paragraphs",
+          "weight": 1,
+          "criterion": "Paragraphs of at most 3-4 sentences, one idea each."
+        },
+        {
+          "id": "in_english",
+          "weight": 1,
+          "criterion": "The whole message is in English, with no Italian words."
+        }
+      ]
+    },
+    {
+      "id": "content_question_en",
+      "content_language": "en",
+      "description": "English version of content_question: short, unverified orientation, then back to the goal.",
+      "topic": {
+        "title": "Rust",
+        "state": "interviewing"
+      },
+      "messages": [
+        {
+          "role": "user",
+          "text": "I want to learn Rust"
+        },
+        {
+          "role": "assistant",
+          "text": "Rust, ok. What would you like to be able to do once you've learned it? For example build a tool you need at work, read other people's code, or prepare for a job change."
+        },
+        {
+          "role": "user",
+          "text": "Dunno, for now just explain what ownership is, everyone talks about it"
+        }
+      ],
+      "deterministic": {
+        "language": "en"
+      },
+      "rubric": [
+        {
+          "id": "short_orientation",
+          "weight": 2,
+          "criterion": "It gives at most a one or two sentence orientation about ownership, with no long explanation and no code examples."
+        },
+        {
+          "id": "flags_unverified",
+          "weight": 2,
+          "criterion": "It says, in a natural way, that this is general knowledge that has not been verified."
+        },
+        {
+          "id": "back_to_goal",
+          "weight": 2,
+          "criterion": "It brings the conversation back to the goal with a question."
+        },
+        {
+          "id": "no_invented_refs",
+          "weight": 2,
+          "criterion": "It does not cite specific books, authors, links, versions or numbers."
+        },
+        {
+          "id": "in_english",
+          "weight": 1,
+          "criterion": "The whole message is in English, with no Italian words."
+        }
+      ]
+    }
+  ],
+  "pass_criteria": {
+    "deterministic": "all deterministic checks pass in the run",
+    "rubric_score": "weighted mean >= 0.8"
+  }
+}

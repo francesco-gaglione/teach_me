@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="login_title">Sign in to teach_me</string>
+    <string name="login_intro">Enter the backend address, then the username and password the server owner gave you.</string>
+
+    <string name="login_address_label">Backend address</string>
+    <string name="login_address_placeholder">https://teach.tailnet.ts.net</string>
+    <string name="login_address_hint">E.g. https://teach.tailnet.ts.net</string>
+    <string name="login_address_row_label">Backend</string>
+    <string name="login_address_change">Change</string>
+    <string name="login_address_row_desc">Backend: %1$s. Change the address</string>
+    <string name="login_address_error_empty">Enter the backend address.</string>
+    <string name="login_address_error_scheme">The address must start with https:// or http://.</string>
+    <string name="login_address_error_host">The address is incomplete: check the server name.</string>
+    <string name="login_username_label">Username</string>
+    <string name="login_username_error">Enter your username.</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_password_error">Enter your password.</string>
+    <string name="login_password_show">Show password</string>
+    <string name="login_password_hide">Hide password</string>
+
+    <string name="login_button">Sign in</string>
+    <string name="login_button_busy">Signing in…</string>
+    <string name="login_button_available_in">Available in %1$s</string>
+    <string name="login_slow">This is taking longer than usual…</string>
+    <string name="login_no_account">Don\'t have an account? The server owner creates it for you.</string>
+
+    <string name="login_reason_title_expired">You need to sign in again</string>
+    <string name="login_reason_body_expired">Your session is no longer valid: it expired, or it was ended after a password change or by whoever runs the server. Your data is safe on the server.</string>
+    <string name="login_reason_body_expired_pending">%1$s %2$s %3$s as soon as you sign in as “%4$s”.</string>
+    <string name="login_reason_pending_verb_one">stays on this device and will be sent</string>
+    <string name="login_reason_pending_verb_many">stay on this device and will be sent</string>
+    <string name="login_reason_title_update">You now sign in with a username and password</string>
+    <string name="login_reason_body_update">The token you used before is no longer valid. The server owner gives you your username and password: enter them below.</string>
+
+    <string name="login_panel_invalid_title">Incorrect username or password</string>
+    <string name="login_panel_invalid_body">Check that you typed them correctly: for security I won\'t say which one is wrong.</string>
+    <string name="login_panel_invalid_body_repeated">Check that you typed them correctly: for security I won\'t say which one is wrong. If you don\'t have an account yet, the server owner creates it for you.</string>
+    <string name="login_panel_limited_title">Too many attempts</string>
+    <string name="login_panel_limited_body">To protect the account I\'ve paused sign-ins with this username. You can try again in %1$s.</string>
+    <string name="login_panel_limited_body_unknown">To protect the account I\'ve paused sign-ins with this username. You can try again in a few minutes.</string>
+    <string name="login_announce_limited">Too many attempts. You can try again in %1$s.</string>
+    <string name="login_announce_limited_unknown">Too many attempts. You can try again in a few minutes.</string>
+    <string name="login_announce_unblocked">You can try signing in again.</string>
+    <string name="login_panel_unreachable_title">Backend unreachable</string>
+    <string name="login_panel_unreachable_body">Check that Tailscale is on for this device and that the address is correct.</string>
+    <string name="login_panel_unreachable_body_reason">Check that Tailscale is on for this device and that the address is correct. %1$s</string>
+    <string name="login_reason_timeout">Timed out.</string>
+    <string name="login_reason_unknown_host">Address not found.</string>
+    <string name="login_reason_refused">Connection refused.</string>
+    <string name="login_reason_tls">Invalid certificate.</string>
+    <string name="login_panel_notready_title">The backend isn\'t ready</string>
+    <string name="login_panel_notready_body">It\'s starting up or under maintenance. Try again in a moment.</string>
+    <string name="login_panel_unknown_title">This address doesn\'t look like a teach_me backend</string>
+    <string name="login_panel_unknown_body">Check the address. If it\'s correct, the backend may not be updated to the version with per-user sign-in.</string>
+    <string name="login_panel_unexpected_title">Unexpected error</string>
+    <string name="login_panel_unexpected_body_code">The backend responded with code %1$d.</string>
+    <string name="login_panel_unexpected_body">I couldn\'t complete the sign-in.</string>
+    <string name="login_panel_details">Details</string>
+    <string name="login_panel_request_id">Request: %1$s</string>
+
+    <string name="login_signed_out_toast">You\'re signed out.</string>
+
+    <plurals name="login_wait_seconds">
+        <item quantity="one">%1$d second</item>
+        <item quantity="other">%1$d seconds</item>
+    </plurals>
+    <plurals name="login_wait_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="login_wait_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+</resources>

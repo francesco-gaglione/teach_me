@@ -1,0 +1,132 @@
+{
+  "version": "tutor-tool-results-phase17-v3",
+  "note": "Testi dei tool_result restituiti al modello. Segnaposto {{nome}} sostituiti dal backend. 'is_error' indica il flag del Part::ToolResult. Italiano, imperativi brevi: sono istruzioni per il modello, mai mostrate alla persona.",
+  "results": {
+    "save_mission_draft": {
+      "ok": {
+        "is_error": false,
+        "text": "Bozza salvata (versione {{version}}). La persona la vede ora come card con i bottoni Conferma e Modifica, dopo il tuo testo. Non ripetere i campi e non chiedere conferma a parole. Ora scrivi l'introduzione, una sola volta: una o due frasi con parole tue sull'obiettivo, senza citare punto di partenza, vincoli né criteri, e senza dire che la bozza è nella card. Poi chiudi il turno: nessun altro testo e nessun altro strumento."
+      },
+      "unchanged": {
+        "is_error": false,
+        "text": "Questa bozza è identica a quella già aperta (versione {{version}}): non ho creato una nuova versione. Non riproporla; rispondi a ciò che la persona ha detto."
+      },
+      "validation_error": {
+        "is_error": true,
+        "text": "Bozza NON salvata. Da correggere:\n{{problems}}\nRichiama save_mission_draft con tutti i campi corretti, senza cambiare il resto. Se manca `starting_point` e la persona non ha ancora detto che cosa sa già, non inventarlo: chiediglielo in una domanda e richiama lo strumento solo dopo la risposta. Non parlare di errori alla persona."
+      },
+      "not_allowed_confirmed": {
+        "is_error": true,
+        "text": "Non ammesso: questo argomento ha già una mission confermata (versione {{version}}). Non è stato salvato nulla. Se la persona vuole cambiarla usa propose_mission_change (solo su sua richiesta esplicita o dopo che ha detto sì alla tua domanda); altrimenti rispondi senza strumenti."
+      },
+      "already_in_turn": {
+        "is_error": true,
+        "text": "Hai già salvato una bozza in questo turno; non ne salvo un'altra. Rispondi alla persona senza altri strumenti."
+      },
+      "not_allowed_after_lesson_request": {
+        "is_error": true,
+        "text": "Non ammesso in questo turno: hai già avviato una lezione con request_lesson e un messaggio mostra una sola card. Non è stato salvato nulla. Chiudi il turno senza altro testo; se la persona vuole cambiare la mission, lo farete nel prossimo messaggio."
+      }
+    },
+    "propose_mission_change": {
+      "ok": {
+        "is_error": false,
+        "text": "Proposta di modifica salvata (versione {{version}}). La persona la vede come card con Conferma e Modifica; finché non conferma resta valida la mission {{current_version}}. Non ripetere i campi. Ora scrivi l'introduzione, una sola volta: 1-2 righe su cosa cambia, senza citare i campi. Poi chiudi il turno: nessun altro testo e nessun altro strumento."
+      },
+      "unchanged": {
+        "is_error": false,
+        "text": "La proposta è identica alla mission confermata (versione {{version}}): non ho creato nulla. Dillo alla persona in una frase e chiedi cosa vuole cambiare."
+      },
+      "validation_error": {
+        "is_error": true,
+        "text": "Proposta NON salvata. Da correggere:\n{{problems}}\nRichiama propose_mission_change con tutti i campi corretti. Se manca `starting_point` e la persona non ha ancora detto che cosa sa già, non inventarlo: chiediglielo in una domanda e richiama lo strumento solo dopo la risposta. Non parlare di errori alla persona."
+      },
+      "not_allowed_no_confirmed": {
+        "is_error": true,
+        "text": "Non ammesso: questo argomento non ha ancora una mission confermata, quindi non c'è nulla da cambiare. Per proporre o correggere la prima mission usa save_mission_draft."
+      },
+      "already_in_turn": {
+        "is_error": true,
+        "text": "Hai già salvato una proposta in questo turno; non ne salvo un'altra. Rispondi alla persona senza altri strumenti."
+      },
+      "not_allowed_after_lesson_request": {
+        "is_error": true,
+        "text": "Non ammesso in questo turno: hai già avviato una lezione con request_lesson e un messaggio mostra una sola card. Non è stato salvato nulla. Chiudi il turno senza altro testo; se la persona vuole cambiare la mission, lo farete nel prossimo messaggio."
+      }
+    },
+    "request_lesson": {
+      "ok": {
+        "is_error": false,
+        "text": "Generazione avviata: la lezione è in coda e la card con l'avanzamento è già nel messaggio. Lo strumento non fa altro e non restituisce altri dati: non richiamarlo. Ora scrivi una sola riga breve per la persona (senza promettere tempi né descrivere il contenuto) e chiudi il turno."
+      },
+      "already_running": {
+        "is_error": false,
+        "text": "Una lezione è già in preparazione: non ne ho avviata un'altra. La persona vede ora l'avanzamento di quella nella card. Dillo in una frase, senza promettere tempi e senza descrivere il contenuto, e chiudi il turno."
+      },
+      "not_ready": {
+        "is_error": true,
+        "text": "Non ammesso: la mission di questo argomento non è ancora confermata, oppure la ricerca delle fonti è ancora in corso. Non è stato avviato nulla. Dillo alla persona in una frase: se manca la conferma della mission, ricordale di confermarla (o prosegui l'intervista); se la ricerca è in corso, dille che la lezione si potrà chiedere appena finisce. Non richiamare lo strumento in questo turno."
+      },
+      "llm_key_missing": {
+        "is_error": true,
+        "text": "Lezione NON avviata: manca la chiave del servizio di generazione. Dillo alla persona in una frase e dille di aggiungerla nelle impostazioni, poi di richiederti la lezione. Non richiamare lo strumento in questo turno."
+      },
+      "not_allowed_with_mission_tool": {
+        "is_error": true,
+        "text": "Non ammesso in questo turno: hai già usato uno strumento di mission e un messaggio mostra una sola card. Non è stato avviato nulla. Chiudi il turno senza altro testo; se la persona vuole la lezione, la chiederà dopo aver deciso sulla mission."
+      },
+      "validation_error": {
+        "is_error": true,
+        "text": "Lezione NON avviata: request_lesson non accetta argomenti.\n{{problems}}\nRichiamalo senza argomenti (la lezione la sceglie il sistema). Non parlare di errori alla persona."
+      },
+      "already_in_turn": {
+        "is_error": false,
+        "text": "Hai già avviato la lezione in questo turno con la chiamata precedente: è in coda e la card è già nel messaggio. Non richiamare lo strumento. Scrivi una sola riga breve per la persona (senza promettere tempi né descrivere il contenuto) e chiudi il turno."
+      }
+    },
+    "save_preference": {
+      "ok": {
+        "is_error": false,
+        "text": "Preferenza salvata ({{scope_label}}). Conferma alla persona in mezza frase, senza ripeterla per intero, e prosegui con quello che stavi facendo."
+      },
+      "duplicate": {
+        "is_error": false,
+        "text": "Questa preferenza è già salvata ({{scope_label}}): non ho aggiunto nulla. Non dire alla persona di averla salvata di nuovo; prosegui."
+      },
+      "validation_error": {
+        "is_error": true,
+        "text": "Preferenza NON salvata. Da correggere:\n{{problems}}\nRichiama save_preference con i valori corretti. Non parlare di errori alla persona."
+      },
+      "limit_reached": {
+        "is_error": true,
+        "text": "Preferenza NON salvata: hai raggiunto il limite di 50 preferenze per ambito ({{scope_label}}). Non riprovare. Dillo alla persona in una frase e, se la preferenza le sta a cuore, suggerisci di eliminarne qualcuna dalla vista Mission (sezione Preferenze), poi chiedile di ripeterla."
+      }
+    },
+    "common": {
+      "unknown_tool": {
+        "is_error": true,
+        "text": "Strumento sconosciuto: {{tool}}. Gli strumenti disponibili sono save_mission_draft, propose_mission_change, request_lesson, save_preference. Prosegui rispondendo con il testo."
+      },
+      "internal_error": {
+        "is_error": true,
+        "text": "Errore interno: non è stato salvato nulla. Dillo alla persona in una frase e chiedile di riprovare tra poco. Non richiamare lo strumento."
+      },
+      "invalid_input_shape": {
+        "is_error": true,
+        "text": "Input non valido per {{tool}}: {{problems}}\nRichiama lo strumento con i campi richiesti."
+      }
+    },
+    "problems": {
+      "note": "Una riga per problema, unite da \\n, prefisso '- '. Il backend le genera dal JSON Schema in tools.json (stesso schema usato nei test).",
+      "missing_field": "- `{{field}}` manca: è obbligatorio.",
+      "wrong_type": "- `{{field}}` deve essere {{expected}}.",
+      "string_empty": "- `{{field}}` è vuoto: scrivi almeno un carattere (oppure, per gli array, togli la voce vuota).",
+      "string_too_long": "- `{{field}}` è lungo {{actual}} caratteri, il massimo è {{max}}: accorcialo mantenendo il senso.",
+      "item_too_long": "- `{{field}}`, voce {{index}} (partendo da 1) è lunga {{actual}} caratteri, il massimo è {{max}}: accorciala.",
+      "too_few_items": "- `{{field}}` ha {{actual}} voci, ne servono almeno {{min}}.",
+      "too_many_items": "- `{{field}}` ha {{actual}} voci, il massimo è {{max}}: tieni le più importanti.",
+      "bad_enum": "- `{{field}}` deve essere uno tra: {{allowed}}.",
+      "unknown_field": "- `{{field}}` non esiste: togli il campo."
+    }
+  }
+}

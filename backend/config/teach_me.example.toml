@@ -1,0 +1,122 @@
+# Copy to config/teach_me.toml (git-ignored) or point TEACH_ME_CONFIG at it.
+# Every key can be overridden by the matching TEACH_ME_* environment variable.
+
+# TEACH_ME_BIND_ADDR
+bind_addr = "127.0.0.1:8080"
+
+# TEACH_ME_DATABASE_URL. The file is created if missing; the directory must exist.
+database_url = "sqlite://teach_me.db"
+
+# TEACH_ME_LOG_FORMAT: "text" (development) or "json" (production)
+log_format = "text"
+
+# TEACH_ME_BODY_LIMIT_BYTES: maximum request body (default 1 MiB)
+body_limit_bytes = 1048576
+
+# TEACH_ME_REQUEST_TIMEOUT_SECS (default 30)
+request_timeout_secs = 30
+
+# TEACH_ME_DATA_DIR: where uploaded PDFs wait for their import (in <data_dir>/uploads).
+# Default: the directory of the database file.
+# data_dir = "."
+
+# TEACH_ME_PDFIUM_DIR: directory with the PDF engine (libpdfium.so). Default: the
+# system's library path. Without it uploaded PDFs cannot be imported.
+# pdfium_dir = "/usr/local/lib/pdfium"
+
+# TEACH_ME_SECRET_KEY is REQUIRED and has no key in this file on purpose (the
+# file may end up in a backup next to the database): 32 random bytes in base64,
+# in the environment only. It encrypts the users' LLM keys in the database:
+#   openssl rand -base64 32
+# Keep it out of the database backups. If it is lost, the stored LLM keys
+# cannot be read and each user has to enter theirs again.
+#
+# Users sign in with a user name and password (`teach-me user add ...`, see
+# backend/README.md). The old static `api_token` / TEACH_ME_API_TOKEN is no
+# longer used: it is accepted so an old file still loads, and ignored with a
+# warning in the log.
+# api_token = "ignored"
+
+# ---------------------------------------------------------------------------
+# Language models (ADR 0004). Everything here is optional: the models per role
+# are compiled in, and this section only holds overrides.
+#
+# Every user brings their own LLM key (Settings in the app, or `teach-me user
+# set-llm-key`); only the provider and the models are chosen here. The API key
+# does NOT belong in a versioned file. If TEACH_ME_ANTHROPIC_API_KEY (or
+# TEACH_ME_OPENROUTER_API_KEY) is set, at first start it becomes the key of
+# the initial user `owner` when `owner` has none; after that the server does
+# not use it for anything. Without a key a user gets `409 llm_key_missing`
+# on whatever needs the model.
+# A different endpoint is set only with TEACH_ME_ANTHROPIC_BASE_URL; the
+# ANTHROPIC_BASE_URL variable used by other tools is deliberately ignored.
+# ---------------------------------------------------------------------------
+[llm]
+# TEACH_ME_LLM_PROVIDER. "anthropic" or "openrouter" need no section of their
+# own (a section named after one of them needs no `kind`). refusal_fallback is
+# Anthropic-only. OpenRouter goes through its Anthropic-compatible endpoint
+# (https://openrouter.ai/api, Bearer auth): key in TEACH_ME_OPENROUTER_API_KEY
+# (OPENROUTER_API_KEY as a fallback), URL override TEACH_ME_OPENROUTER_BASE_URL.
+# Model ids such as claude-sonnet-5-5 become anthropic/claude-sonnet-5.5;
+# OpenRouter slugs (with a "/") are used as they are.
+default_provider = "anthropic"
+
+[llm.providers.anthropic]
+kind = "anthropic"
+# base_url = "https://api.anthropic.com"   # TEACH_ME_ANTHROPIC_BASE_URL
+# anthropic-version header; check the official docs before changing it.
+# api_version = "2026-10-21"
+# connect_timeout_secs = 10
+# request_timeout_secs = 120       # time allowed for the response headers
+# stream_idle_timeout_secs = 60    # longest silence on an open stream
+# Whole-request limit for calls that run server-side web searches (the
+# Researcher). They are not streamed, so this covers the searches too.
+# server_tool_timeout_secs = 300
+# Tool type of the provider's web search (see backend/prompts/llm-port.md §12.1).
+# web_search_tool = "web_search_20250305"
+# Tool type of the provider's web fetch, used by the Generator when
+# [llm.roles.generator] max_fetches > 0 (ADR 0009).
+# web_fetch_tool = "web_fetch_20250910"
+# Whether the provider runs the web fetch tool. Default: true for kind
+# "anthropic", false for "openrouter" (not proven there yet: ADR 0009, open
+# point 1). Set it to true only to try the tool through OpenRouter.
+# server_web_fetch = true
+# Server-side retry after safety refusals. Leave off until tried with a real key.
+# refusal_fallback = false
+
+# Defaults: tutor/interviewer/researcher/recorder claude-sonnet-5-5,
+# planner/generator claude-opus-5-5, grader claude-haiku-5-5.
+# Per-role model from the environment: TEACH_ME_LLM_ROLES_<ROLE>_MODEL.
+[llm.roles.tutor]
+# model = "claude-sonnet-5-5"
+# effort = "low"                   # low | medium | high | xhigh | max
+# max_output_tokens = 4096         # includes thinking
+# history_token_budget = 8000      # estimated tokens of chat history sent
+
+[llm.roles.researcher]
+# max_searches = 4                 # web searches per research (max_uses); production uses 6 (issue #15)
+
+[llm.roles.generator]
+# Reasoning effort of the Generator. `low` since the Phase 12 evals
+# (backend/evals/README.md): at `medium` the reasoning took 60-80% of the output
+# and lessons of 4-5 concepts ran out of tokens before the document was written.
+# effort = "low"
+# Output cap of every Generator call, thinking included, and of its repair: the
+# one place where it is set. The default fits a lesson (~8k tokens at `low`)
+# with room to spare. When a call hits it the log says so (warning "ran out of
+# output tokens"): lower `effort` or raise this. A repair adds a second call,
+# so keep job_timeout (15 minutes) in mind when raising it a lot.
+# max_output_tokens = 32000
+# Web pages the Generator may read per lesson with the provider's web fetch
+# tool (at most 3 are ever read: the sources of the lesson plan). 0 = off,
+# the default: the lesson is written from title, URL and annotation, as before.
+# Turn it on only after the real test of docs/adr/0009-web-fetch-generator.md;
+# it needs a provider with web fetch (see server_web_fetch above). Each page
+# adds up to 8000 input tokens, and again on every repair.
+# max_fetches = 0
+
+# Keep this table last: keys after it would belong to it.
+# Traces over OTLP/HTTP (e.g. to Jaeger). Off unless an endpoint is set here or in the
+# standard OTEL_EXPORTER_OTLP_ENDPOINT variable (which wins; empty = off).
+# [telemetry]
+# otlp_endpoint = "http://localhost:4318"

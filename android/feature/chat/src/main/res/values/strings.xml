@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Messages -->
+    <string name="chat_tutor_label">Tutor</string>
+    <string name="chat_user_description">Tu: %1$s</string>
+    <string name="chat_unknown_content">Questo messaggio contiene qualcosa che questa versione dell\'app non sa ancora mostrare.</string>
+    <string name="chat_state_streaming">In scrittura</string>
+    <string name="chat_copy_message">Copia messaggio</string>
+    <string name="chat_copy_code">Copia codice</string>
+    <string name="chat_copy_action">Copia</string>
+    <string name="chat_copied">Copiato</string>
+    <string name="chat_copied_toast">Messaggio copiato</string>
+    <string name="chat_code_description">Codice %1$s</string>
+    <string name="chat_code_description_plain">Codice</string>
+    <string name="chat_day_today">Oggi</string>
+    <string name="chat_day_yesterday">Ieri</string>
+
+    <!-- Activity indicator -->
+    <string name="chat_typing">Il Tutor sta scrivendo…</string>
+    <string name="chat_typing_slow">Il Tutor ci sta mettendo più del solito…</string>
+    <string name="chat_connection_lost">Connessione persa. Riconnetto…</string>
+    <string name="chat_unreachable">Non riesco a raggiungere il backend. La risposta continua a prepararsi sul server e la ritroverai qui.</string>
+    <string name="chat_reconnect_now">Riprova ora</string>
+
+    <!-- List -->
+    <string name="chat_pill_new">Nuovi messaggi</string>
+    <string name="chat_older_loading">Carico i messaggi precedenti…</string>
+    <string name="chat_older_failed">Non riesco a caricare i messaggi precedenti.</string>
+    <string name="chat_older_retry">Riprova</string>
+    <string name="chat_loading">Caricamento</string>
+    <string name="chat_loading_long">Sto ancora caricando…</string>
+
+    <!-- Empty state -->
+    <string name="chat_empty_title">Cominciamo da te</string>
+    <string name="chat_empty_body">Dimmi perché vuoi imparare «%1$s». Il Tutor ti farà qualche domanda e da lì nascerà la tua mission: lo scopo che guida ogni lezione.</string>
+    <string name="chat_empty_examples">Per esempio puoi cominciare con:</string>
+    <string name="chat_suggestion_work">Mi serve per il lavoro…</string>
+    <string name="chat_suggestion_project">Ho un progetto in mente…</string>
+    <string name="chat_suggestion_exam">È per un esame o un corso…</string>
+
+    <!-- Context pane -->
+    <string name="chat_context_title">La tua mission</string>
+    <string name="chat_context_draft_body">C\'è una proposta in attesa (versione %1$d). Leggila nella chat e decidi se confermarla.</string>
+    <string name="chat_context_change_pending">Proposta di modifica in attesa.</string>
+    <string name="chat_context_go_proposal">Vai alla proposta</string>
+    <string name="chat_context_open_mission">Apri la mission</string>
+    <string name="chat_context_version">Versione %1$d</string>
+    <string name="chat_context_criteria">Come capirai di esserci riuscito</string>
+    <string name="chat_context_criterion">Criterio %1$d di %2$d: %3$s</string>
+    <string name="chat_context_body">Ancora da definire. La mission è lo scopo per cui impari «%1$s»: guida cosa ti insegno e in che ordine.</string>
+
+    <!-- Composer -->
+    <string name="chat_composer_hint">Scrivi un messaggio…</string>
+    <string name="chat_composer_label">Scrivi un messaggio al Tutor</string>
+    <string name="chat_send">Invia</string>
+    <string name="chat_send_disabled_empty">Invia, scrivi prima un messaggio</string>
+    <string name="chat_send_disabled_busy">Invia, il Tutor sta rispondendo</string>
+    <string name="chat_reason_turn">Il Tutor sta rispondendo. Potrai inviare quando ha finito.</string>
+    <string name="chat_composer_hint_starting_point">Cosa sai già di questo argomento e cosa non hai mai visto?</string>
+    <string name="chat_composer_hint_mission">Cosa vuoi cambiare nella mission? Puoi citare il numero del criterio.</string>
+    <string name="chat_reason_confirming">Sto confermando la mission…</string>
+    <string name="chat_notice_updated">La chat si è aggiornata. Controlla il messaggio e invia di nuovo.</string>
+    <string name="chat_counter">%1$s / %2$s</string>
+    <string name="chat_counter_over">Il messaggio è più lungo di %1$s caratteri: accorcialo di %2$s.</string>
+    <string name="chat_counter_threshold_announce">Hai superato i %1$s caratteri su %2$s.</string>
+
+    <!-- Errors -->
+    <string name="chat_send_error_title">Messaggio non inviato</string>
+    <string name="chat_send_error_network">Non sono riuscito a raggiungere il backend. Il tuo testo è ancora nel campo.</string>
+    <string name="chat_send_error_server">Il server ha avuto un problema. Il tuo testo è ancora nel campo.</string>
+    <string name="chat_send_error_retry">Riprova</string>
+    <string name="chat_dismiss">Chiudi</string>
+    <string name="chat_failed_title_interrupted">Risposta interrotta</string>
+    <string name="chat_failed_title_rate">Troppe richieste</string>
+    <string name="chat_failed_body_upstream">Il servizio del modello non ha risposto. Riprova tra poco.</string>
+    <string name="chat_failed_body_rate">Il servizio del modello è occupato. Aspetta un minuto e riprova.</string>
+    <string name="chat_failed_body_internal">Qualcosa è andato storto sul server. Riprova.</string>
+    <string name="chat_failed_body_other">Non sono riuscito a completare la risposta. Riprova.</string>
+    <string name="chat_failed_partial">Sopra c\'è la parte arrivata prima dell\'interruzione.</string>
+    <string name="chat_failed_old">Questa risposta non è stata completata.</string>
+    <string name="chat_retry">Riprova</string>
+    <string name="chat_retry_loading">Riprovo…</string>
+    <string name="chat_toast_updated">La chat si è aggiornata.</string>
+    <string name="chat_toast_retry_failed">Non sono riuscito a riprovare. Controlla la connessione.</string>
+
+    <!-- Accessibility announcements -->
+    <string name="chat_announce_writing">Il Tutor sta scrivendo.</string>
+    <string name="chat_announce_answered">Il Tutor ha risposto.</string>
+    <string name="chat_announce_failed">Risposta interrotta. Riprova disponibile.</string>
+    <string name="chat_announce_mission">Il Tutor ha proposto una mission per %1$s. Leggi i criteri di successo e scegli se confermarla.</string>
+    <string name="chat_announce_lesson_request">Il Tutor ha avviato la preparazione di una lezione.</string>
+    <string name="chat_messages_list">Conversazione con il Tutor</string>
+
+    <!-- Chat opened from a lesson (ask_agent.md) -->
+    <string name="chat_lesson_chip">Sulla lezione %1$d: %2$s</string>
+    <string name="chat_lesson_chip_a11y">Contesto: lezione %1$d, %2$s</string>
+    <string name="chat_lesson_chip_remove">Togli la lezione dal contesto</string>
+    <string name="chat_lesson_title">Lezione</string>
+    <string name="chat_lesson_meta">Lezione %1$d</string>
+    <string name="chat_lesson_meta_minutes">Lezione %1$d · %2$s</string>
+    <plurals name="chat_lesson_minutes">
+        <item quantity="one">Circa %1$d minuto</item>
+        <item quantity="other">Circa %1$d minuti</item>
+    </plurals>
+    <string name="chat_lesson_back">Torna alla lezione</string>
+    <string name="chat_prefilled_announce">Domanda precompilata nel campo messaggio. Modificala e inviala quando vuoi.</string>
+</resources>

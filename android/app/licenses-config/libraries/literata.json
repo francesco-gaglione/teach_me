@@ -1,0 +1,8 @@
+{
+  "uniqueId": "literata",
+  "name": "Literata (font)",
+  "artifactVersion": "bundled",
+  "website": "https://github.com/googlefonts/literata",
+  "developers": [{ "name": "The Literata Project Authors" }],
+  "licenses": ["OFL-1.1"]
+}

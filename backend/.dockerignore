@@ -1,0 +1,9 @@
+target
+.git
+deploy/*
+!deploy/teach_me.toml
+*.db
+*.db-shm
+*.db-wal
+config/teach_me.toml
+**/.env

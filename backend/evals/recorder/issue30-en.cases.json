@@ -1,0 +1,471 @@
+{
+  "suite": "recorder/issue30-en",
+  "prompt_dir": "backend/prompts/recorder",
+  "schema_file": "backend/prompts/recorder/output_schema.json",
+  "description": "Issue #30 (ADR 0019): English versions of two phase7 cases.",
+  "defaults": {
+    "runs_per_case": 1,
+    "deterministic": {
+      "schema_valid": true,
+      "backend_validator_pass_first_try": true,
+      "backend_validator_pass_within_2": true,
+      "max_records": 5,
+      "max_terms": 8,
+      "max_cards": 10,
+      "lengths": {
+        "title": [
+          1,
+          120
+        ],
+        "body": [
+          1,
+          600
+        ],
+        "evidence": [
+          1,
+          400
+        ],
+        "term": [
+          1,
+          80
+        ],
+        "definition": [
+          1,
+          400
+        ],
+        "front": [
+          1,
+          300
+        ],
+        "back": [
+          1,
+          600
+        ],
+        "avoid_each": [
+          1,
+          120
+        ],
+        "avoid_count": [
+          0,
+          3
+        ]
+      },
+      "evidence_blocks_must_exist_with_attempts": true,
+      "demonstrated_needs_passed_attempt": true,
+      "misconception_needs_first_fail_and_a_pass": true,
+      "terms_need_passed_attempt": true,
+      "supersedes_must_be_active_records": true,
+      "each_card_links_exactly_one": true,
+      "term_keys_format": "^[a-z0-9_]{1,40}$",
+      "term_key_equals_lesson_glossary_key_when_same_term": true,
+      "no_markdown_beyond_inline": true,
+      "no_double_brackets_in_definitions": true,
+      "body_must_not_match": [
+        "(?i)\\b(well done|great job|finally|you've improved|congratulations)\\b"
+      ],
+      "card_text_must_not_match": [
+        "(?i)\\b(above|below|in the example|as seen|in this lesson|in the lesson)\\b"
+      ],
+      "no_exclamation_marks": "ignorare `!` dentro `codice inline` e nei blocchi di codice (es. println!)",
+      "language": "en",
+      "body_and_evidence_second_person": "euristica: contengono una forma di seconda persona singolare (hai, sai, pensavi, sei, ti, tuo/a, prevedi, vedi) oppure sono impersonali; mai terza persona (ha, sa, pensava)",
+      "evidence_must_not_match": [
+        "\\b(q|fb|oa|fc|g)\\d+\\b"
+      ],
+      "no_ids_in_visible_text": "id di esercizi (evidence_blocks) assenti da title, body, evidence, definition, front, back",
+      "title_must_not_match": [
+        "(?i)\\b(thought|believed|think|believe)\\b that"
+      ],
+      "card_front_single_question": {
+        "description": "Il fronte non unisce due domande: segnala `\\b(e|and) (chi|che cosa|cosa|quale|come|dove|perché)\\b` dopo un `?`-less segmento, oppure due `?` in cui il secondo segmento non sia esattamente «Perché?» / «Perché no?» / «Perché non?». Il formato «Compila? Perché?» è ammesso (una previsione con la sua ragione).",
+        "severity": "error"
+      },
+      "card_front_chars_max": 170,
+      "card_front_chars_hard_max": 300,
+      "card_back_max_sentences": 3,
+      "card_back_chars_max": 250,
+      "card_back_chars_hard_max": 600,
+      "records_demonstrated_do_not_cite_failed_blocks_only": "un record demonstrated non può avere come sole evidence_blocks esercizi mai superati (già coperto da demonstrated_needs_passed_attempt); in più: ogni evidence_block di un demonstrated ha almeno un tentativo `correct`",
+      "unpassed_block_only_on_never_passed": true,
+      "unpassed_block_not_in_visible_text": true
+    },
+    "notes": "`expect` di un caso: intervalli [min,max] per il numero di records/terms/cards, record_kinds_include/exclude, term_keys_subset_of, supersedes_any, terms_must_not_include_keys. Il backend_validator è quello di lessons.md §6.3 (codice reale). Gli esiti `passed` sono quelli del campo `outcome` dei tentativi del caso. Fase 9: casi real_lesson_1_unproven_point e real_lesson_2_second_attempt_pass dalle lezioni reali (docs/design/samples). Per `body_must_not_match`/`evidence_must_not_match` di caso: regex vietate in title+body+evidence dei record `demonstrated`. `expect.cards_min_application`: numero minimo di schede di applicazione, verificate dalla rubrica. Issue #29: `unpassed_block_only_on_never_passed` (ogni valore non nullo è un esercizio con tentativi e nessun `correct`: mai su un esercizio superato né corretto al secondo tentativo), `unpassed_block_not_in_visible_text`; per caso `unpassed_block_includes_one_of` (almeno una scheda cita uno di quegli esercizi) e `unpassed_block_includes_all_of` (tutti quegli esercizi compaiono in qualche scheda)."
+  },
+  "cases": [
+    {
+      "id": "explained_only_zero_records_en",
+      "description": "English version of explained_only_zero_records: nothing passed, so zero records, terms and cards.",
+      "topic": {
+        "title": "Ownership and borrowing in Rust"
+      },
+      "mission_why": "I want to stop fighting the compiler and understand its error messages.",
+      "lesson": {
+        "number": 1,
+        "title": "When a variable stops being valid",
+        "objective": "Be able to predict whether a Rust variable is still usable after an assignment."
+      },
+      "plan": {
+        "concepts": [
+          {
+            "name": "move",
+            "key_point": "Assigning a String moves ownership."
+          },
+          {
+            "name": "copying simple types",
+            "key_point": "Types like i32 are duplicated."
+          }
+        ],
+        "why_now": "First step toward the criterion \"read borrow of moved value\"."
+      },
+      "lesson_glossary": [
+        {
+          "key": "ownership",
+          "term": "ownership",
+          "definition": "The rule that every value has a single owner, which frees it when it goes out of scope.",
+          "avoid": [
+            "intellectual property"
+          ]
+        },
+        {
+          "key": "move",
+          "term": "move",
+          "definition": "The transfer of ownership of a value from one variable to another: after the move the original variable is no longer usable.",
+          "avoid": []
+        },
+        {
+          "key": "copy_trait",
+          "term": "Copy",
+          "definition": "Trait of simple types that are duplicated bit by bit on assignment instead of being moved.",
+          "avoid": []
+        }
+      ],
+      "exercise_blocks": [
+        {
+          "id": "q1",
+          "type": "quiz_single",
+          "question": "In the code `let a = String::from(\"hello\"); let b = a;`, what happens if you use `a` after the second line?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It prints the text twice",
+              "feedback": "feedback"
+            },
+            {
+              "id": "b",
+              "text": "The program does not compile",
+              "feedback": "feedback"
+            },
+            {
+              "id": "c",
+              "text": "It prints an empty string",
+              "feedback": "feedback"
+            }
+          ],
+          "correct": "b",
+          "required": true
+        },
+        {
+          "id": "oa1",
+          "type": "open_answer",
+          "question": "Explain in 2-3 sentences why, after `let b = a;` with `a` of type `String`, you can no longer use `a`.",
+          "max_chars": 600,
+          "rubric": "Key points: value moved into `b`; a single owner, so `a` is not valid. Typical mistake: thinks assignment copies.",
+          "required": true
+        },
+        {
+          "id": "fc1",
+          "type": "flashcard",
+          "front": "Which trait do simple types like `i32` have that makes them duplicate on assignment?",
+          "back": "Copy.",
+          "required": false
+        }
+      ],
+      "attempts": [
+        {
+          "block_id": "q1",
+          "attempt_number": 1,
+          "answer": {
+            "option": "a"
+          },
+          "outcome": "incorrect"
+        },
+        {
+          "block_id": "oa1",
+          "attempt_number": 1,
+          "answer": {
+            "text": "Because it gets moved."
+          },
+          "outcome": "pending"
+        },
+        {
+          "block_id": "fc1",
+          "attempt_number": 1,
+          "answer": {
+            "rating": "again"
+          },
+          "outcome": "incorrect"
+        }
+      ],
+      "active_records": [],
+      "topic_glossary": [],
+      "expect": {
+        "records": [
+          0,
+          0
+        ],
+        "terms": [
+          0,
+          0
+        ],
+        "cards": [
+          0,
+          0
+        ]
+      },
+      "rubric": [
+        {
+          "id": "all_empty",
+          "text": "Returns three empty arrays.",
+          "weight": 5
+        }
+      ],
+      "content_language": "en",
+      "deterministic": {
+        "language": "en"
+      }
+    },
+    {
+      "id": "misconception_corrected_en",
+      "description": "English version of misconception_corrected: fails the multiple-choice quiz first (partial), passes it on the second attempt, and the open answer is correct. Expected: a misconception_corrected record citing q2, term move with the lesson key, cards testing move vs copy.",
+      "topic": {
+        "title": "Ownership and borrowing in Rust"
+      },
+      "mission_why": "I want to stop fighting the compiler and understand its error messages.",
+      "lesson": {
+        "number": 1,
+        "title": "When a variable stops being valid",
+        "objective": "Be able to predict whether a Rust variable is still usable after an assignment."
+      },
+      "plan": {
+        "concepts": [
+          {
+            "name": "move",
+            "key_point": "Assigning a String moves ownership."
+          },
+          {
+            "name": "copying simple types",
+            "key_point": "Types like i32 are duplicated."
+          }
+        ],
+        "why_now": "First step toward the criterion \"read borrow of moved value\"."
+      },
+      "lesson_glossary": [
+        {
+          "key": "ownership",
+          "term": "ownership",
+          "definition": "The rule that every value has a single owner, which frees it when it goes out of scope.",
+          "avoid": [
+            "intellectual property"
+          ]
+        },
+        {
+          "key": "move",
+          "term": "move",
+          "definition": "The transfer of ownership of a value from one variable to another: after the move the original variable is no longer usable.",
+          "avoid": []
+        },
+        {
+          "key": "copy_trait",
+          "term": "Copy",
+          "definition": "Trait of simple types that are duplicated bit by bit on assignment instead of being moved.",
+          "avoid": []
+        }
+      ],
+      "exercise_blocks": [
+        {
+          "id": "q1",
+          "type": "quiz_single",
+          "question": "In the code `let a = String::from(\"hello\"); let b = a;`, what happens if you use `a` after the second line?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It prints the text twice",
+              "feedback": "feedback"
+            },
+            {
+              "id": "b",
+              "text": "The program does not compile",
+              "feedback": "feedback"
+            },
+            {
+              "id": "c",
+              "text": "It prints an empty string",
+              "feedback": "feedback"
+            }
+          ],
+          "correct": "b",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "type": "quiz_multi",
+          "question": "In which cases is `v` no longer usable after the described statement?",
+          "options": [
+            {
+              "id": "a",
+              "text": "`v` is a `String` assigned to `w`",
+              "feedback": "feedback"
+            },
+            {
+              "id": "b",
+              "text": "`v` is an `i32` assigned to `w`",
+              "feedback": "feedback"
+            },
+            {
+              "id": "c",
+              "text": "`v` is a `String` passed to a function",
+              "feedback": "feedback"
+            },
+            {
+              "id": "d",
+              "text": "`v` is a `String` cloned into `w`",
+              "feedback": "feedback"
+            }
+          ],
+          "correct": [
+            "a",
+            "c"
+          ],
+          "required": true
+        },
+        {
+          "id": "oa1",
+          "type": "open_answer",
+          "question": "Explain in 2-3 sentences why, after `let b = a;` with `a` of type `String`, you can no longer use `a`.",
+          "max_chars": 600,
+          "rubric": "Key points: value moved into `b`; a single owner, so `a` is not valid. Typical mistake: thinks assignment copies.",
+          "required": true
+        }
+      ],
+      "attempts": [
+        {
+          "block_id": "q1",
+          "attempt_number": 1,
+          "answer": {
+            "option": "b"
+          },
+          "outcome": "correct"
+        },
+        {
+          "block_id": "q2",
+          "attempt_number": 1,
+          "answer": {
+            "options": [
+              "a"
+            ]
+          },
+          "outcome": "partial"
+        },
+        {
+          "block_id": "q2",
+          "attempt_number": 2,
+          "answer": {
+            "options": [
+              "a",
+              "c"
+            ]
+          },
+          "outcome": "correct"
+        },
+        {
+          "block_id": "oa1",
+          "attempt_number": 1,
+          "answer": {
+            "text": "Because `let b = a;` moves the value into `b`: the string has a single owner and after the move it is `b`, so `a` can no longer be used."
+          },
+          "outcome": "correct",
+          "grade": {
+            "verdict": "correct",
+            "feedback": "…",
+            "misconception": null
+          }
+        }
+      ],
+      "active_records": [],
+      "topic_glossary": [],
+      "expect": {
+        "records": [
+          1,
+          2
+        ],
+        "terms": [
+          1,
+          3
+        ],
+        "cards": [
+          2,
+          5
+        ],
+        "record_kinds_include": [
+          "misconception_corrected"
+        ],
+        "term_keys_subset_of": [
+          "ownership",
+          "move",
+          "copy_trait"
+        ]
+      },
+      "deterministic": {
+        "misconception_record_cites": [
+          "q2"
+        ],
+        "language": "en"
+      },
+      "rubric": [
+        {
+          "id": "kind_right",
+          "text": "There is a misconception_corrected record about the fact that passing a String to a function / assigning it moves it (the belief was that it stayed usable); it is not called demonstrated.",
+          "weight": 3
+        },
+        {
+          "id": "evidence_concrete",
+          "text": "`evidence` says concretely that the person got the multiple-choice question wrong and then solved it, with no grades.",
+          "weight": 2
+        },
+        {
+          "id": "no_diary",
+          "text": "No record is a diary of the lesson (\"did 3 exercises\").",
+          "weight": 2
+        },
+        {
+          "id": "cards_recall",
+          "text": "The cards ask for recall (a prediction or a short-answer question), stand on their own and do not point back to the lesson.",
+          "weight": 3
+        },
+        {
+          "id": "term_definition",
+          "text": "Term definitions say what the term IS, in 1-2 sentences.",
+          "weight": 2
+        },
+        {
+          "id": "second_person",
+          "text": "`body` and `evidence` are in the second person (\"At first you thought that...\", \"You explained...\"), `title` is impersonal and states the right idea, with no exercise ids.",
+          "weight": 3
+        },
+        {
+          "id": "in_english",
+          "text": "All visible text (titles, bodies, evidence, definitions, cards) is in English.",
+          "weight": 1
+        }
+      ],
+      "content_language": "en"
+    }
+  ],
+  "pass_criteria": {
+    "expect_all_cases": "tutti i controlli `expect` in 3/3 run per i casi explained_only_zero_records, flashcard_only_weak_evidence, existing_term_and_record_not_duplicated (regole di sobrietà: devono essere stabili); 2/3 per gli altri",
+    "backend_validator_pass_first_try": ">= 85% delle run (ogni fallimento costa una riparazione)",
+    "rubric_mean": ">= 0.8",
+    "phase9": "real_lesson_1_unproven_point: 3/3 run senza alcuna affermazione su `clone` nei record demonstrated; real_lesson_2_second_attempt_pass: 3/3 run con un record misconception_corrected che cita q3; card_front_single_question e card_back_chars_max: >= 90% delle schede",
+    "issue29": "unpassed_block_includes_all_of (q2 e q4): real_lesson_1_unproven_point 3/3 run; unpassed_block_only_on_never_passed e unpassed_block_not_in_visible_text: 100% delle run su tutti i casi (in particolare misconception_corrected e real_lesson_2_second_attempt_pass, dove l'esercizio sbagliato è poi corretto: sempre null); nessuna regressione degli altri controlli rispetto alla misura v4"
+  }
+}
