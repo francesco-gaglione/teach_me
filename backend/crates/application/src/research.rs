@@ -1,4 +1,4 @@
-//! The Researcher (phase 4): the `research` job handler and the use cases
+//! The Researcher: the `research` job handler and the use cases
 //! behind `/topics/{id}/resources`. Design: `backend/prompts/llm-port.md` §12;
 //! contract: `docs/contracts/resources.md`.
 

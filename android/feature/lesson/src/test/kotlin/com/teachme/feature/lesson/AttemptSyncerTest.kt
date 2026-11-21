@@ -143,7 +143,7 @@ class AttemptSyncerTest {
             assertEquals(listOf(listOf("q0"), listOf("o1")), seen)
         }
 
-    // region Phase 11: data of a user never leaves with the session of another
+    // region data of a user never leaves with the session of another
 
     private val userA =
         com.teachme.core.model

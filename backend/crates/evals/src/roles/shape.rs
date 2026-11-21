@@ -1,4 +1,4 @@
-//! Shape checks of a Phase 12 lesson (`backend/evals/README.md`, "Fase 12"):
+//! Shape checks of a rich lesson (`backend/evals/README.md`):
 //! the sections the plan implies, the chain of each concept, the length of
 //! what is read between two exercises, the recall of unproven prerequisites.
 //! Pure functions over the document the Generator wrote and the plan it was

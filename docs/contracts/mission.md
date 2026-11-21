@@ -1,8 +1,8 @@
 # Contratto: Mission e preferenze
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.4** (2026-11-18: tool `request_lesson`, §6), v1.3 (2026-11-15: proposta superata, §3 `replaces_version`), v1.2 (2026-11-11), Fase 3.
-> **Fase 12 (v1.2):** nuovo campo `starting_point` della mission (che cosa la persona sa già), `null` per le versioni precedenti; il Tutor lo chiede sempre nell'intervista (§2, §6, §8).
-> **Fase 11 (v1.1):** le preferenze, comprese quelle globali, sono dell'utente: valgono solo per i suoi argomenti e non entrano mai nei prompt di altri. La conferma della mission riesce anche senza chiave LLM (`users.md` §3).
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.4** (2026-11-18: tool `request_lesson`, §6), v1.3 (2026-11-15: proposta superata, §3 `replaces_version`), v1.2 (2026-11-11).
+> **v1.2:** nuovo campo `starting_point` della mission (che cosa la persona sa già), `null` per le versioni precedenti; il Tutor lo chiede sempre nell'intervista (§2, §6, §8).
+> **v1.1:** le preferenze, comprese quelle globali, sono dell'utente: valgono solo per i suoi argomenti e non entrano mai nei prompt di altri. La conferma della mission riesce anche senza chiave LLM (`users.md` §3).
 > Valgono `api-conventions.md`, `folders-topics.md` e `chat.md`. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti
@@ -77,7 +77,7 @@ Nuovo tipo di parte in `ChatMessage.parts` (`chat.md` §1). Compare nel messaggi
 { "type": "mission_proposal", "mission": { "...": "Mission con status draft al momento della proposta" }, "replaces_version": 1 }
 ```
 
-- `replaces_version`: la versione confermata che la bozza sostituirebbe se confermata (`null` se non c'è ancora una mission confermata). L'app la usa per i testi "Sostituirà la versione N" e per evidenziare le differenze. Se nel frattempo la versione confermata è cambiata (`replaces_version` diverso dalla versione confermata corrente), la proposta è **superata**: l'app la mostra come non più applicabile, senza bottoni (v1.3, issue #19).
+- `replaces_version`: la versione confermata che la bozza sostituirebbe se confermata (`null` se non c'è ancora una mission confermata). L'app la usa per i testi "Sostituirà la versione N" e per evidenziare le differenze. Se nel frattempo la versione confermata è cambiata (`replaces_version` diverso dalla versione confermata corrente), la proposta è **superata**: l'app la mostra come non più applicabile, senza bottoni (v1.3).
 - La parte `mission_proposal` è sempre **l'ultima** del messaggio, dopo tutto il testo.
 - La parte è uno **snapshot**: non cambia quando la bozza viene confermata o superata. L'app decide lo stato della card confrontando `mission.version` con `GET /topics/{id}/mission` (o con gli eventi del §5): bozza aperta → bottoni attivi; confermata → "Confermata"; superata → "Sostituita da una proposta più recente" senza bottoni.
 - App vecchie che non conoscono il tipo lo ignorano (regola di `chat.md`).
@@ -115,7 +115,7 @@ Non c'è un endpoint: "Modifica" nell'app mette il focus sul composer; l'utente 
 
 ## 5. Stati del Topic e nuovi eventi
 
-Transizioni della Fase 3 (`docs/mvp.md` §5, semplificato dal tech lead per i cambi di mission):
+Transizioni (`docs/mvp.md` §5, semplificato dal tech lead per i cambi di mission):
 
 **Senza mission confermata** (prima mission):
 
@@ -125,7 +125,7 @@ Transizioni della Fase 3 (`docs/mvp.md` §5, semplificato dal tech lead per i ca
 | `mission_proposed` | `interviewing` | l'utente invia un messaggio (la bozza resta aperta e confermabile) |
 | `mission_proposed` | `researching` | conferma della bozza |
 
-**Con una mission confermata** (cambio di mission, `propose_mission_change`): la bozza **non cambia lo stato del Topic** (resta `researching` o `ready`), così lezioni e ripassi non si bloccano mentre una proposta è in attesa; la bozza è visibile come card e nella vista Mission. La conferma rende la bozza la mission corrente senza cambiare stato in Fase 3 (dalla Fase 4 l'app propone all'utente di rifare la ricerca delle fonti, `resources.md` §3; nessuna ricerca automatica). Questo sostituisce la transizione `Ready → MissionProposed` di `docs/mvp.md` §5.
+**Con una mission confermata** (cambio di mission, `propose_mission_change`): la bozza **non cambia lo stato del Topic** (resta `researching` o `ready`), così lezioni e ripassi non si bloccano mentre una proposta è in attesa; la bozza è visibile come card e nella vista Mission. La conferma rende la bozza la mission corrente senza cambiare stato (l'app propone all'utente di rifare la ricerca delle fonti, `resources.md` §3; nessuna ricerca automatica). Questo sostituisce la transizione `Ready → MissionProposed` di `docs/mvp.md` §5.
 
 Ogni cambio di stato emette `topic_updated` (`chat.md` §3). Nuovi eventi SSE:
 
@@ -149,7 +149,7 @@ Non fanno parte del contratto HTTP; fissano l'intento per `llm-engineer` e backe
 
 L'ammissibilità dipende dai dati (c'è o no una mission confermata), non dallo stato del Topic. Al più un tool di mission per turno del Tutor.
 
-`start_research` non è un tool: la ricerca parte dalla conferma della mission (`resources.md`). `request_lesson` dalla v1.4 (issue #17); un turno ha al più una card, quindi niente `request_lesson` nello stesso turno di un tool di mission.
+`start_research` non è un tool: la ricerca parte dalla conferma della mission (`resources.md`). `request_lesson` dalla v1.4; un turno ha al più una card, quindi niente `request_lesson` nello stesso turno di un tool di mission.
 
 ## 7. Precisazioni (dopo l'implementazione, v1.1)
 
@@ -166,7 +166,7 @@ L'ammissibilità dipende dai dati (c'è o no una mission confermata), non dallo 
 - La parte `mission_proposal` viene aggiunta al messaggio **alla sua chiusura** (`message_completed` o `message_failed`), non durante lo streaming: uno snapshot REST di un messaggio `streaming` non contiene ancora la card, e gli indici dei `message_delta` si riferiscono solo alle parti di testo.
 - Al massimo 50 preferenze per ambito (globali; ciascun Topic): oltre il limite il Tutor riceve un errore e non salva.
 
-## 8. Punto di partenza (v1.2, Fase 12)
+## 8. Punto di partenza (v1.2)
 
 - `starting_point` è **obbligatorio nei tool** `save_mission_draft` e `propose_mission_change` (1-600 caratteri dopo il trim): senza, il tool restituisce un errore al modello come per gli altri limiti. Il Tutor chiede sempre che cosa la persona sa già prima di proporre una mission; se la persona parte da zero lo scrive esplicitamente ("Parto da zero: mai programmato"), non lascia il campo vuoto.
 - Nelle risposte HTTP e negli eventi il campo è **sempre presente**: stringa, oppure `null` per le versioni create prima della v1.2. Nessuna versione esistente viene riscritta.

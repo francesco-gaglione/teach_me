@@ -39,8 +39,7 @@ Migrations in `migrations/` run at startup (never edit an applied one; add a new
 
 Migration `0014` is a `-- no-transaction` file (it must switch the foreign keys off to rebuild the parent tables). Its own `BEGIN`/`COMMIT` makes the changes atomic, but sqlx records the migration in `_sqlx_migrations` only afterwards: if the process dies exactly between the `COMMIT` and that record (a window of milliseconds), the next start tries to apply `0014` again and stops with an error such as `table users already exists`. Remedy, with the service stopped: restore the pre-deploy backup (`./backup.sh restore ...`; `deploy.sh` takes one before every deploy) and deploy again. Do not insert the `_sqlx_migrations` row by hand: its checksum must match the file.
 
-### Chat with the Tutor (phase 2)
-
+### Chat with the Tutor
 The Tutor, the Researcher, the Generator and the Grader use the LLM key **of the user who owns the topic**: each user saves theirs from the app (`PUT /me/llm-key`) or the operator does with `teach-me user set-llm-key`. Never put a key in a versioned file. Without one, what needs the model answers `409 llm_key_missing` and creates nothing; a key the provider refuses (401/403) gives `llm_key_rejected`, and an account out of credit (402, or a billing error on an open stream) gives `llm_credit_exhausted`, not retried automatically (contract `docs/contracts/users.md` §3). If `TEACH_ME_ANTHROPIC_API_KEY` (fallback `ANTHROPIC_API_KEY`) or, with OpenRouter, `TEACH_ME_OPENROUTER_API_KEY` is set, at first start it becomes the key of the user `owner` if `owner` has none; afterwards the server does not use it. Models, effort and timeouts per role are configured in the `[llm]` section (see `config/teach_me.example.toml`); the defaults are compiled in. The Generator can read the web sources of a lesson with the provider's web fetch tool: `[llm.roles.generator] max_fetches` (0 = off, the default, until the real test of `docs/adr/0009-web-fetch-generator.md` passes; through OpenRouter it also needs `server_web_fetch = true` under the provider). `ANTHROPIC_BASE_URL` is ignored on purpose: use `TEACH_ME_ANTHROPIC_BASE_URL` for a different endpoint. To use OpenRouter instead (same adapter, its Anthropic-compatible endpoint): `TEACH_ME_LLM_PROVIDER=openrouter` and `TEACH_ME_OPENROUTER_API_KEY`; model ids are mapped to OpenRouter slugs (`claude-haiku-5-5` → `anthropic/claude-haiku-5.5`). The prompts in `prompts/` are embedded at build time, so edit then rebuild. Contract: `docs/contracts/chat.md`.
 
 ```bash
@@ -59,8 +58,7 @@ curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"name":"Lavoro"}' localhost:8080/api/v1/folders
 ```
 
-### PDF documents (phase 10)
-
+### PDF documents
 The user can upload up to 5 PDFs per topic (`POST /api/v1/topics/{id}/documents`, multipart, one `file` field). Lessons then follow the chosen sections and cite their pages, next to the web sources. Contract: `docs/contracts/documents.md`.
 
 - **Limits.** 50 MB per file, on this route only (every other route keeps `TEACH_ME_BODY_LIMIT_BYTES`, and the upload has no request timeout). More than 1,500 pages, password-protected files and scans without selectable text (fewer than 200 characters per page on average, or more than half of the pages empty) are refused by the import job with `too_many_pages`, `encrypted_pdf` and `no_text`. There is no OCR.
@@ -74,8 +72,7 @@ curl -s -H "Authorization: Bearer $TOKEN" -F file=@book.pdf localhost:8080/api/v
 
 To try the extractor on a real book: `TEACH_ME_PDFIUM_DIR=… TEACH_ME_TEST_PDF=book.pdf cargo test -p infrastructure --test pdf -- --ignored --nocapture`.
 
-### Read aloud (issue #8, stages 1-2b)
-
+### Read aloud
 ADR 0013 / `docs/contracts/audio.md`.
 
 - `domain::readable_blocks` gives the readable blocks of a lesson document with the text the voice speaks (heading, paragraph, callout, diagram `alt`; markdown cleaned, `[[key]]` read as the glossary term).
@@ -105,7 +102,7 @@ Off by default. Setting `OTEL_EXPORTER_OTLP_ENDPOINT` (or `[telemetry] otlp_endp
 cargo tree -p domain # must not list tokio/axum/sqlx/reqwest
 ```
 
-## Users (phase 11)
+## Users
 
 Several people can use the same backend, each with a user name and password, their own LLM key and their own folders, lessons and reviews: nobody sees anything of the others (a resource of another user is `404`, as if it did not exist). Design: `docs/adr/0008-multiutenza.md`; contract: `docs/contracts/users.md`.
 

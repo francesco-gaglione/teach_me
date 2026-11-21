@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-20
-- Issue Gitea #5 («tracing OpenTelemetry + Jaeger»). Il numero 0014 era già occupato da ADR 0014 (FSRS-7), quindi questa ADR è la 0017.
+- Richiesta «tracing OpenTelemetry + Jaeger». Il numero 0014 era già occupato da ADR 0014 (FSRS-7), quindi questa ADR è la 0017.
 
 ## Problema
 

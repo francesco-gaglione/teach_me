@@ -442,7 +442,7 @@ async fn with_read_aloud_off_nothing_is_queued_and_there_is_no_worker() {
     assert!(!app.dir.exists());
 }
 
-// ---------- stage 2b: manifest, voices, clips ----------
+// ---------- manifest, voices, clips ----------
 
 fn blocks(manifest: &Res) -> Vec<(String, String, Option<String>)> {
     manifest.body["blocks"]

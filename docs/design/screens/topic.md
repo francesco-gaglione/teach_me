@@ -1,137 +1,71 @@
 # Schermata Topic (con tab)
 
-> Bozza Fase 0 + sezioni per fase. **In vigore: Fase 2 (Chat), Fase 3 (Mission), Fase 4 (Fonti) e, per struttura delle tab, tab Lezioni e tab «Cosa sai» di Fase 6-7 (ultima sezione di questo file, che prevale su tutto ciò che la precede).** Tab finali: Lezioni · Chat · Cosa sai · Fonti · Mission.
+> **Tab: Lezioni · Chat · Cosa sai · Fonti · Mission.** Questo file descrive la struttura della schermata Argomento (TopBar, chip di stato, tab, expanded) e, nelle sezioni «Struttura delle tab» (F1-F9), la tab Lezioni. Le altre tab hanno la loro specifica: `chat.md`, `progress.md` («Cosa sai»), `resources.md` (Fonti), `mission.md`.
 
-## Fase 1: schermata Argomento minima
+## Struttura della schermata
 
-> **Superata dalla Fase 2** (sotto): resta come riferimento di TopBar, ⋮, caricamento ed errori, che non cambiano.
-
-**Decisione**: in Fase 1 **non ci sono tab**. Una barra di tab con voci vuote o disabilitate mostrerebbe funzioni che non esistono (e ogni tab disabilitata ha bisogno di un motivo, base-components §1). La `TabRow` compare solo quando le tab *disponibili* sono almeno due; con una sola (Fase 2: solo Chat) il contenuto è mostrato direttamente.
+Dall'alto: TopBar (Indietro, titolo, ⋮) → chip di stato → `TabRow` → contenuto della tab. La `TabRow` compare solo quando le tab *disponibili* sono almeno due (una barra con voci vuote o disabilitate mostrerebbe funzioni che non esistono e ogni tab disabilitata ha bisogno di un motivo, base-components §1); oggi sono cinque e sempre presenti (F1).
 
 ```
 ┌──────────────────────────────────────┐
 │ ←  Rust                        ⋮     │  TopBar ui.title2 (2 righe se fontScale > 1,3)
 │    ( 💬 Definiamo la mission )       │  StatusChip sotto il titolo, 16 dp dai margini
 ├──────────────────────────────────────┤
-│                                      │
-│  Questo argomento è stato creato.    │  ui.title3
-│                                      │
-│  La chat per definire la mission e   │  ui.bodyL, inkSoft
-│  le lezioni arriveranno nei          │  (testo di interfaccia, non di studio)
-│  prossimi aggiornamenti dell'app.    │
-│                                      │
+│ Lezioni | Chat | Cosa sai | Fonti | … │  TabRow scrollabile (base-components §7)
+│ ━━━━━━━                              │  indicatore 3dp accent
+├──────────────────────────────────────┤
+│  (contenuto della tab)               │
 └──────────────────────────────────────┘
 ```
 
-- Nessun bottone, nessuna illustrazione, nessuna card finta: il testo dice la verità sullo stato dell'app senza promettere date. Il chip mostra lo stato reale (`state`) con i testi della tabella sopra (`folder.md`); in Fase 1 sarà quasi sempre "Definiamo la mission".
 - **⋮**: `ActionMenu` "Rinomina argomento" · "Elimina argomento". Dialog e testi identici a `folder.md` (rinomina: `InputDialog` precompilato; elimina: `ConfirmDialog` «Eliminare l'argomento «Rust»?»). La rinomina aggiorna titolo e Toast; l'eliminazione torna alla Cartella con Toast "Argomento «Rust» eliminato".
 - Stati: caricamento (titolo noto dalla navigazione, chip assente, testo "Sto caricando…"), errore di caricamento (`ErrorState`), `404` (torna alla Cartella con Toast "Questo argomento non esiste più.").
-- Accessibilità: ordine Indietro → titolo (heading) → "Altre azioni" → chip ("Stato: definiamo la mission") → testo. Il testo informativo non è un elemento interattivo.
-- Il testo informativo si sostituisce con il contenuto reale fase per fase; non va lasciato accanto a funzioni vere.
+- Accessibilità: ordine Indietro → titolo (heading) → "Altre azioni" → chip ("Stato: definiamo la mission") → tab → contenuto.
 
-### Fase 1 in expanded / tablet orizzontale
+### In expanded / tablet orizzontale
 
-Nessun terzo pannello: l'argomento si apre **a tutta finestra** sopra il list-detail (motivazione: `../design-system.md` §5.1). Layout: TopBar come compact (Indietro, titolo, ⋮), chip di stato sotto il titolo, contenuto centrato in colonna a `readingMaxWidth` 600 con margini 32 dp, allineata in alto a sinistra del contenuto (non centrata verticalmente: il testo è informativo, non uno stato vuoto di una lista). Il resto (⋮, dialog a 480 dp, 404) è invariato. Indietro → list-detail con la stessa cartella selezionata e lo stesso scroll. Da Fase 2 in poi: le tab restano sopra il contenuto; la Chat usa la colonna a 600 dp, e lo spazio laterale è riservato a contesto (mission in sintesi), non a testo più largo.
+Nessun terzo pannello: l'argomento si apre **a tutta finestra** sopra il list-detail (motivazione: `../design-system.md` §5.1). TopBar come compact (Indietro, titolo, ⋮), chip di stato sotto il titolo, tab sopra il contenuto. Il contenuto sta in colonna a `readingMaxWidth` 600 con margini 32 dp; lo spazio laterale è riservato a contesto (mission in sintesi nella Chat, indice nella lezione), non a testo più largo. ⋮, dialog a 480 dp e 404 come in compact. Indietro → list-detail con la stessa cartella selezionata e lo stesso scroll.
 
-## Fase 2: la Chat è il contenuto dell'Argomento
+### Chat nell'Argomento
 
-Specifica completa della chat: `chat.md`. Qui solo ciò che cambia nella schermata Argomento.
+Specifica completa della chat: `chat.md`. Qui solo ciò che riguarda la schermata Argomento.
 
-- **Contenuto**: sostituisce il testo informativo di Fase 1 (che va rimosso). Niente `TabRow`: con una sola tab disponibile (Chat) il contenuto è mostrato direttamente (decisione di Fase 1 confermata). La `TabRow` comparirà con la seconda tab reale (Fase 3, Mission).
-- **Struttura (tutte le classi)**: TopBar (Indietro, titolo, ⋮) → chip di stato → area chat che riempie il resto (lista messaggi scrollabile + composer ancorato in basso). Expanded: colonna chat a `readingMaxWidth` 600 + pannello di contesto 280 dp a destra se la finestra ≥ 1100 dp (`chat.md` §2). Compact/medium: colonna sola.
+- **Struttura (tutte le classi)**: area chat che riempie il resto (lista messaggi scrollabile + composer ancorato in basso). Expanded: colonna chat a `readingMaxWidth` 600 + pannello di contesto 280 dp a destra se la finestra ≥ 1100 dp (`chat.md` §2). Compact/medium: colonna sola.
 - **Scroll con la tastiera aperta**: TopBar e chip **scorrono via** con la lista quando l'altezza utile è < 480 dp (tastiera virtuale in orizzontale, telefono); il composer resta sempre visibile sopra la tastiera. Con altezza sufficiente, TopBar e chip restano fissi.
-- **Chip di stato**: `new` e `interviewing` mostrano **lo stesso** testo «Definiamo la mission» (`folder.md`: per l'utente è la stessa fase), quindi all'invio del primo messaggio il chip **non cambia visibilmente**: l'evento `topic_updated` (`new` → `interviewing`) aggiorna solo lo stato interno e la riga nella lista della cartella. Nessun annuncio TalkBack per questa transizione (non è un cambio che l'utente deve sapere). Il chip in Fase 2 non va mai oltre «Definiamo la mission» perché non esiste altra transizione.
 - **Stato dell'argomento aperto**: titolo noto dalla navigazione; la cronologia si carica con skeleton (`chat.md` §4.4); errore del primo caricamento = `ErrorState`.
-- **Ricordare la tab**: irrilevante in Fase 2 (una sola).
 - **Eliminare/rinominare con un turno in corso**: l'eliminazione mostra il dialog di sempre; il testo del `ConfirmDialog` aggiunge, solo se un turno è in corso, «La risposta del Tutor in corso andrà persa.» Rinominare non interrompe nulla.
 - **Uscire dalla schermata** durante lo streaming: lo stream SSE si chiude (contratto), il backend continua; al ritorno si ricaricano i messaggi e si riapre lo stream. Nessun avviso di uscita: nulla va perso (la bozza del composer si conserva, `chat.md` §8).
 - **Accessibilità**: ordine Indietro → titolo → «Altre azioni» → chip → lista messaggi → composer → pannello di contesto (`chat.md` §11).
 
-## Fase 3: tab Chat e Mission, chip aggiornato
+### Mission, chip di stato, eliminazione
 
-Specifica completa: `mission.md`. Qui solo ciò che cambia nella schermata Argomento.
+Specifica completa: `mission.md`. Qui solo ciò che riguarda la schermata Argomento.
 
-- **Tab**: con la seconda tab reale compare la `TabRow` **Chat · Mission** (su tutte le classi, sotto il chip). Mission è sempre disponibile (vuota ha contenuto: stato vuoto e preferenze). Le altre tab (Lezioni, Glossario, Fonti) restano non presenti finché non hanno contenuto reale. Ordine finale con tutte: Lezioni · Chat · Glossario · Fonti · Mission (invariato).
-- **Tab iniziale**: `new`/`interviewing`/`mission_proposed` → Chat; `researching` → Mission. Poi l'ultima scelta nella sessione. Cambiare tab non perde scroll, composer né stream.
-- **Chip** (sostituisce la tabella di Fase 0 per `mission_proposed` e `researching`):
+- **Chip di stato** (non interattivo, testo + icona, non solo colore):
 
 | Stato | Testo | Icona |
 |---|---|---|
 | new / interviewing | Definiamo la mission | `message-circle` |
 | mission_proposed | Conferma la mission | `flag` (variante info) |
-| researching, Fase 3 | Mission confermata | `check-circle` (neutral) |
-| researching, dalla Fase 4 | Cerco le fonti… | `search` |
+| researching | Cerco le fonti… | `search` |
+| researching, job fallito | Ricerca da riprovare | (vedi `resources.md`) |
 | ready | Pronto per le lezioni | `check-circle` |
 
-  Il testo di `researching` dipende dal flag `ResearchAvailable` (falso finché non esiste la ricerca): non si promette una ricerca che non parte.
+  `new` e `interviewing` mostrano lo stesso testo (per l'utente è la stessa fase): all'invio del primo messaggio il chip non cambia visibilmente e non c'è annuncio TalkBack per quella transizione.
 - **ContextPane** (≥ 1100 dp, solo tab Chat): sintesi della mission, non la vista completa (`mission.md` §4.5). Sotto 1100 dp: nessun pannello, nessun BottomSheet.
-- **Eliminare l'argomento**: invariato; il `ConfirmDialog` può aggiungere, se esiste una mission, «Verranno eliminate anche la mission e le preferenze di questo argomento.» (le preferenze di un argomento vanno con esso, contratto).
+- **Eliminare l'argomento**: il `ConfirmDialog` aggiunge, se esiste una mission, «Verranno eliminate anche la mission e le preferenze di questo argomento.» (le preferenze di un argomento vanno con esso, contratto).
 
 ## Scopo didattico
 
 Il Topic è l'ambiente di studio di un argomento con una **mission** (perché lo imparo). La schermata deve rendere ovvio il *passo successivo* in base allo stato del Topic, e tenere le altre viste a un tocco ma non in competizione (P1).
 
-## Layout (compact)
+## Contenuto delle tab
 
-```
-┌──────────────────────────────────────┐
-│ ←  Rust                        ⋮     │  TopBar (ui.title2), ⋮ = Rinomina/Elimina
-│    ● Pronto per le lezioni           │  StatusChip (base-components §5)
-├──────────────────────────────────────┤
-│ Lezioni | Chat | Glossario | Fonti | …│  TabRow scrollabile (base-components §7), tab ≥ 48dp
-│ ━━━━━━━                              │  indicatore 3dp accent
-├──────────────────────────────────────┤
-│  (contenuto della tab)               │
-│                                      │
-└──────────────────────────────────────┘
-```
-
-Tab, in ordine (Fase 0, **superato dalla Fase 6-7**: Glossario e Registro stanno nella tab «Cosa sai»): ~~Lezioni · Chat · Glossario · Fonti · Mission~~. Tab scorrevole (5 etichette non entrano a 360 dp con font grande). Testo `ui.label`, nessuna icona nelle tab (l'etichetta basta, meno inchiostro). Tab iniziale per stato del Topic: `new`/`interviewing`/`mission_proposed` → **Chat**; `researching` → **Mission** (con avanzamento della ricerca); `ready` → **Lezioni**. L'ultima tab visitata è ricordata per Topic.
-
-**Chip di stato** (sotto il titolo, testo + icona, non solo colore):
-
-| Stato | Testo | Icona |
-|---|---|---|
-| new / interviewing | "Definiamo la mission" | `message-circle` |
-| mission_proposed | "Conferma la mission" | `flag` |
-| researching | "Cerco le fonti…" | `search` + indeterminato |
-| ready | "Pronto per le lezioni" | `check-circle` |
-
-## Tab Lezioni (schizzo di Fase 0, **superato dalla Fase 6-7**, vedi in fondo)
-
-```
-┌──────────────────────────────────────┐
-│ ┌──────────────────────────────────┐ │
-│ │ Prossima lezione                 │ │  Surface emphasis (accentSoft)
-│ │ Scelgo io in base alla tua       │ │  ui.body: spiegazione di 1 riga
-│ │ mission e a ciò che hai già      │ │
-│ │ dimostrato.   [ Genera lezione ] │ │
-│ └──────────────────────────────────┘ │
-│                                      │
-│ Lezioni                              │  ui.label
-│ ┌──────────────────────────────────┐ │
-│ │ 3  Lifetimes in pratica          │ │  riga 72dp: numero (cerchio 32dp), titolo,
-│ │    ~8 min · in corso · 2/4   ›   │ │  meta (ui.bodyS), chevron
-│ ├──────────────────────────────────┤ │
-│ │ 2  Ownership e borrowing         │ │
-│ │    ~6 min · completata  ✓    ›   │ │
-│ └──────────────────────────────────┘ │
-└──────────────────────────────────────┘
-```
-
-- **Genera lezione** è l'unica azione primaria. Durante il job: la card diventa "Sto preparando la lezione…" con `ProgressBar` (indeterminato → determinato se il job riporta avanzamento) e le **fasi in parole** ("Scelgo cosa insegnare" → "Scrivo la lezione" → "Controllo la lezione"); il bottone è disabilitato con motivo visibile. Si può lasciare la schermata: il job continua e una toast avvisa a fine. Errore del job: card `dangerSoft`, "Non sono riuscito a creare la lezione." + `Riprova` + "Dettagli".
-- **Stato di una lezione** sempre con testo (+ icona): "da iniziare", "in corso · 2/4", "completata ✓". Nessun voto numerico sulla lista.
-- Nessun Topic `ready` → la card spiega "Prima definiamo la mission" con bottone che porta a Chat.
-
-## Tab Chat
-
-> Specifica in vigore: `chat.md` (Fase 2). Lo schizzo di Fase 0 qui sotto è superato: i messaggi del Tutor **non** hanno più riquadro con bordo (sono testo di lettura su `bg`, a tutta colonna) e lo streaming è descritto in `chat.md` §6-7. Resta valido: messaggio utente in `accentSoft` a destra (max 80%), card nativa di mission in Fase 3 (`chat.md` §10), pulsante «Nuovi messaggi».
-
-## Altre tab (schema)
-
-- **Glossario** (schema di Fase 0, **superato**: vedi `progress.md`): lista alfabetica; ogni riga = termine (`ui.title3`, `knowledge`), prima riga della definizione. Tocco → sheet con definizione completa, "Evita di confonderlo con…", e le lezioni in cui compare.
-- **Fonti**: due gruppi **Knowledge** e **Wisdom** (community), ciascuna riga: titolo, dominio, annotazione "Usa per…"; tocco → apre il browser. Sezione **Lacune** in fondo se presente.
-- **Mission**: **superata dalla Fase 3**, vedi `mission.md` §4 (non c'è «Modifica» sulla mission confermata: si passa dal Tutor).
+- **Lezioni**: card «Prossima lezione» e lista delle lezioni, F3-F5 (sotto). Un solo bottone primario; lo stato di una lezione è sempre testo + icona, mai un voto numerico.
+- **Chat**: `chat.md`. I messaggi del Tutor sono testo di lettura su `bg`, a tutta colonna (senza riquadro); il messaggio dell'utente è in `accentSoft` a destra (max 80%); card nativa di mission (`chat.md` §10); pulsante «Nuovi messaggi».
+- **Cosa sai**: Registro e Glossario, `progress.md`.
+- **Fonti**: due gruppi **Knowledge** e **Community**, sezione **Lacune** in fondo se presente; `resources.md`.
+- **Mission**: `mission.md` §4 (non c'è «Modifica» sulla mission confermata: si passa dal Tutor).
 
 ## Accessibilità
 
@@ -141,16 +75,16 @@ Tab con `Role.Tab`, selezione annunciata; chip di stato con `contentDescription`
 
 Contatori di lezioni "da recuperare", badge sulle tab, percentuale "completamento del Topic" (non misura apprendimento).
 
-## Fase 4: tab Fonti
+## Fonti nella schermata Argomento
 
-Specifica completa: `resources.md`. Qui solo ciò che cambia nella schermata Argomento.
+Specifica completa: `resources.md`.
 
-- **Tab**: `TabRow` **Chat · Fonti · Mission**; Fonti sempre presente (stato vuoto prima della conferma della mission), nessun badge.
-- **Tab iniziale**: `researching` → **Fonti** (sostituisce «Mission» di Fase 3); `ready` → Fonti finché non esiste la tab Lezioni.
-- **Chip**: `researching` = «Cerco le fonti…» (flag `ResearchAvailable` acceso); job fallito = «Ricerca da riprovare»; `ready` = «Pronto per le lezioni».
+- **Tab**: Fonti sempre presente (stato vuoto prima della conferma della mission), nessun badge.
+- **Tab iniziale**: vedi F1 (`researching` → Fonti).
+- **Chip**: `researching` = «Cerco le fonti…»; job fallito = «Ricerca da riprovare»; `ready` = «Pronto per le lezioni».
 - **Puntatori** alla ricerca da card «Mission confermata», `ContextPane`, tab Mission e Toast: `resources.md` §7.
 
-## Fase 6-7: Lezioni, «Cosa sai» e struttura delle tab
+## Struttura delle tab: Lezioni e «Cosa sai»
 
 > Contratto: `docs/contracts/lessons.md`, `jobs.md`. Specifica del Glossario e del Registro: `progress.md`. Riferimento: tablet orizzontale (1280 × 800 dp), poi medium e compact (ADR 0003). Terminologia: «lezione», «argomento», «registro», «Tutor» (mai «job», «Learning record», «Attempt»).
 
@@ -170,11 +104,11 @@ Specifica completa: `resources.md`. Qui solo ciò che cambia nella schermata Arg
 
 **Ordine**: dall'azione alla consultazione, dal più usato al meno: Lezioni (fare) · Chat (chiedere) · Cosa sai (verificare) · Fonti e Mission (la base, si consultano di rado).
 
-**Presenza**: tutte e cinque sempre presenti da Fase 7 (come Fonti in Fase 4), mai disabilitate né con badge. Una tab senza contenuto ha uno stato vuoto che spiega (Lezioni a Topic non `ready`: F3.A; «Cosa sai» prima della prima lezione completata: `progress.md`). Motivo: posizioni stabili (memoria motoria; niente layout che salta quando compare una tab).
+**Presenza**: tutte e cinque sempre presenti, mai disabilitate né con badge. Una tab senza contenuto ha uno stato vuoto che spiega (Lezioni a Topic non `ready`: F3.A; «Cosa sai» prima della prima lezione completata: `progress.md`). Motivo: posizioni stabili (memoria motoria; niente layout che salta quando compare una tab).
 
 **Su compact**: `TabRow` scrollabile (base-components §7); la tab selezionata è sempre riportata in vista all'apertura e al cambio, e la tab successiva resta **tagliata a destra** (indizio di scorrimento). A 360 dp e font 1,0 sono visibili circa 3,5 tab. Etichette corte (`Cosa sai`, 7 caratteri) per questo. Nessuna icona nelle tab. Tastiera fisica: Ctrl+Tab / Ctrl+Maiusc+Tab cambia tab; Alt+1…5 va alla tab N.
 
-**Tab iniziale** (aggiorna le versioni precedenti):
+**Tab iniziale**:
 
 | Stato del Topic | Tab iniziale |
 |---|---|
@@ -185,7 +119,7 @@ Specifica completa: `resources.md`. Qui solo ciò che cambia nella schermata Arg
 
 Poi vale l'ultima tab scelta **nella sessione** dell'app per quel Topic (non persistita oltre: ogni apertura a freddo riparte dallo stato, perché lo stato è il suggerimento del passo successivo). Aprendo l'argomento dalla Lezione (`ask_agent`, riepilogo): la tab è quella richiesta (`ask_agent.md`). Cambiare tab non perde scroll, bozze né stream.
 
-**Chip di stato**: invariato (`ready` = «Pronto per le lezioni»). Non cambia mentre si genera o si chiude una lezione: lo stato del Topic non cambia, e un chip che oscilla sarebbe rumore.
+**Chip di stato**: `ready` = «Pronto per le lezioni». Non cambia mentre si genera o si chiude una lezione: lo stato del Topic non cambia, e un chip che oscilla sarebbe rumore.
 
 **Nessun badge sulle tab** per «lezione pronta», «registro aggiornato», «lezioni da fare» (P9): l'avviso è un Toast una tantum (F3.C) e le righe nella tab.
 
@@ -312,7 +246,7 @@ La card diventa `Surface static` (non più emphasis: nessuna azione) con il **pa
 | `timeout` | La lezione ha richiesto troppo tempo | Non sono riuscito a finire in tempo. Puoi riprovare: spesso basta. |
 | `interrupted` | Preparazione interrotta | Il server si è riavviato più volte mentre scrivevo. Riprova. |
 | `internal` / sconosciuto | Preparazione interrotta | Qualcosa è andato storto sul server. Riprova. |
-| `llm_key_missing` / `llm_key_rejected` (Fase 11) | non è questa tabella: pannello `LlmKeyNotice` con «Inserisci/Sostituisci la chiave», «Riprova» solo dopo il salvataggio di una chiave | testi in `../llm-key.md` §6. `llm_credit_exhausted`: stesso posto, pannello `credit` con «Riprova» subito (`../llm-key.md` §9.3) |
+| `llm_key_missing` / `llm_key_rejected` | non è questa tabella: pannello `LlmKeyNotice` con «Inserisci/Sostituisci la chiave», «Riprova» solo dopo il salvataggio di una chiave | testi in `../llm-key.md` §6. `llm_credit_exhausted`: stesso posto, pannello `credit` con «Riprova» subito (`../llm-key.md` §9.3) |
 
 Annuncio: `liveRegion Polite` «Preparazione interrotta. Riprova disponibile.» Errore di rete su «Riprova»: stesso pannello con corpo «Non sono riuscito a raggiungere il backend. Controlla la connessione.» `409` su Riprova: ricarica in silenzio (c'è già un job più recente o attivo). Il chip del Topic **non** cambia (resta «Pronto per le lezioni»: l'errore ha il suo pannello).
 
@@ -394,7 +328,7 @@ Il `ConfirmDialog` di eliminazione, se esistono lezioni, aggiunge: «Verranno el
 Contatori («3 lezioni da fare»), percentuale del Topic, barra di avanzamento sul Topic, badge sulle tab, streak, «lezione del giorno», generazione automatica, conto alla rovescia, stima di minuti rimasti nella preparazione.
 
 
-## Fase 10: lezioni che seguono il tuo PDF
+## Lezioni che seguono il tuo PDF
 
 Obiettivo didattico: far **vedere** che le lezioni stanno seguendo il documento caricato (segnalazione, Mayer; autonomia, Deci e Ryan), senza nuove funzioni. Specifica del caricamento: `resources.md` §13.
 

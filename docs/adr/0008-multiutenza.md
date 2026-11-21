@@ -3,7 +3,7 @@
 - Stato: accettata
 - Decisioni del proprietario (2026-11-10): D5 utenti creati dal server, con il codice pronto per una registrazione futura; D6 nome utente e password; D7 una chiave LLM per utente; D8 nessuna condivisione, né ora né in futuro.
 - Data: 2026-11-10
-- Fase 11. Scelta del proprietario: più utenti nello **stesso database** (scartate: un'istanza per utente, un file SQLite per utente).
+- Scelta del proprietario: più utenti nello **stesso database** (scartate: un'istanza per utente, un file SQLite per utente).
 
 ## Contesto
 
@@ -36,7 +36,7 @@ Una suite di integrazione "isolamento" con due utenti: per **ogni rotta** regist
 
 ### 4. Credenziali (D6): nome utente e password, sessioni opache
 
-- Password salvate con **Argon2id** (parametri raccomandati correnti, da verificare in fase sulla documentazione del crate), dietro un port `PasswordHasher` nel dominio.
+- Password salvate con **Argon2id** (parametri raccomandati correnti, da verificare sulla documentazione del crate), dietro un port `PasswordHasher` nel dominio.
 - L'accesso crea una **sessione**: token opaco di 256 bit casuali, salvato come SHA-256 (ha abbastanza entropia da non richiedere un hash lento), con scadenza a 90 giorni di inattività. Il middleware cerca la sessione per hash e ne ricava l'utente.
 - Protezioni: stessa risposta e stesso tempo per utente sconosciuto, password errata e utente disattivato; blocco temporaneo dopo 5 accessi falliti in 15 minuti per nome utente; il cambio password revoca le altre sessioni.
 - Scartati: JWT (non servono token verificabili senza database e la revoca diventa complicata), token personale statico (scelta iniziale del tech lead, scartata dal proprietario).
@@ -56,7 +56,7 @@ Una suite di integrazione "isolamento" con due utenti: per **ogni rotta** regist
 
 ### 7. Migrazione dei dati esistenti
 
-La migrazione crea l'utente iniziale `owner` con id fisso, senza password, e gli assegna cartelle, argomenti e preferenze esistenti. Il proprietario imposta la password con `user passwd owner`. Al primo avvio la chiave LLM in configurazione diventa la chiave di `owner`. `TEACH_ME_API_TOKEN` è ignorato con un avviso. Da verificare in fase: SQLite non permette `ADD COLUMN ... NOT NULL REFERENCES` senza default, quindi le tre tabelle vanno ricostruite (come `resources` in `0013`).
+La migrazione crea l'utente iniziale `owner` con id fisso, senza password, e gli assegna cartelle, argomenti e preferenze esistenti. Il proprietario imposta la password con `user passwd owner`. Al primo avvio la chiave LLM in configurazione diventa la chiave di `owner`. `TEACH_ME_API_TOKEN` è ignorato con un avviso. Da verificare: SQLite non permette `ADD COLUMN ... NOT NULL REFERENCES` senza default, quindi le tre tabelle vanno ricostruite (come `resources` in `0013`).
 
 ## Conseguenze e rischi
 
@@ -64,6 +64,6 @@ La migrazione crea l'utente iniziale `owner` con id fisso, senza password, e gli
 - `api-conventions.md` §2 cambia (accesso con nome utente e password); le forme delle risorse esistenti non cambiano, quindi resta `/api/v1`. Un'app vecchia riceve `401` ovunque e va aggiornata insieme al backend.
 - L'app tiene dati locali legati all'utente (coda dei voti di ripasso non ancora inviati, cache): con un token di un altro utente vanno separati o svuotati, altrimenti i voti di A partirebbero con il token di B.
 - Perdere `TEACH_ME_SECRET_KEY` rende illeggibili le chiavi LLM salvate: ogni utente deve reinserire la propria. Va conservata fuori dai backup del database.
-- Nuove dipendenze crittografiche (Argon2id, AEAD, generatore casuale): crate della famiglia RustCrypto, da scegliere e verificare in fase.
+- Nuove dipendenze crittografiche (Argon2id, AEAD, generatore casuale): crate della famiglia RustCrypto, da scegliere e verificare.
 - Eliminare un utente cancella a cascata i suoi dati e deve rimuovere anche i file dei suoi documenti in `<data_dir>/uploads`.
 - Nessuna condivisione tra utenti, per scelta definitiva (D8): nessuna tabella di accessi, nessun campo pensato per introdurla.

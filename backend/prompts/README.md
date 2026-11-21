@@ -5,13 +5,13 @@ Specifica del port LLM, della configurazione dei modelli e del Context Assembler
 
 ## Convenzioni
 
-- Un ruolo = una cartella. Ogni cartella ha `VERSION` (es. `tutor-phase2-v1`, da incrementare a ogni modifica del testo; il backend la scrive nei log insieme a modello e usage) e due tipi di file:
+- Un ruolo = una cartella. Ogni cartella ha `VERSION` (es. `tutor-v1`, da incrementare a ogni modifica del testo; il backend la scrive nei log insieme a modello e usage) e due tipi di file:
   - `system.md`: parte **statica**, nessuna variabile. Va per prima nel prompt ed è cacheable.
   - `context.md`: parte **variabile**, template con segnaposto `{{nome}}` sostituiti dal Context Assembler (sostituzione di stringhe semplice, nessun motore di template; un segnaposto non riconosciuto è un errore di avvio/test).
 - Nessuna data, orario o id nel testo statico (invaliderebbe la cache).
 - Nessun riferimento a feature di un provider specifico.
 
-## Tutor, Fase 3 (`tutor/`, versione attuale `tutor-issue30-v5`)
+## Tutor (`tutor/`, versione attuale `tutor-v5`)
 
 L'**Interviewer è una modalità del Tutor**, non un prompt separato (motivazione in `llm-port.md` §10bis.4). File:
 
@@ -52,7 +52,7 @@ Perché: ...
 (stesso formato)
 ```
 
-Dalla Fase 12 la riga `Punto di partenza:` sta su **una sola riga** (ritorni a capo sostituiti da spazio, come `Perché`), dopo i criteri e prima dei vincoli, sia nella mission confermata sia nella bozza o proposta. `non dichiarato` è il testo per `null` (mission salvate prima della v1.2): il `system.md` del Tutor ne spiega il significato e come valorizzarlo (`propose_mission_change`). Anche `tools.json` ha `starting_point` obbligatorio (1-600 caratteri) in `save_mission_draft` e `propose_mission_change`, con `required` nell'ordine `why, success_criteria, starting_point, constraints, out_of_scope`: il messaggio d'errore per un campo mancante o troppo lungo si genera dallo schema, e `tool_results.json` aggiunge ai due `validation_error` il consiglio di non inventare il campo.
+La riga `Punto di partenza:` sta su **una sola riga** (ritorni a capo sostituiti da spazio, come `Perché`), dopo i criteri e prima dei vincoli, sia nella mission confermata sia nella bozza o proposta. `non dichiarato` è il testo per `null` (mission salvate prima della v1.2): il `system.md` del Tutor ne spiega il significato e come valorizzarlo (`propose_mission_change`). Anche `tools.json` ha `starting_point` obbligatorio (1-600 caratteri) in `save_mission_draft` e `propose_mission_change`, con `required` nell'ordine `why, success_criteria, starting_point, constraints, out_of_scope`: il messaggio d'errore per un campo mancante o troppo lungo si genera dallo schema, e `tool_results.json` aggiunge ai due `validation_error` il consiglio di non inventare il campo.
 
 Se la bozza aperta è una proposta di cambio (esiste anche la confermata) l'intestazione è `Proposta di modifica in attesa di conferma (versione {{m}}), la mission {{n}} resta valida finché non conferma:`. Così il Tutor "vede" la conferma nel turno successivo: la bozza sparisce e compare "Mission confermata".
 
@@ -62,7 +62,7 @@ Se la bozza aperta è una proposta di cambio (esiste anche la confermata) l'inte
 
 Il testo finale del blocco di sistema è `system.md` seguito dal blocco `context.md` renderizzato, come **due blocchi di sistema separati** (vedi `llm-port.md` §6 e §10).
 
-## Tutor, Fase 2 (storico)
+## Tutor, prima versione (storico)
 
 | Variabile (`context.md`) | Valore | Note |
 |---|---|---|
@@ -72,7 +72,7 @@ Il testo finale del blocco di sistema è `system.md` seguito dal blocco `context
 
 Il testo finale del blocco di sistema è `system.md` seguito dal blocco `context.md` renderizzato, come **due blocchi di sistema separati** (vedi `llm-port.md` §6).
 
-## Researcher, Fase 4 (`researcher/`, versione attuale `researcher-issue30-v11`)
+## Researcher (`researcher/`, versione attuale `researcher-v11`)
 
 | File | Ruolo |
 |---|---|
@@ -81,7 +81,7 @@ Il testo finale del blocco di sistema è `system.md` seguito dal blocco `context
 | `output_schema.json` | `{version, name, schema}`: schema dell'output (sottoinsieme strict: `additionalProperties:false`, tutti i campi `required`, nessun `minLength`/`maxItems`). Le regole che lo schema non può esprimere (URL tra i risultati di ricerca, https, conteggi, nessuna community se `communities_skipped`) stanno nel Validator |
 | `repair_system.md` | testo di sistema della chiamata di riparazione (unico blocco, senza segnaposto): la riparazione non riusa i blocchi A e B, riceve solo l'output da correggere, gli errori e gli URL ammessi (al massimo 80) |
 
-Modifiche di `researcher-issue15-v1..v10` (issue 15, il Researcher consegnava 2-4 fonti): le ricerche si pianificano sui candidati noti **cercati per nome e sito** ("doc.rust-lang.org book ...", "rustlings"), con un primo giro di metà budget e il resto per i buchi; per le community una query sul tipo di luogo (forum, Stack Exchange) perché i subreddit non compaiono mai nei risultati dello strumento; prima di dichiarare una lacuna si rileggono tutti i risultati; il «meno è meglio» è limitato (sotto 5 fonti solo se la ricerca non le trova); regole di forma più esplicite (`use_for` nominale anche per le community, annotazione che nomina autore o ente e non cita il livello della persona, nota di lacuna max 25 parole, siti che vendono i propri programmi); v8: esempio del primo giro per un budget qualsiasi (con 6, tre ricerche), esempio di query su un forum e non su reddit, annotazione al massimo 50 parole; v9 (decisione del proprietario 2026-11-15): community **facoltative**, cercate e consegnate solo se una preferenza le chiede (senza richiesta `communities_skipped: true`, nessuna ricerca per le community, tutto il budget a fonti `knowledge` verificate, community già salvate scartate, nessuna lacuna sulle community non chieste); v10 (revisione): una sola regola per le community chieste, in un punto a parte (al massimo due ricerche e mai più di metà del budget: una nel primo giro col nome di un luogo con dominio proprio, la seconda solo se sono usciti thread ma non la pagina principale), i subreddit non si cercano. Misure in `evals/README.md`.
+Modifiche di `researcher-v1..v10` (serie `researcher/sources`; il Researcher consegnava 2-4 fonti): le ricerche si pianificano sui candidati noti **cercati per nome e sito** ("doc.rust-lang.org book ...", "rustlings"), con un primo giro di metà budget e il resto per i buchi; per le community una query sul tipo di luogo (forum, Stack Exchange) perché i subreddit non compaiono mai nei risultati dello strumento; prima di dichiarare una lacuna si rileggono tutti i risultati; il «meno è meglio» è limitato (sotto 5 fonti solo se la ricerca non le trova); regole di forma più esplicite (`use_for` nominale anche per le community, annotazione che nomina autore o ente e non cita il livello della persona, nota di lacuna max 25 parole, siti che vendono i propri programmi); v8: esempio del primo giro per un budget qualsiasi (con 6, tre ricerche), esempio di query su un forum e non su reddit, annotazione al massimo 50 parole; v9 (decisione del proprietario 2026-11-15): community **facoltative**, cercate e consegnate solo se una preferenza le chiede (senza richiesta `communities_skipped: true`, nessuna ricerca per le community, tutto il budget a fonti `knowledge` verificate, community già salvate scartate, nessuna lacuna sulle community non chieste); v10 (revisione): una sola regola per le community chieste, in un punto a parte (al massimo due ricerche e mai più di metà del budget: una nel primo giro col nome di un luogo con dominio proprio, la seconda solo se sono usciti thread ma non la pagina principale), i subreddit non si cercano. Misure in `evals/README.md`.
 
 Il Researcher usa lo strumento di ricerca web **lato server** (vedi `llm-port.md` §12) con `output = Text`: il JSON finale si estrae dal testo e si valida con lo schema (non `output_config.format`, vedi §12.4).
 
@@ -94,7 +94,7 @@ Variabili di `context.md`:
 | `{{mission_version}}` | numero della mission confermata |
 | `{{mission_why}}` | `why`, ritorni a capo sostituiti da spazio |
 | `{{mission_success}}`, `{{mission_constraints}}`, `{{mission_out_of_scope}}` | una riga `- voce` per elemento; `- nessuno` se vuoto |
-| `{{mission_starting_point}}` | dalla Fase 12: `starting_point` su una riga (ritorni a capo sostituiti da spazio); `non dichiarato` se `null`. Sta dopo i criteri e prima dei vincoli |
+| `{{mission_starting_point}}` | `starting_point` su una riga (ritorni a capo sostituiti da spazio); `non dichiarato` se `null`. Sta dopo i criteri e prima dei vincoli |
 | `{{preferences_section}}` | stesso formato del Tutor (`- [tutti gli argomenti] testo`), solo preferenze rilevanti o tutte (max 20); `Nessuna.` se vuoto. La richiesta di community (senza, il Researcher non le cerca) arriva da qui |
 | `{{existing_resources_section}}` | `Nessuna.` oppure una riga per risorsa: `- [knowledge] Titolo — url — use_for` |
 | `{{search_budget}}` | intero = `max_uses` dello strumento (6 in produzione dal 2026-11-15) |
@@ -103,7 +103,7 @@ Variabili di `context.md`:
 
 Dopo la risposta: `application` valida, scarta/ripara e salva. Il Validator (codice) verifica gli URL contro l'insieme di quelli visti nei risultati di ricerca o tra le fonti esistenti; il prompt dice di non usare URL non visti ma non è una garanzia.
 
-## Lingua dei contenuti (issue #30, ADR 0019)
+## Lingua dei contenuti (ADR 0019)
 
 I prompt restano scritti in italiano. La lingua dell'output (`italiano` o `inglese`, scelta per Topic) arriva come segnaposto **opzionale** `{{content_language}}`: il backend lo rende in ogni template che lo usa, e un template che non lo usa resta valido. `system.md` è statico e non lo contiene: dice «nella lingua indicata in «Lingua dei contenuti» nel contesto», e la lingua sta nel `context.md` o nel messaggio utente. Con `inglese` valgono le stesse regole in inglese (seconda persona «you», stessi limiti di lunghezza e di parole); gli esempi restano in italiano. Citazioni in altra lingua: `lang` solo se il contenuto non è nella lingua del topic, più parafrasi nella lingua del topic. Il Grader accetta risposte in qualsiasi lingua. Gli errori del Validator in `{{errors}}` restano in italiano.
 
@@ -114,9 +114,9 @@ I prompt restano scritti in italiano. La lingua dell'output (`italiano` o `ingle
 | `planner/repair.md`, `recorder/repair.md`, `generator/repair.md`, `generator/improve.md`, `generator/kickoff_web.md` | riga all'inizio del blocco degli errori / delle fonti |
 | `tutor/tool_results.json`, `researcher/repair_system.md` | assente (statici: nessun segnaposto; `repair_system` non fissa una lingua d'output oltre al JSON) |
 
-Versioni: `tutor-issue30-v5`, `researcher-issue30-v11`, `planner-issue30-v12`, `generator-issue30-v23`, `grader-issue30-v7`, `recorder-issue30-v9` (non misurate: l'eval di regressione sull'italiano e i casi in inglese spettano alla tappa successiva).
+Versioni: `tutor-v5`, `researcher-v11`, `planner-v12`, `generator-v23`, `grader-v7`, `recorder-v9` (le suite con casi in inglese sono in `evals/README.md`).
 
-## Fasi 6-7: Planner, Generator, Grader, Recorder (segnaposto fissati)
+## Planner, Generator, Grader, Recorder (segnaposto fissati)
 
 Lista dei segnaposto di `context.md` per ruolo (nomi stabili; il formato esatto di ogni sezione è nel seguito di questo file). `repair.md` ha i propri segnaposto.
 
@@ -127,14 +127,14 @@ Lista dei segnaposto di `context.md` per ruolo (nomi stabili; il formato esatto 
 | `grader/` | `{{lesson_title}}` `{{lesson_objective}}` `{{question}}` `{{rubric}}` `{{max_chars}}` `{{answer}}` | (nessuno) |
 | `recorder/` | `{{topic_title}}` `{{lesson_number}}` `{{lesson_title}}` `{{lesson_objective}}` `{{mission_why}}` `{{plan_section}}` `{{lesson_glossary_section}}` `{{exercises_section}}` `{{records_section}}` `{{glossary_section}}` | `{{errors}}` `{{previous_output}}` |
 
-Cartelle (versioni): `planner/` `planner-issue30-v6`, `generator/` `generator-issue30-v23`, `grader/` `grader-issue30-v6`, `recorder/` `recorder-issue30-v9`. Per ciascuna: `system.md` (statico, cacheable), `context.md` (variabile), `VERSION`; più `output_schema.json` (Planner, Grader, Recorder) e `repair.md` (Planner, Generator, Recorder). Il Grader non ha `repair.md` (vedi sotto).
+Cartelle (versioni): `planner/` `planner-v6`, `generator/` `generator-v23`, `grader/` `grader-v6`, `recorder/` `recorder-v9`. Per ciascuna: `system.md` (statico, cacheable), `context.md` (variabile), `VERSION`; più `output_schema.json` (Planner, Grader, Recorder) e `repair.md` (Planner, Generator, Recorder). Il Grader non ha `repair.md` (vedi sotto).
 
 **Avvertenze comuni**
 - Sostituzione **a passata unica**: il valore inserito non viene riesaminato. Record, risposte e titoli possono contenere `{{...}}` o `[[...]]`: non sono segnaposto. Un segnaposto di `context.md`/`repair.md` non riconosciuto è un errore di avvio/test.
 - `generator/system.md` contiene **testo letterale** `{{op_a}}` e `{{id}}` (sintassi dei vuoti di `fill_blank`): `system.md` non è mai un template, il backend non deve né sostituirlo né vietare `{{` al suo interno (il test «nessun segnaposto residuo» vale per `context.md` e `repair.md` renderizzati, non per `system.md`).
 - Il testo finale è `system.md` (blocco A, `cache_breakpoint: true`) + `context.md` renderizzato (blocco B, `cache_breakpoint: true`) come due blocchi di sistema; la richiesta ha un solo messaggio `user` (vedi sotto per ruolo). La riparazione riusa **gli stessi due blocchi** (cache) e ha come unico messaggio `user` il `repair.md` renderizzato.
 - Ritorni a capo: in tutte le voci elencate sotto sostituiti da uno spazio, salvo dove indicato. «Testo semplice» = markup tolto: `[[key|testo]]` → `testo`, `[[key]]` → il `term` della voce di glossario (o la key), `[^key]` rimosso, `**`/`*` rimossi, i backtick restano.
-- `{{mission_starting_point}}` (Fase 12, Planner e Generator; anche Researcher): `starting_point` su una sola riga (ritorni a capo sostituiti da spazio, nessun troncamento: il contratto lo limita a 600 caratteri); la stringa `non dichiarato` se è `null`. Nel template sta tra i criteri e i vincoli.
+- `{{mission_starting_point}}` (Planner e Generator; anche Researcher): `starting_point` su una sola riga (ritorni a capo sostituiti da spazio, nessun troncamento: il contratto lo limita a 600 caratteri); la stringa `non dichiarato` se è `null`. Nel template sta tra i criteri e i vincoli.
 - `{{mission_why}}`, `{{mission_success}}`, `{{mission_constraints}}`, `{{mission_out_of_scope}}`, `{{preferences_section}}`: identici al Researcher (`- voce` per elemento, `- nessuno` se vuoto; preferenze `- [tutti gli argomenti] testo` / `- [questo argomento] testo`, max 20, `Nessuna.` se vuoto, prima riga `(mostrate le 20 più recenti)` se troncate). `{{topic_title}}` come per gli altri ruoli. Nel Planner `{{mission_version}}` è il numero.
 - Le sezioni vuote usano il testo indicato per ciascuna (`Nessuno.` / `Nessuna.`); mai una sezione con testo vuoto.
 - **Risposta del modello (tutti i ruoli):** il backend estrae il JSON in modo tollerante (testo intero; altrimenti dalla prima `{` alla `}` bilanciata corrispondente, dopo aver tolto eventuali recinti ```), poi valida. Un JSON non parsabile o fuori schema conta come errore da riparare (per il Generator come errore `schema` con `path: ""`).
@@ -153,7 +153,7 @@ Cartelle (versioni): `planner/` `planner-issue30-v6`, `generator/` `generator-is
 | `{{lessons_section}}` | `Nessuna.` oppure `- {lesson_id} · lezione {number} · {status} · "{title}": {objective}`, `number` crescente, massime 20 (le più recenti; se troncate, prima riga `(mostrate le 20 più recenti di {totale})`). `status` ∈ `not_started` `in_progress` `completed`. Titolo e obiettivo senza ritorni a capo |
 | `{{resources_section}}` | una riga per risorsa `knowledge` **con `url` https** (le `community` e le risorse senza URL non si passano), nell'ordine di importanza salvato, max 12: `- {id} · {title} — {url} — {annotation} Usala per: {use_for}`. Il backend non chiama il Planner se l'elenco è vuoto (`invalid_output` non ha senso: fallire prima con un messaggio chiaro) |
 
-Risposta: `output_schema.json` nativo (vedi `llm-port.md` §13). Controlli del Validator del piano (codice): `primary_source_id` è id di una risorsa dell'elenco passato; `other_source_ids` ⊆ elenco, senza duplicati e senza la primaria (≤ 4); `lesson_links[].lesson_id` ∈ lezioni del Topic (≤ 2); `prerequisites[].record_numbers` ⊆ record attivi, non vuoto se `basis = record`; `terms.reuse` ⊆ chiavi del glossario; `terms.introduce[].key` formato `[a-z0-9_]{1,40}`, assente dal glossario, senza duplicati, ≤ 8 (Fase 12; il prompt ne chiede al massimo 2 per concetto); `concepts` 2-5 (al più 4 con un prerequisito `general`), con `example`, `steps` e `pitfall` (limiti nella sezione Fase 12 più sotto); `general` ≤ 3; `exercises` 2-5 con almeno uno `verifies_objective`; `estimated_minutes` 1-20 (il prompt lo calcola con la formula di Fase 12); lunghezze: `title` 1-120, `objective` 1-200, `why_now` 1-400. Errori resi in `{{errors}}` come `- {campo}: {messaggio in italiano}`. Una riparazione, poi `invalid_output`. `{{previous_output}}`: il JSON del piano.
+Risposta: `output_schema.json` nativo (vedi `llm-port.md` §13). Controlli del Validator del piano (codice): `primary_source_id` è id di una risorsa dell'elenco passato; `other_source_ids` ⊆ elenco, senza duplicati e senza la primaria (≤ 4); `lesson_links[].lesson_id` ∈ lezioni del Topic (≤ 2); `prerequisites[].record_numbers` ⊆ record attivi, non vuoto se `basis = record`; `terms.reuse` ⊆ chiavi del glossario; `terms.introduce[].key` formato `[a-z0-9_]{1,40}`, assente dal glossario, senza duplicati, ≤ 8 (il prompt ne chiede al massimo 2 per concetto); `concepts` 2-5 (al più 4 con un prerequisito `general`), con `example`, `steps` e `pitfall` (limiti nella sezione «Lezioni più ricche» più sotto); `general` ≤ 3; `exercises` 2-5 con almeno uno `verifies_objective`; `estimated_minutes` 1-20 (il prompt lo calcola con la formula descritta nella sezione «Lezioni più ricche»); lunghezze: `title` 1-120, `objective` 1-200, `why_now` 1-400. Errori resi in `{{errors}}` come `- {campo}: {messaggio in italiano}`. Una riparazione, poi `invalid_output`. `{{previous_output}}`: il JSON del piano.
 
 ### Generator (`generator/`)
 
@@ -165,7 +165,7 @@ Risposta: `output_schema.json` nativo (vedi `llm-port.md` §13). Controlli del V
 | `{{glossary_section}}` | condiviso (tutto il glossario, non solo `terms.reuse`: è il linguaggio canonico) |
 | `{{lesson_links_section}}` | `Nessuna.` oppure `- {lesson_id} · lezione {number}: "{title}" — {reason}` per le sole lezioni di `plan.lesson_links` |
 
-`{{plan_section}}` (dalla Fase 12; formato esatto sotto, nella sezione «Fase 12»):
+`{{plan_section}}` (formato esatto sotto, nella sezione «Lezioni più ricche»):
 
 ```
 Titolo di lavoro: {title}
@@ -243,7 +243,7 @@ Persona grammaticale: `title` dei record impersonale (idea giusta), `body` ed `e
 
 Suggerimento di costo (per rust-backend-dev): se nessun tentativo della lezione è `correct`, il Recorder non può produrre nulla di valido: il job può saltare la chiamata e chiudersi con zero record/termini/schede.
 
-## Fase 10: PDF da studiare (versioni `tutor-phase10-v1`, `researcher-phase10-v1`, `planner-phase10-v2`, `generator-phase10-v2`)
+## PDF da studiare (versioni della serie PDF: `tutor-v1`, `researcher-v1`, `planner-v2`, `generator-v2`)
 
 I documenti caricati entrano nei prompt così (formati in `crates/application/src/document_context.rs`):
 
@@ -251,14 +251,14 @@ I documenti caricati entrano nei prompt così (formati in `crates/application/sr
 |---|---|---|
 | Tutor | niente segnaposto in `context.md`: il backend appende in fondo `## Documenti caricati` solo se ce ne sono (`render_with_documents`) | un segnaposto con titolo proprio farebbe comparire «Documenti caricati» anche con `Nessuno.` e rompe il test `the_tutor_sees_the_index_of_ready_documents`; `system.md` ha la sezione «Documenti caricati» che spiega al modello come usare titolo, pagine e indice (chiede il perimetro con opzioni A/B/C, mette la risposta nella mission, non inventa contenuti) |
 | Researcher | `{{documents_section}}` in `context.md`, prima di «Risorse già salvate» | completare, non duplicare; non consegna né tocca i documenti |
-| Planner | `{{documents_section}}` in `context.md`, prima di «Fonti disponibili»; nuovo campo `document_sections` in `output_schema.json` | dalla Fase 12 il campo è **in `required` nello schema** (più portabile verso provider con strict "tutto required"): il Planner scrive `[]` quando non serve; un piano senza il campo non supera il controllo dello schema (va in riparazione), mentre `validate_plan` senza schema lo leggerebbe come vuoto. I piani fissi delle suite di eval lo hanno sempre |
+| Planner | `{{documents_section}}` in `context.md`, prima di «Fonti disponibili»; nuovo campo `document_sections` in `output_schema.json` | il campo è **in `required` nello schema** (più portabile verso provider con strict "tutto required"): il Planner scrive `[]` quando non serve; un piano senza il campo non supera il controllo dello schema (va in riparazione), mentre `validate_plan` senza schema lo leggerebbe come vuoto. I piani fissi delle suite di eval lo hanno sempre |
 | Generator | `{{excerpts_section}}` (già esistente) | regole nella sezione «Quando la lezione segue un PDF della persona» di `system.md`; fonti PDF con `url: null` e pagine nel `title` |
 
 Cache: il testo statico (`system.md`) è cresciuto di circa 1,5k token per Generator e Planner; il contesto variabile resta dopo. Nessuna regola dipende da un provider.
 
-## Fase 12: lezioni più ricche (versioni `planner-phase12-v1`, `generator-phase12-v1`)
+## Lezioni più ricche (versioni della serie lezioni più ricche: `planner-v1`, `generator-v1`)
 
-Obiettivo: lezioni da 10-15 minuti, ogni concetto spiegato per intero (intuizione, esempio svolto, regola, errore tipico), prerequisiti non dimostrati richiamati in apertura. Specifica didattica: `docs/design/generator-guidelines.md` §7 e `docs/design/components/README.md` §1.1-1.4. I numeri sono nei prompt; le regole verificabili dal codice sono anche negli eval (`evals/README.md`, «Fase 12»).
+Obiettivo: lezioni da 10-15 minuti, ogni concetto spiegato per intero (intuizione, esempio svolto, regola, errore tipico), prerequisiti non dimostrati richiamati in apertura. Specifica didattica: `docs/design/generator-guidelines.md` §7 e `docs/design/components/README.md` §1.1-1.4. I numeri sono nei prompt; le regole verificabili dal codice sono anche negli eval (`evals/README.md`, «Lezioni più ricche»).
 
 **Planner (`output_schema.json`).** Ogni elemento di `concepts` ha ora `{name, key_point, example, steps, pitfall}` (tutti `required`, `additionalProperties: false`): `example` caso concreto con valori, diverso da quello degli esercizi (1-300 car.); `steps` 2-6 passaggi in ordine (1-150 car. ciascuno); `pitfall` la convinzione errata tipica in una frase (0-200 car.), **stringa vuota se non c'è un errore reale**. `basis: general` significa «da richiamare» (non dimostrato né dichiarato). Limiti nuovi dichiarati nel prompt e da applicare in `validate_plan`: concetti 2-5 (4 se c'è un `general`), `steps` 2-6, `terms.introduce` al massimo 8 (2 per concetto), `general` al massimo 3, esercizi 2-5 (almeno uno per concetto, solo avviso). `estimated_minutes` = `round(P/250 + 0,5·E + 2·O)` (il prompt dà la stima di `P`); il prompt non lo vincola a 10-15 se la formula dà meno.
 
@@ -270,9 +270,9 @@ Obiettivo: lezioni da 10-15 minuti, ogni concetto spiegato per intero (intuizion
 
 **Tetti di token consigliati.** Planner: 8.000 token di output (JSON da 5 concetti con `example` e `steps` ~1.500 token più ragionamento). Generator: effort `low` e tetto di output 32.000 (`[llm.roles.generator] max_output_tokens`; lezione da ~1.800 parole di prosa: 5-8k token totali misurati con `low`; con `medium` il ragionamento portava a 10-20k, vedi «correzione dopo i primi eval reali»). La riparazione riscrive il documento intero: stesso tetto. (Versione precedente di questa riga: 20.000 token con effort `medium`, superata.) Modello: Planner e Generator restano di fascia alta (Sonnet o equivalente; Opus solo se gli eval mostrano che Sonnet non regge la catena); Haiku solo per prove.
 
-## Fase 12, blocco B: punto di partenza della mission (`starting_point`)
+## Punto di partenza della mission (`starting_point`)
 
-Contratto: `docs/contracts/mission.md` v1.2, §2 e §8. Versioni: `tutor-phase12-v1`, `researcher-phase12-v1`; Planner e Generator restano `planner-phase12-v1` e `generator-phase12-v1` (mai misurati né rilasciati: il testo è cambiato ma non c'è una v1 di confronto).
+Contratto: `docs/contracts/mission.md` v1.2, §2 e §8. Versioni della serie punto di partenza: `tutor-v1`, `researcher-v1`; Planner e Generator restano `planner-v1` e `generator-v1` (mai misurati né rilasciati: il testo è cambiato ma non c'è una v1 di confronto).
 
 | Ruolo | Segnaposto aggiunto / resa | Regola d'uso (nel `system.md`) |
 |---|---|---|
@@ -284,7 +284,7 @@ Contratto: `docs/contracts/mission.md` v1.2, §2 e §8. Versioni: `tutor-phase12
 Recorder e Grader non lo ricevono (non ne hanno bisogno: lavorano sulla lezione e sulla risposta). Cache: il testo è nel blocco variabile, `system.md` è cresciuto di poche decine di token per ruolo.
 
 
-## Generator, Fase 12 blocco C: lettura delle fonti web (`generator-phase12-v2`)
+## Generator, lettura delle fonti web (serie lezioni più ricche: `generator-v2`)
 
 Specifica: ADR 0009 e `llm-port.md` §14. Il testo di `generator/system.md` ha una sezione «Quando hai lo strumento di lettura web» (statica, vale solo se lo strumento c'è **e** il messaggio utente ha «Fonti da leggere»): nessuna versione doppia del file e nessun segnaposto in `system.md` o `context.md`. La regola 9 è unificata con gli estratti dei PDF («testo di una fonte»).
 
@@ -295,9 +295,9 @@ Specifica: ADR 0009 e `llm-port.md` §14. Il testo di `generator/system.md` ha u
 `repair.md`: nessun segnaposto nuovo; la riparazione prosegue la conversazione con i blocchi dello strumento (vedi `llm-port.md` §14.3).
 
 
-## Fase 12, correzione dopo i primi eval reali (`generator-phase12-v3`, `planner-phase12-v2`)
+## Correzione dopo i primi eval reali (serie lezioni più ricche: `generator-v3`, `planner-v2`)
 
-Misurato il 2026-11-11 (Sonnet 5.5, Anthropic diretto): con `generator-phase12-v2` ed effort `medium` il modello spendeva il 60-80% dei token di output in ragionamento (documento ~3-4k token su 10-20k) e con 4-5 concetti esauriva il tetto di 20.000 senza scrivere il documento. Dettagli e tabella in `evals/README.md`.
+Misurato il 2026-11-11 (Sonnet 5.5, Anthropic diretto): con `generator-v2` (serie lezioni più ricche) ed effort `medium` il modello spendeva il 60-80% dei token di output in ragionamento (documento ~3-4k token su 10-20k) e con 4-5 concetti esauriva il tetto di 20.000 senza scrivere il documento. Dettagli e tabella in `evals/README.md`.
 
 **Generator v3** (cambi in `generator/system.md`, stessi segnaposto):
 - In cima, «Come lavorare»: scrivere, non pianificare; niente conti di parole e blocchi (li fa il Validator); una lezione corta è un difetto, non un'economia.
@@ -312,7 +312,7 @@ Il testo resta ~40 KB (l'esempio compensa i tagli): costo fisso dell'input già 
 
 **Planner v2**: prima dei concetti elenca per ognuno che cosa serve per capirlo e confrontalo con record e punto di partenza (un elenco di prerequisiti vuoto è corretto solo se tutto è coperto); uno strumento che la persona dice di non aver mai usato è `general`; formula di `estimated_minutes` in forma già semplificata (`round(0,9 + 1,8·C + 0,8·G + 0,5·E + 2·O)`). Resta la richiesta di farla calcolare al backend.
 
-## Fase 12, 4-5 concetti per lezione (`planner-phase12-v3`, `generator-phase12-v4`)
+## 4-5 concetti per lezione (serie lezioni più ricche: `planner-v3`, `generator-v4`)
 
 Decisione del proprietario (2026-11-11), dopo la misura sui piani da 2-3 concetti: con effort `low` il Generator scrive ~330-380 parole di prosa per concetto, quindi 759, 1014 e 1181 parole con 2-3 concetti (minimo 1200); con 4-5 concetti si sta nei limiti. **Ogni lezione ha 4 o 5 concetti** (esattamente 4 con un prerequisito `general`); `validate_plan` lo impone.
 
@@ -326,11 +326,11 @@ Decisione del proprietario (2026-11-11), dopo la misura sui piani da 2-3 concett
 
 **Cache e costi.** Nessun cambio di struttura: il prefisso statico resta `system.md`. Planner: Sonnet 5.5, effort `medium` (JSON da 4-5 concetti ~1.500 token più ragionamento). Generator: Sonnet 5.5, effort `low`, tetto 32.000.
 
-## Planner v4: contro la prima risposta «scheletro» (`planner-phase12-v4`, 2026-11-11, NON MISURATA)
+## Planner v4: contro la prima risposta «scheletro» (`planner-v4` della serie lezioni più ricche, 2026-11-11, NON MISURATA)
 
 Diagnosi del backend: in circa 3 prove su 10 la prima risposta del Planner è lo scheletro dello schema (campi vuoti, `estimated_minutes` 10, chiavi in ordine alfabetico, `EndTurn`, ~115 token). Modifica: sezione finale «Prima di rispondere» in `planner/system.md` (un piano con campi vuoti non è una risposta, va compilato per intero ora) e frase di chiusura rafforzata in `planner/context.md` (nessun segnaposto nuovo). **Questa modifica non è stata misurata**: nessuna chiamata reale. Sulla frase «es. 10» di `estimated_minutes`: non è la causa, perché lo scheletro compare già nei rapporti `2026-11-11_07-13-43-669` e `08-40-48-960`, quando il prompt chiedeva ancora la formula; resta invariata. Se la modifica non basta, la leva è il messaggio utente («Procedi.», `KICKOFF` in `application/src/generation.rs`): vedi report a rust-backend-dev.
 
-## Diagrammi nel Generator (issue #3; `generator-phase12-v6`)
+## Diagrammi nel Generator (`generator-v6`)
 
 **v6 (2026-11-12, NON MISURATA)**: allineamento alle «Linee guida per il Generator» di `docs/design/components/diagram.md`. Solo `generator/system.md` (sezione «Figura»): quando sì/no con la prova della `caption` in una frase; posizione subito dopo il paragrafo che annuncia la struttura (`tree`/`cycle` dopo l'intuizione, `flow` dopo l'esempio svolto, prima della regola; prima era «dopo la regola»); tetto 1 per sezione e 2 per lezione (3 se il tema è una struttura); nodi consigliati per layout (`flow` max 2 per livello e nessun arco che salta un livello); limiti di lunghezza consigliati più stretti del contratto (label 24, detail 40, label degli archi 20, title 50, caption 140 caratteri); `alt` autosufficiente con layout, ordine di lettura e `detail`; la figura non anticipa un esercizio sulla stessa struttura. Nessuna contraddizione col contratto: i limiti del designer sono consigli dentro i limiti duri (40/60/30/80/300), che restano al Validator. Compatibilità con `concept_chain`: `chain_problems` in `crates/evals/src/roles/shape.rs` filtra i `diagram` prima di controllare la catena, quindi qualunque posizione dentro la sezione di concetto la rispetta (test `a_diagram_does_not_break_the_chain`). `repair.md` invariato rispetto a v5. Nessun eval reale eseguito.
 
@@ -344,15 +344,15 @@ Diagnosi del backend: in circa 3 prove su 10 la prima risposta del Planner è lo
 - Eval: `evals/generator/diagram.cases.json` (vedi `evals/README.md`, «Diagrammi»).
 
 
-## Generator, opzioni dei quiz di pari lunghezza in caratteri (issue #16; `generator-phase12-v9`)
+## Generator, opzioni dei quiz di pari lunghezza in caratteri (`generator-v9`)
 
 Misurato il 2026-11-15 con `v7`: `quiz_option_char_ratio_max` (1,3) falliva in 4 run su 7, con rapporti 1,32-1,62, perché la regola contava le parole e non i caratteri. In `system.md` («Quiz») le opzioni devono ora avere 7 o 8 parole e al massimo 10 caratteri di differenza tra la più lunga e la più corta, la corretta non oltre la mediana (un primo tentativo con la fascia 55-70 caratteri non è stato seguito dal modello: lunghezze 34-58). `repair.md` ha una riga per `quiz_option_length_cue`. Risultati: `evals/README.md`.
 
-## Generator, attribuzioni con il web fetch (issue #16, tappa B; `generator-phase12-v10`)
+## Generator, attribuzioni con il web fetch (`generator-v10`)
 
-Misurato il 2026-11-15 (`generator/phase12-fetch`, `max_fetches` 3): la rubrica `page_content` era 0,23-0,33 (gemello senza fetch 0,60): `[^key]` su regole che stanno in un'altra pagina letta o che il modello ricordava, e contenuti chiave della pagina mancanti (le tre condizioni della data race). Con la fonte irraggiungibile la lezione citava `[^key]` sugli esempi svolti e diceva cosa «spiega» la fonte. In «Quando hai lo strumento di lettura web» (`system.md`): `[^key]` di una pagina letta solo su ciò che quel testo dice (e se ne sa indicare la frase), uso dei fatti centrali (elenchi completi, messaggi, codici) e, a lettura fallita, citazione come con la sola annotazione, senza dire cosa contiene e senza `[^key]` sugli esempi. `repair.md` ripete la regola sulla lettura fallita. Il paragrafo «Quiz» della tappa A non è toccato. Cache: `system.md` cresce di circa 300 token (prefisso statico).
+Misurato il 2026-11-15 (`generator/web-fetch`, `max_fetches` 3): la rubrica `page_content` era 0,23-0,33 (gemello senza fetch 0,60): `[^key]` su regole che stanno in un'altra pagina letta o che il modello ricordava, e contenuti chiave della pagina mancanti (le tre condizioni della data race). Con la fonte irraggiungibile la lezione citava `[^key]` sugli esempi svolti e diceva cosa «spiega» la fonte. In «Quando hai lo strumento di lettura web» (`system.md`): `[^key]` di una pagina letta solo su ciò che quel testo dice (e se ne sa indicare la frase), uso dei fatti centrali (elenchi completi, messaggi, codici) e, a lettura fallita, citazione come con la sola annotazione, senza dire cosa contiene e senza `[^key]` sugli esempi. `repair.md` ripete la regola sulla lettura fallita. Il paragrafo «Quiz» della sezione precedente non è toccato. Cache: `system.md` cresce di circa 300 token (prefisso statico).
 
-## Fase 17: lezione richiesta dalla chat (versioni attuali `tutor-phase17-v4`, `tutor-tools-phase17-v4`, `tutor-tool-results-phase17-v3`; v2 = solo `request_lesson`, v3 = correzioni dei difetti di `tutor/phase3`, v4 = eccezione al cambio immediato quando il punto di partenza è «non dichiarato»)
+## Lezione richiesta dalla chat (serie `tutor/request-lesson`, versioni attuali `tutor-v4`, `tutor-tools-v4`, `tutor-tool-results-v3`; v2 = solo `request_lesson`, v3 = correzioni dei difetti di `tutor/tools`, v4 = eccezione al cambio immediato quando il punto di partenza è «non dichiarato»)
 
 Contratto: `docs/contracts/lessons.md` §12, `mission.md` §6. Solo il Tutor cambia.
 
@@ -360,7 +360,7 @@ Contratto: `docs/contracts/lessons.md` §12, `mission.md` §6. Solo il Tutor cam
 |---|---|---|
 | Tutor | nuovo tool `request_lesson` (nessun argomento, `additionalProperties: false`), con esiti `ok`, `already_running`, `already_in_turn`, `not_ready`, `llm_key_missing`, `not_allowed_with_mission_tool` in `tool_results.json` (tutti senza segnaposto). Nuova sezione «Chiedere la prossima lezione» in `system.md`: solo con stato `ready` e richiesta o sì esplicito, mai di iniziativa, mai per un argomento scelto dalla persona (lo sceglie il Planner), mai nel turno di un tool di mission, nessun testo prima del tool e una riga dopo l'esito (v2: con la riga prima, il turno dopo `ok` era senza nulla da scrivere e il modello richiamava il tool, 3 run su 3 in v1), niente tempi né contenuto (la card li mostra). Può proporla una volta sola dopo la conferma | una lezione è un job a pagamento: l'ammissibilità vera la verifica il backend, il prompt evita le chiamate inutili |
 | Tutor | `context.md` ha ora `{{documents_section}}` sotto `## Documenti caricati`, dopo la Mission; senza documenti il valore è `Nessuno.` e l'intestazione resta | il segnaposto rende il punto esplicito; il test `the_tutor_sees_the_index_of_ready_documents` va aggiornato (non asserisce più l'assenza di «Documenti caricati»). `system.md` dice «Nessuno.» al posto di «la sezione manca» |
-| Tutor (v3, correzione dei 4 casi di `tutor/phase3`) | (1) `save_mission_draft`/`propose_mission_change`: nessun testo prima dello strumento, l'introduzione (1-2 frasi, max 40 parole, senza citare punto di partenza, vincoli, criteri) si scrive dopo l'esito, come per `request_lesson`; gli esiti `ok` lo dicono e vietano altri strumenti. (2) `constraints` deve contenere scadenze e tempo detti dalla persona anche se già nel `why`. (3) richiesta esplicita di cambio mission con nuovo obiettivo: `propose_mission_change` subito, senza intervista (criteri solo dalle parole della persona, `out_of_scope` contraddetti rimossi). (4) il riconoscimento cita 1-2 dati, non tutti. (5) criteri senza dettagli aggiunti | (1) con il testo prima il modello lo ripeteva dopo l'esito (messaggio doppio) o chiamava altri strumenti (`request_lesson`, `save_preference` con testo «placeholder»); nominare gli strumenti vietati nel prompt peggiorava (priming): ora si dice solo cosa fare. (2)-(5) misurati in `evals/README.md`, Fase 17 bis |
-| Tutor (v4, eccezione al cambio immediato) | Richiesta esplicita di cambio con mission confermata dal punto di partenza «non dichiarato» e persona che non ha ancora detto cosa sa: nessuna chiamata, una sola domanda su cosa sa già, poi la proposta (in `system.md` e nella `description` di `propose_mission_change`) | La v3 («chiama subito») sovrascriveva la regola della Fase 12 (`phase12` `change_requested_with_undeclared_starting_point_asks_first` 0/1 → v4 3/3); eccezione scritta come condizione, senza nominare strumenti vietati. Misure in `evals/README.md`, Fase 17 ter |
+| Tutor (v3, correzione dei 4 casi di `tutor/tools`) | (1) `save_mission_draft`/`propose_mission_change`: nessun testo prima dello strumento, l'introduzione (1-2 frasi, max 40 parole, senza citare punto di partenza, vincoli, criteri) si scrive dopo l'esito, come per `request_lesson`; gli esiti `ok` lo dicono e vietano altri strumenti. (2) `constraints` deve contenere scadenze e tempo detti dalla persona anche se già nel `why`. (3) richiesta esplicita di cambio mission con nuovo obiettivo: `propose_mission_change` subito, senza intervista (criteri solo dalle parole della persona, `out_of_scope` contraddetti rimossi). (4) il riconoscimento cita 1-2 dati, non tutti. (5) criteri senza dettagli aggiunti | (1) con il testo prima il modello lo ripeteva dopo l'esito (messaggio doppio) o chiamava altri strumenti (`request_lesson`, `save_preference` con testo «placeholder»); nominare gli strumenti vietati nel prompt peggiorava (priming): ora si dice solo cosa fare. (2)-(5) misurati in `evals/README.md`, «Lezione richiesta dalla chat» |
+| Tutor (v4, eccezione al cambio immediato) | Richiesta esplicita di cambio con mission confermata dal punto di partenza «non dichiarato» e persona che non ha ancora detto cosa sa: nessuna chiamata, una sola domanda su cosa sa già, poi la proposta (in `system.md` e nella `description` di `propose_mission_change`) | La v3 («chiama subito») sovrascriveva la regola del punto di partenza (`tutor/starting-point` `change_requested_with_undeclared_starting_point_asks_first` 0/1 → v4 3/3); eccezione scritta come condizione, senza nominare strumenti vietati. Misure in `evals/README.md`, «Lezione richiesta dalla chat» |
 
-Evals: `evals/tutor/phase17.cases.json` (3 casi, eseguiti il 2026-11-18: v1 `explicit_request_calls_tool` 0/3, v2 tutti 3/3; dettagli in `evals/README.md`, Fase 17).
+Evals: `evals/tutor/request-lesson.cases.json` (3 casi, eseguiti il 2026-11-18: v1 `explicit_request_calls_tool` 0/3, v2 tutti 3/3; dettagli in `evals/README.md`, «Lezione richiesta dalla chat»).

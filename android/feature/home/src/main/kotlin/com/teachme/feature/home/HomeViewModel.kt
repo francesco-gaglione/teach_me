@@ -62,7 +62,7 @@ sealed interface HomeDialog {
     ) : HomeDialog
 }
 
-/** The "Ripasso di oggi" entry of Home (home.md, "Ripasso di oggi (Fase 8)"). */
+/** The "Ripasso di oggi" entry of Home (home.md, "Ripasso di oggi"). */
 sealed interface HomeReview {
     /** Nothing to say: still loading, no card was ever made, or all are suspended. */
     data object Hidden : HomeReview

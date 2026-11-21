@@ -1,8 +1,8 @@
 {
-  "suite": "recorder/issue30-en",
+  "suite": "recorder/english",
   "prompt_dir": "backend/prompts/recorder",
   "schema_file": "backend/prompts/recorder/output_schema.json",
-  "description": "Issue #30 (ADR 0019): English versions of two phase7 cases.",
+  "description": "English versions of two cases of `recorder/records`.",
   "defaults": {
     "runs_per_case": 1,
     "deterministic": {
@@ -89,7 +89,7 @@
       "unpassed_block_only_on_never_passed": true,
       "unpassed_block_not_in_visible_text": true
     },
-    "notes": "`expect` di un caso: intervalli [min,max] per il numero di records/terms/cards, record_kinds_include/exclude, term_keys_subset_of, supersedes_any, terms_must_not_include_keys. Il backend_validator è quello di lessons.md §6.3 (codice reale). Gli esiti `passed` sono quelli del campo `outcome` dei tentativi del caso. Fase 9: casi real_lesson_1_unproven_point e real_lesson_2_second_attempt_pass dalle lezioni reali (docs/design/samples). Per `body_must_not_match`/`evidence_must_not_match` di caso: regex vietate in title+body+evidence dei record `demonstrated`. `expect.cards_min_application`: numero minimo di schede di applicazione, verificate dalla rubrica. Issue #29: `unpassed_block_only_on_never_passed` (ogni valore non nullo è un esercizio con tentativi e nessun `correct`: mai su un esercizio superato né corretto al secondo tentativo), `unpassed_block_not_in_visible_text`; per caso `unpassed_block_includes_one_of` (almeno una scheda cita uno di quegli esercizi) e `unpassed_block_includes_all_of` (tutti quegli esercizi compaiono in qualche scheda)."
+    "notes": "`expect` di un caso: intervalli [min,max] per il numero di records/terms/cards, record_kinds_include/exclude, term_keys_subset_of, supersedes_any, terms_must_not_include_keys. Il backend_validator è quello di lessons.md §6.3 (codice reale). Gli esiti `passed` sono quelli del campo `outcome` dei tentativi del caso. Casi real_lesson_1_unproven_point e real_lesson_2_second_attempt_pass dalle lezioni reali (docs/design/samples). Per `body_must_not_match`/`evidence_must_not_match` di caso: regex vietate in title+body+evidence dei record `demonstrated`. `expect.cards_min_application`: numero minimo di schede di applicazione, verificate dalla rubrica. `unpassed_block_only_on_never_passed` (ogni valore non nullo è un esercizio con tentativi e nessun `correct`: mai su un esercizio superato né corretto al secondo tentativo), `unpassed_block_not_in_visible_text`; per caso `unpassed_block_includes_one_of` (almeno una scheda cita uno di quegli esercizi) e `unpassed_block_includes_all_of` (tutti quegli esercizi compaiono in qualche scheda)."
   },
   "cases": [
     {
@@ -465,7 +465,7 @@
     "expect_all_cases": "tutti i controlli `expect` in 3/3 run per i casi explained_only_zero_records, flashcard_only_weak_evidence, existing_term_and_record_not_duplicated (regole di sobrietà: devono essere stabili); 2/3 per gli altri",
     "backend_validator_pass_first_try": ">= 85% delle run (ogni fallimento costa una riparazione)",
     "rubric_mean": ">= 0.8",
-    "phase9": "real_lesson_1_unproven_point: 3/3 run senza alcuna affermazione su `clone` nei record demonstrated; real_lesson_2_second_attempt_pass: 3/3 run con un record misconception_corrected che cita q3; card_front_single_question e card_back_chars_max: >= 90% delle schede",
-    "issue29": "unpassed_block_includes_all_of (q2 e q4): real_lesson_1_unproven_point 3/3 run; unpassed_block_only_on_never_passed e unpassed_block_not_in_visible_text: 100% delle run su tutti i casi (in particolare misconception_corrected e real_lesson_2_second_attempt_pass, dove l'esercizio sbagliato è poi corretto: sempre null); nessuna regressione degli altri controlli rispetto alla misura v4"
+    "real_lessons": "real_lesson_1_unproven_point: 3/3 run senza alcuna affermazione su `clone` nei record demonstrated; real_lesson_2_second_attempt_pass: 3/3 run con un record misconception_corrected che cita q3; card_front_single_question e card_back_chars_max: >= 90% delle schede",
+    "unpassed_block": "unpassed_block_includes_all_of (q2 e q4): real_lesson_1_unproven_point 3/3 run; unpassed_block_only_on_never_passed e unpassed_block_not_in_visible_text: 100% delle run su tutti i casi (in particolare misconception_corrected e real_lesson_2_second_attempt_pass, dove l'esercizio sbagliato è poi corretto: sempre null); nessuna regressione degli altri controlli rispetto alla misura v4"
   }
 }

@@ -1,11 +1,11 @@
-# Schermata di accesso (Fase 11)
+# Schermata di accesso
 
 > Componenti: `../base-components.md` (TextField §2 e variante mascherata, Button §1, StatusPanel §5, Toast §9) e le composizioni di §16. Token: `../tokens.json`. Contratto: `../../contracts/users.md` §2.1-2.2, `api-conventions.md` §2 e §7. Decisione: ADR 0008. Nessun componente nuovo, nessun token nuovo.
 > **È la prima schermata dell'app senza sessione**: sostituisce il ruolo che le Impostazioni avevano al primo avvio. Non esiste registrazione: gli utenti li crea il proprietario sul server.
 
 ## Scopo
 
-Una sola cosa: entrare. Chi apre l'app la prima volta capisce **che cosa gli serve** (indirizzo, nome utente, password) e **da chi lo ottiene** (il proprietario del server). Chi rientra dopo una sessione finita capisce **perché** e trova già compilato tutto tranne la password. Carico cognitivo (Sweller): tre campi al massimo, due per chi torna; niente testo che non serva a compilarli. Errore = informazione, mai colpa (P9): l'ambra (`warning`) segnala ciò che l'utente può correggere, `danger` solo l'imprevisto, come nelle Impostazioni di Fase 1.
+Una sola cosa: entrare. Chi apre l'app la prima volta capisce **che cosa gli serve** (indirizzo, nome utente, password) e **da chi lo ottiene** (il proprietario del server). Chi rientra dopo una sessione finita capisce **perché** e trova già compilato tutto tranne la password. Carico cognitivo (Sweller): tre campi al massimo, due per chi torna; niente testo che non serva a compilarli. Errore = informazione, mai colpa (P9): l'ambra (`warning`) segnala ciò che l'utente può correggere, `danger` solo l'imprevisto, come nelle Impostazioni.
 
 ## Quando si vede
 
@@ -81,11 +81,11 @@ Nessun list-detail. Un'unica colonna di **480 dp** (`dialogWidthWide`) centrata 
 
 | Campo | Comportamento |
 |---|---|
-| **Indirizzo del backend** | Come in Fase 1: `KeyboardType.Uri`, `ImeAction.Next`, nessuna correzione né maiuscole automatiche. Accetta `https://` e `http://` senza avvisi sul cleartext (traffico via Tailscale). Spazi iniziali/finali tolti; `/` finale e un eventuale `/api/v1` digitato rimossi. Nessun autofill (`importantForAutofill = no`). |
+| **Indirizzo del backend** | `KeyboardType.Uri`, `ImeAction.Next`, nessuna correzione né maiuscole automatiche. Accetta `https://` e `http://` senza avvisi sul cleartext (traffico via Tailscale). Spazi iniziali/finali tolti; `/` finale e un eventuale `/api/v1` digitato rimossi. Nessun autofill (`importantForAutofill = no`). |
 | **Nome utente** | `KeyboardType.Text`, `capitalization = None`, `autoCorrectEnabled = false`, `ImeAction.Next`. **Autofill di sistema attivo**: `contentType = ContentType.Username`. Spazi ai bordi tolti prima dell'invio; il maiuscolo non si corregge (il backend confronta in minuscolo: «Valentina» entra) e non si riscrive nel campo. Nessuna regola di formato applicata in locale (3-32 caratteri `a-z0-9._-` sono regole di creazione, non di accesso: dirle qui suggerirebbe come indovinare). |
 | **Password** | Campo mascherato (base-components §2): `ImeAction.Done`, `KeyboardType.Password`, **autofill di sistema attivo**: `contentType = ContentType.Password`. Toggle `eye`/`eye-off` 48 dp, `contentDescription` «Mostra password» / «Nascondi password», `toggleable`/`Role.Switch`. Copia e taglia disabilitati se mascherato; **incolla sempre ammesso** (gestori di password). Tornando in secondo piano (`ON_STOP`) il campo si rimaschera. Spazi **non** tolti (fanno parte della password). Il valore non entra mai in log, `contentDescription`, `SavedStateHandle` o `rememberSaveable` su disco: vive solo nello stato in memoria del ViewModel (sopravvive alla rotazione, non al processo ucciso). Nessun limite di lunghezza né minimo applicati in locale. |
 
-**Eccezione esplicita** alla regola della Fase 0 «niente autofill sui campi mascherati» (era scritta per un token da incollare): qui l'autofill è voluto, perché un utente con una password di 10+ caratteri senza gestore di password userebbe password deboli o le riscriverebbe di continuo sul tablet. Gli altri suggerimenti della tastiera restano disattivati. A accesso riuscito android-dev completa il contesto di autofill (`AutofillManager.commit()` / Credential Manager) perché il sistema proponga di salvare le credenziali: nessun salvataggio nostro.
+**Eccezione esplicita** alla regola «niente autofill sui campi mascherati» (pensata per un token da incollare): qui l'autofill è voluto, perché un utente con una password di 10+ caratteri senza gestore di password userebbe password deboli o le riscriverebbe di continuo sul tablet. Gli altri suggerimenti della tastiera restano disattivati. A accesso riuscito android-dev completa il contesto di autofill (`AutofillManager.commit()` / Credential Manager) perché il sistema proponga di salvare le credenziali: nessun salvataggio nostro.
 
 ### Validazione locale (prima della rete)
 

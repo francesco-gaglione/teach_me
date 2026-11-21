@@ -1,6 +1,6 @@
-# Controlli di qualità del Validator: errori e avvisi (issue #14)
+# Controlli di qualità del Validator: errori e avvisi
 
-Fonte delle soglie: `backend/crates/evals/src/roles/{shape,generator}.rs` e `backend/evals/generator/phase12.cases.json`. **Una sola regola per cosa**: il Validator del dominio implementa le stesse regole delle eval (le eval le possono poi delegare a lui). Dove la issue proponeva un valore diverso (callout > 3) vince il valore delle eval, perché è già misurato sulle suite.
+Fonte delle soglie: `backend/crates/evals/src/roles/{shape,generator}.rs` e `backend/evals/generator/rich-lessons.cases.json`. **Una sola regola per cosa**: il Validator del dominio implementa le stesse regole delle eval (le eval le possono poi delegare a lui). Dove era stato proposto un valore diverso (callout > 3) vince il valore delle eval, perché è già misurato sulle suite.
 
 Ogni controllo produce un'`issue` con: `code` (stabile, snake_case), `block_id` (id del blocco interessato, o `null` se riguarda la lezione intera), messaggio di riparazione (italiano, per il Generator: dice cosa è sbagliato e come ripararlo; interno al backend, non è nel contratto) e, per gli avvisi, `message` (italiano, testo per chi studia; è il campo `message` di `quality_warnings`, `lessons.md` §2).
 
@@ -113,9 +113,9 @@ Titolo e voci sono **testo fisso in italiano** (`message` di `quality_warnings`)
 
 ## 5. Decisioni del tech lead
 
-Issue #14, registrate da `docs-keeper` su decisione del tech lead.
+Registrate da `docs-keeper` su decisione del tech lead.
 
 - **Punto 2 (`consecutive_code_blocks`)**: la regex delle parole di confronto si applica solo al `caption` del secondo `code`, non al `code`.
-- **Punto 3 (callout)**: valgono le soglie delle eval (per sezione 1; `tip`+`info` in lezione 2; `warning` in lezione 5), non il «> 3» della issue.
+- **Punto 3 (callout)**: valgono le soglie delle eval (per sezione 1; `tip`+`info` in lezione 2; `warning` in lezione 5), non il «> 3» proposto inizialmente.
 - **Punto 4 (tenuta della riparazione)**: punteggio pesato. `explanation_run_too_long` vale 2, gli altri avvisi 1. Si tiene il documento riparato solo se è valido e con punteggio strettamente minore; altrimenti si tiene quello di partenza.
 - **Punto 5 (limite riparazioni)**: la riparazione per soli avvisi parte solo da un documento già valido, quindi non sottrae tentativi a un errore. Se il riparato ha errori si tiene il precedente valido, senza altre riparazioni. Massimo una riparazione per avvisi per lezione, sempre dentro `max_document_repairs`.

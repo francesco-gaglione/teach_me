@@ -23,7 +23,7 @@ Le lezioni reali non mostrano figure: 0 blocchi `diagram` in 15 lezioni reali, e
    - il documento migliorato si tiene solo se è valido, non perde le figure già soddisfatte e non peggiora;
    - il controllo rispetta il limite di riparazioni già previsto.
 7. **Fuori da `quality_warnings`**: il controllo non produce avvisi visibili. Nessuna modifica di contratto, nessuna migrazione.
-8. **Versioni dei prompt**: planner `planner-phase12-v5`, generator `generator-visual-v20`.
+8. **Versioni dei prompt**: planner `planner-v5`, generator `generator-visual-v20`.
 
 ## Alternative scartate
 

@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-19
-- Issue Gitea #14 ("Avvisi non bloccanti del Validator"). Il proprietario ha deciso il salvataggio nel database e la visibilità nell'app il 2026-11-19; i punti 1-5 sono scelte del tech lead che ne derivano. Contratto: `docs/contracts/lessons.md` §2, §3.1 e §4 (v1.7). Regole e soglie: `docs/design/quality-warnings.md`.
+- Richiesta "Avvisi non bloccanti del Validator". Il proprietario ha deciso il salvataggio nel database e la visibilità nell'app il 2026-11-19; i punti 1-5 sono scelte del tech lead che ne derivano. Contratto: `docs/contracts/lessons.md` §2, §3.1 e §4 (v1.7). Regole e soglie: `docs/design/quality-warnings.md`.
 
 ## Problema
 
@@ -18,10 +18,10 @@ Il Validator (`sdui.md` §6) blocca il documento per ogni regola violata. Alcune
 4. **Gli avvisi si salvano nel database** con la lezione, così restano disponibili su ogni dispositivo.
 5. **L'app li mostra.** Un codice sconosciuto è un avviso generico che mostra solo `message`, così nuovi codici non richiedono una versione nuova dell'app.
 
-Decisioni del tech lead (issue #14, 2026-11-19), che precisano i punti sopra:
+Decisioni del tech lead (2026-11-19), che precisano i punti sopra:
 
 - **Punto 2 (`consecutive_code_blocks`)**: la regex delle parole di confronto si applica solo al `caption` del secondo `code`, non al `code`.
-- **Punto 3 (callout)**: valgono le soglie delle eval (per sezione 1; `tip`+`info` in lezione 2; `warning` in lezione 5), non il «> 3» della issue.
+- **Punto 3 (callout)**: valgono le soglie delle eval (per sezione 1; `tip`+`info` in lezione 2; `warning` in lezione 5), non il «> 3» della richiesta.
 - **Punto 4 (tenuta della riparazione)**: punteggio pesato, `explanation_run_too_long` vale 2, gli altri avvisi 1. Si tiene il documento riparato solo se è valido e con punteggio strettamente minore.
 - **Punto 5 (limite riparazioni)**: la riparazione per soli avvisi parte solo da un documento già valido e non sottrae tentativi a un errore. Se il riparato ha errori si tiene il precedente valido. Massimo una riparazione per avvisi per lezione, sempre dentro `max_document_repairs`.
 

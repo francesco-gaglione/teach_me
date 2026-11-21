@@ -1,4 +1,4 @@
-//! Migration `0015` (phase 12, block B) on a database at schema `0014` with
+//! Migration `0015` on a database at schema `0014` with
 //! data: purely additive. Nothing is rewritten, old missions read back with no
 //! starting point, and new drafts can carry one.
 
@@ -14,7 +14,7 @@ const T: &str = "2026-11-09T09:00:00.000Z";
 const TOPIC: &str = "00000000-0000-7000-8000-0000000000a1";
 const MESSAGE: &str = "00000000-0000-7000-8000-0000000000b1";
 
-/// A mission snapshot as a Phase 11 backend saved it: no `starting_point` key.
+/// A mission snapshot as an earlier backend saved it: no `starting_point` key.
 fn old_snapshot() -> String {
     serde_json::json!([{
         "type": "mission_proposal",
@@ -37,7 +37,7 @@ async fn exec(pool: &Pool, sql: &'static str, binds: &[&str]) {
     q.execute(pool).await.unwrap();
 }
 
-/// A database as the Phase 11 backend left it (schema `0014`), with a topic
+/// A database as the previous backend left it (schema `0014`), with a topic
 /// that has a confirmed mission, an older superseded one and a chat message.
 async fn database_at_0014(path: &std::path::Path) -> Pool {
     let pool = sqlite::connect(&format!("sqlite://{}", path.display()))

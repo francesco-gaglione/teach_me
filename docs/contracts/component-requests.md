@@ -1,7 +1,7 @@
 # Contratto: Componenti mancanti
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.1** (2026-11-10), Fase 9.
-> **Fase 11 (v1.1):** la classifica conta solo le richieste nate dagli argomenti dell'utente della sessione.
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.1** (2026-11-10).
+> **v1.1:** la classifica conta solo le richieste nate dagli argomenti dell'utente della sessione.
 > Valgono `api-conventions.md`, `sdui.md` (blocco `missing_component`) e `lessons.md` §4 (al salvataggio di una lezione nasce una `ComponentRequest` per ogni blocco `missing_component`). Flusso: `docs/mvp.md` §7.6. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti

@@ -1,6 +1,6 @@
 # Evidenziatore (penna)
 
-> Issue Gitea #2, ADR 0011 (decisioni prese, non si riaprono), contratto `lessons.md` §10. **Dall'ADR 0015 la penna ha due strumenti** (evidenziatore e penna, scrittura a mano: `handwriting.md`); questo documento descrive l'**evidenziatore** e la tavolozza comune (§6). I gesti di §4, §7 e §8 della punta valgono con lo strumento «evidenziatore» attivo. Non è un blocco SDUI: è uno strato dell'utente sul testo di `paragraph` e `callout` (campo `text`; non il titolo del callout). Token: `tokens.json` → `color.*.highlight*` e sezione `highlight`.
+> ADR 0011 (decisioni prese, non si riaprono), contratto `lessons.md` §10. **Dall'ADR 0015 la penna ha due strumenti** (evidenziatore e penna, scrittura a mano: `handwriting.md`); questo documento descrive l'**evidenziatore** e la tavolozza comune (§6). I gesti di §4, §7 e §8 della punta valgono con lo strumento «evidenziatore» attivo. Non è un blocco SDUI: è uno strato dell'utente sul testo di `paragraph` e `callout` (campo `text`; non il titolo del callout). Token: `tokens.json` → `color.*.highlight*` e sezione `highlight`.
 
 ## 1. Scopo didattico
 

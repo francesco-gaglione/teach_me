@@ -12,13 +12,13 @@ use crate::ids::{DocumentId, JobId, LessonId, TopicId};
 /// What a job does. The string forms are part of the API contract.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum JobKind {
-    /// Find and annotate sources for the topic's mission (phase 4).
+    /// Find and annotate sources for the topic's mission.
     Research,
-    /// Plan, write and validate one lesson (phase 6).
+    /// Plan, write and validate one lesson.
     LessonGeneration,
-    /// Grade what is pending and record what the learner showed (phase 7).
+    /// Grade what is pending and record what the learner showed.
     LessonCompletion,
-    /// Extract the text of an uploaded PDF (phase 10).
+    /// Extract the text of an uploaded PDF.
     DocumentImport,
 }
 

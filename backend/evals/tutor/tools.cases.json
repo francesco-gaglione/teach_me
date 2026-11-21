@@ -1,8 +1,8 @@
 {
- "suite": "tutor-phase3",
+ "suite": "tutor/tools",
  "prompt_dir": "backend/prompts/tutor",
  "tools_file": "backend/prompts/tutor/tools.json",
- "description": "Tutor in Fase 3: intervista sulla mission, bozza, correzioni, conferma, cambio mission, preferenze. Casi multi-turno con utente scriptato.",
+ "description": "Tutor: intervista sulla mission, bozza, correzioni, conferma, cambio mission, preferenze. Casi multi-turno con utente scriptato.",
  "defaults": {
   "runs_per_case": 3,
   "deterministic": {

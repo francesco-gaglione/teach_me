@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-09
-- Fase 10, contratto `docs/contracts/documents.md`. Servono testo **per pagina**, **segnalibri** con pagina di destinazione, rilevamento dei PDF **cifrati**, tempi accettabili su ~500 pagine, licenza compatibile, e un modo semplice di portare la libreria nell'immagine Docker (Debian bookworm). Verifica e prova: `rust-backend-dev`.
+- Contratto `docs/contracts/documents.md`. Servono testo **per pagina**, **segnalibri** con pagina di destinazione, rilevamento dei PDF **cifrati**, tempi accettabili su ~500 pagine, licenza compatibile, e un modo semplice di portare la libreria nell'immagine Docker (Debian bookworm). Verifica e prova: `rust-backend-dev`.
 
 ## Scelta
 

@@ -59,7 +59,7 @@ interface MissionRepository {
 
 /** Switches for features the backend does not offer yet. */
 object FeatureFlags {
-    /** Phase 4 (source research) turned this on; kept as a switch for a backend without the research. */
+    /** Kept as a switch for a backend without the research. */
     @Suppress("ktlint:standard:property-naming")
     const val ResearchAvailable: Boolean = true
 }

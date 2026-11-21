@@ -764,7 +764,7 @@ internal fun tabForKey(
     }
 }
 
-/** Below this usable height the top bar scrolls with the chat (topic.md, Fase 2). */
+/** Below this usable height the top bar scrolls with the chat (topic.md). */
 private val SHORT_WINDOW_HEIGHT = 480.dp
 
 private val previewTopic = Topic("1", "f", "Rust", TopicState.New, Instant.EPOCH, Instant.EPOCH)

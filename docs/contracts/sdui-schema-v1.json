@@ -170,7 +170,7 @@
               "type": "null"
             }
           ],
-          "description": "UUID di una Resource del Topic. null solo in fixture/prove (Validator, Fase 6: `unknown_resource`)."
+          "description": "UUID di una Resource del Topic. null solo in fixture/prove (Validator: `unknown_resource`)."
         },
         "title": {
           "type": "string",
@@ -832,7 +832,7 @@
       }
     },
     "lesson_link": {
-      "description": "Link a un'altra lezione dello stesso Topic (Validator, Fase 6: `invalid_lesson_link`).",
+      "description": "Link a un'altra lezione dello stesso Topic (Validator: `invalid_lesson_link`).",
       "type": "object",
       "additionalProperties": false,
       "required": [

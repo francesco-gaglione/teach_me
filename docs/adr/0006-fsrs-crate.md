@@ -2,7 +2,7 @@
 
 - Stato: sostituita da ADR 0014 (FSRS-7, 2026-11-14)
 - Data: 2026-11-09
-- Attua la decisione D4 di ADR 0005, dopo la verifica della Fase 8. Contratto: `docs/contracts/reviews.md`.
+- Attua la decisione D4 di ADR 0005, dopo la verifica della libreria. Contratto: `docs/contracts/reviews.md`.
 
 ## Scelta
 

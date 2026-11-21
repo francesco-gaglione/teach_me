@@ -1,6 +1,6 @@
 # Contratto: documento di lezione SDUI, catalogo v1
 
-> Contratto condiviso tra backend (Generator, Validator) e app (renderer). Proprietario: tech lead. Versione: **catalogo v1** (2026-11-08), Fase 5; contratto v1.1 (2026-11-09, Fase 10: `sources[].url` può essere `null` per i PDF caricati); contratto v1.2 (2026-11-11, Fase 12: limite di prosa di `too_long` da 1500 a 2200 parole, stesso `catalog_version`); contratto v1.3 (2026-11-12, issue #3: nuovo blocco `diagram`, §4 e §10, codice `diagram_structure`, stesso `catalog_version`); contratto v1.4 (2026-11-15, issue #22: campo facoltativo `code` negli esercizi con una domanda, §4.1, codice `inline_code_too_long`, stesso `catalog_version`); contratto v1.5 (2026-11-15, issue #16: soglia di `quiz_option_length_cue` da 1,4 a 1,3, la stessa degli eval, stesso `catalog_version`); contratto v1.6 (2026-11-19, issue #14: codici `fill_blank_answer_in_text` e `quiz_option_markup_uneven` in §6, stesso `catalog_version`).
+> Contratto condiviso tra backend (Generator, Validator) e app (renderer). Proprietario: tech lead. Versione: **catalogo v1** (2026-11-08); contratto v1.1 (2026-11-09: `sources[].url` può essere `null` per i PDF caricati); contratto v1.2 (2026-11-11: limite di prosa di `too_long` da 1500 a 2200 parole, stesso `catalog_version`); contratto v1.3 (2026-11-12: nuovo blocco `diagram`, §4 e §10, codice `diagram_structure`, stesso `catalog_version`); contratto v1.4 (2026-11-15: campo facoltativo `code` negli esercizi con una domanda, §4.1, codice `inline_code_too_long`, stesso `catalog_version`); contratto v1.5 (2026-11-15: soglia di `quiz_option_length_cue` da 1,4 a 1,3, la stessa degli eval, stesso `catalog_version`); contratto v1.6 (2026-11-19: codici `fill_blank_answer_in_text` e `quiz_option_markup_uneven` in §6, stesso `catalog_version`).
 > Schema formale: `sdui-schema-v1.json` (JSON Schema 2020-12) in questa cartella. Esempi: `fixtures/`. In caso di conflitto tra questo testo e lo schema, vale questo testo e lo schema va corretto.
 > Specifiche visive e didattiche di ogni componente: `docs/design/components/<tipo>.md`. Flusso della lezione: `docs/design/screens/lesson.md`.
 
@@ -37,7 +37,7 @@
 | `objective` | string | 1-200 caratteri. **Una** vittoria concreta, formulata come capacità ("Saper…", verbo osservabile) |
 | `estimated_minutes` | int | 1-20. Dalla v1.2 lo **calcola il backend** al salvataggio (`round(P/250 + 0,5·E + 2·O)`, limitato a 1-20: `P` parole di prosa di §9, `E` esercizi, `O` `open_answer`); il valore scritto dal Generator viene sostituito |
 | `glossary` | array | 0-12 voci `{key, term, definition, avoid?}`. `key`: `[a-z0-9_]{1,40}`, unica. `term` 1-80, `definition` 1-400 (markdown inline), `avoid` 0-3 stringhe 1-120 ("non confonderlo con…") |
-| `sources` | array | 1-8 voci `{key, resource_id, title, url}`. `key` come sopra; `resource_id`: UUID di una `Resource` del Topic (Fase 4) o `null` solo nelle fixture/prove; `title` 1-200; `url` assoluto `https`, oppure `null` se e solo se `resource_id` è una `Resource` `document` (PDF caricato, `documents.md` §6: le pagine vanno nel `title`; dalla v1.1 del contratto, stesso `catalog_version`) |
+| `sources` | array | 1-8 voci `{key, resource_id, title, url}`. `key` come sopra; `resource_id`: UUID di una `Resource` del Topic o `null` solo nelle fixture/prove; `title` 1-200; `url` assoluto `https`, oppure `null` se e solo se `resource_id` è una `Resource` `document` (PDF caricato, `documents.md` §6: le pagine vanno nel `title`; dalla v1.1 del contratto, stesso `catalog_version`) |
 | `blocks` | array | 3-60 blocchi (§3) |
 
 ## 3. Blocchi
@@ -75,7 +75,7 @@ Niente a capo, elenchi, intestazioni o immagini dentro un campo *md*: la struttu
 | `fill_blank` | `text` *md* 1-600 con segnaposto `{{blank_id}}`, `blanks` 1-4 × `{id, answers[] 1-5 × 1-60, case_sensitive (default false)}`, `feedback {correct, incorrect}` *md*, `required` | locale (match normalizzato §5) |
 | `order_steps` | `prompt` *md* 1-300, `steps` 3-8 × `{id, text *md* 1-200}` **nell'ordine corretto**, `feedback {correct, incorrect}` *md*, `required` | locale (l'app mescola in modo deterministico per `id` del blocco) |
 | `flashcard` | `code?` (§4.1, sul fronte), `front` *md* 1-300, `back` *md* 1-600, `required` | autovalutazione (`again`/`hard`/`good`/`easy`) |
-| `open_answer` | `code?` (§4.1), `question` *md* 1-400, `max_chars` 50-2000 (default 1000), `rubric` 1-1500 (**solo backend**, §7), `required` | backend (Grader, Fase 7) |
+| `open_answer` | `code?` (§4.1), `question` *md* 1-400, `max_chars` 50-2000 (default 1000), `rubric` 1-1500 (**solo backend**, §7), `required` | backend (Grader) |
 | `checklist` | `title?` 1-80, `items` 1-8 × `{id, text *md* 1-200}` | autodichiarata, mai obbligatoria |
 | `primary_source` | `source` (→ `sources[].key`), `why` *md* 1-300 | — |
 | `lesson_link` | `lesson_id` (UUID di una lezione dello stesso Topic), `label` 1-120 | — |
@@ -106,11 +106,11 @@ Gli `id` di opzioni, blanks, steps, items e nodi sono `[a-z0-9_-]{1,40}` e unici
 - `order_steps`: corretto se l'ordine coincide; altrimenti `incorrect` (nessun parziale in v1).
 - `flashcard`: nessuna correzione; l'esito è l'autovalutazione.
 
-Invio dei tentativi al backend: `lessons.md` §5 (Fase 7).
+Invio dei tentativi al backend: `lessons.md` §5.
 
 ## 6. Validator (backend)
 
-Il Validator riceve il documento (e, dalla Fase 6, il contesto: id delle `Resource` del Topic, id delle lezioni del Topic, chiavi del glossario del Topic) e restituisce **tutti** gli errori trovati, non solo il primo:
+Il Validator riceve il documento (e il contesto: id delle `Resource` del Topic, id delle lezioni del Topic, chiavi del glossario del Topic) e restituisce **tutti** gli errori trovati, non solo il primo:
 
 ```json
 { "path": "/blocks/7/options/2/text", "code": "quiz_option_length", "message": "Le opzioni del quiz 'q2' hanno lunghezze troppo diverse (3-11 parole, massimo scarto 3). Parole per opzione: opzione 0: 3 parole; opzione 1: 9 parole; opzione 2: 11 parole. Riscrivi le opzioni fuori intervallo in modo che tutte abbiano tra 9 e 12 parole." }
@@ -125,12 +125,12 @@ Il Validator riceve il documento (e, dalla Fase 6, il contesto: id delle `Resour
 | `duplicate_id` | `id` di blocco duplicato nel documento, id duplicato dentro un blocco, o `key` duplicata in `glossary`/`sources` |
 | `quiz_correct_missing` | `correct` non indica opzioni esistenti; in `quiz_multi` tutte o nessuna corrette |
 | `quiz_option_length` | Le opzioni di un quiz differiscono troppo in numero di parole: (max − min) > tolleranza (default **3**, configurabile) |
-| `quiz_option_length_cue` | (dalla Fase 9) In un `quiz_single`, la lunghezza in caratteri del testo visibile dell'opzione corretta supera di oltre **1,3 volte** la mediana delle opzioni sbagliate (la risposta si riconosce dalla lunghezza). In un `quiz_multi` vale per ciascuna corretta rispetto alla mediana delle sbagliate |
+| `quiz_option_length_cue` | In un `quiz_single`, la lunghezza in caratteri del testo visibile dell'opzione corretta supera di oltre **1,3 volte** la mediana delle opzioni sbagliate (la risposta si riconosce dalla lunghezza). In un `quiz_multi` vale per ciascuna corretta rispetto alla mediana delle sbagliate |
 | `quiz_answer_position` | Con ≥ 3 `quiz_single` nella lezione, la risposta corretta è sempre nella stessa posizione |
 | `fill_blank_mismatch` | Segnaposto `{{id}}` nel testo senza blank corrispondente, o blank non usato |
 | `unknown_citation` | `[^key]` che non esiste in `sources` |
-| `unknown_resource` | `sources[].resource_id` non è una `Resource` del Topic (dalla Fase 6; `null` vietato in produzione) |
-| `unknown_glossary_key` | `[[key]]` o `glossary_term.key` che non esiste in `glossary` del documento (dalla Fase 6 il glossario del Topic non basta: il documento è autosufficiente, `lessons.md` §4) |
+| `unknown_resource` | `sources[].resource_id` non è una `Resource` del Topic (`null` vietato in produzione) |
+| `unknown_glossary_key` | `[[key]]` o `glossary_term.key` che non esiste in `glossary` del documento (il glossario del Topic non basta: il documento è autosufficiente, `lessons.md` §4) |
 | `unused_entry` | Voce di `glossary` o `sources` mai usata nel documento |
 | `primary_source_count` | Non c'è **esattamente un** `primary_source` |
 | `ask_agent_missing` | Non c'è almeno un `ask_agent` |
@@ -138,7 +138,7 @@ Il Validator riceve il documento (e, dalla Fase 6, il contesto: id delle `Resour
 | `too_long` | Più di 6 sezioni (heading di livello 2) o più di **2200 parole** di prosa (1500 fino alla v1.1) (configurabile; definizione in §9). Il limite di 60 blocchi è già un errore `schema` |
 | `first_block_not_title` | Il primo blocco non è un `heading` di livello 1 |
 | `section_without_content` | Un `heading` di livello 2 senza blocchi prima del successivo |
-| `invalid_lesson_link` | `lesson_id` non è una lezione del Topic (dalla Fase 6) |
+| `invalid_lesson_link` | `lesson_id` non è una lezione del Topic |
 | `nested_missing_component` | `missing_component` dentro un `fallback` |
 | `diagram_structure` | La struttura di un `diagram` non rispetta il suo `layout` (§10): arco verso un nodo inesistente, arco da un nodo a se stesso, arco ripetuto, nodo isolato, ciclo in un `flow`, `tree` senza una sola radice o con un nodo con più genitori, `cycle` con `edges` |
 | `inline_code_too_long` | (contratto v1.4) In un campo *md* qualsiasi, uno span di codice inline `` `…` `` ha più di **60 caratteri** o contiene **due o più `;`**. Il messaggio dice di spostarlo nel campo `code` dell'esercizio (§4.1) o, fuori dagli esercizi, in un blocco `code` |
@@ -154,7 +154,7 @@ Il documento salvato dal backend è completo. Quando l'app lo richiede (`GET /le
 
 In `docs/contracts/fixtures/`:
 
-- `lesson-*.json`: lezioni **valide** che coprono tutti i 17 tipi; usate dal Validator (devono passare) e dall'app in Fase 5 (schermata Lezione che carica una fixture).
+- `lesson-*.json`: lezioni **valide** che coprono tutti i 17 tipi; usate dal Validator (devono passare) e dall'app (schermata Lezione che carica una fixture).
 - `invalid/*.json`: un file per codice di errore del §6 (dove testabile senza contesto del Topic), con accanto `*.expected.json` = lista dei `code` attesi.
 - `unknown-type.json`: lezione valida tranne un blocco di tipo inventato (l'app mostra il fallback; il Validator la rifiuta con `unknown_block_type`).
 

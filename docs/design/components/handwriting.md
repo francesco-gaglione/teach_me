@@ -1,6 +1,6 @@
 # Scrittura a mano (penna)
 
-> Issue Gitea #27, ADR 0015 (decisioni prese, non si riaprono), contratto `lessons.md` §11 (proposta in fondo a questo file). Non è un blocco SDUI: è uno strato dell'utente sopra l'intera lezione. Estende `highlight.md` (stessa penna, stessa tavolozza, stesso rilevamento) senza contraddirlo: con lo strumento «evidenziatore» tutto resta come in `highlight.md`. Token: `tokens.json` → `handwriting` e `color.*.pen*`.
+> ADR 0015 (decisioni prese, non si riaprono), contratto `lessons.md` §11 (proposta in fondo a questo file). Non è un blocco SDUI: è uno strato dell'utente sopra l'intera lezione. Estende `highlight.md` (stessa penna, stessa tavolozza, stesso rilevamento) senza contraddirlo: con lo strumento «evidenziatore» tutto resta come in `highlight.md`. Token: `tokens.json` → `handwriting` e `color.*.pen*`.
 
 ## 1. Scopo didattico
 

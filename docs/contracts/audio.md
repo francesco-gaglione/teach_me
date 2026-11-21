@@ -1,6 +1,6 @@
 # Contratto: lettura ad alta voce
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1** (2026-11-13), issue #8; v1.1 (2026-11-15, issue #20: pulizia delle clip, §1 e §5, nessun cambio di forma); v1.1, nota del 2026-11-16: tempi del modello 1.7B in §1, nessun cambio di forma. Design: ADR 0013.
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1** (2026-11-13); v1.1 (2026-11-15: pulizia delle clip, §1 e §5, nessun cambio di forma); v1.1, nota del 2026-11-16: tempi del modello 1.7B in §1, nessun cambio di forma. Design: ADR 0013.
 > Valgono `api-conventions.md`, `sdui.md`, `lessons.md`, `users.md`. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti

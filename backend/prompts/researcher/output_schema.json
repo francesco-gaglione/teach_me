@@ -1,5 +1,5 @@
 {
-  "version": "researcher-phase4-v3",
+  "version": "researcher-v3",
   "name": "researcher_output",
   "schema": {
     "type": "object",

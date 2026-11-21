@@ -26,7 +26,7 @@ Versions are pinned in `gradle/libs.versions.toml`; the Gradle wrapper pins Grad
 | `core:network` | Ktor client, `HealthApi`, `FolderApi`/`TopicApi`, error parsing |
 | `core:data` | Session (`SessionRepository`, token wrapped by the Android Keystore), per-user queues, LLM key monitor, `LibraryStateRepository`; folder/topic repositories; flash inbox; last notified review count per user |
 | `core:ui` | Shared UI of the feature modules: dialog wiring, error mapping texts, topic state chip |
-| `sdui` | Structure only (phase 5) |
+| `sdui` | Lesson renderer: block registry and native components |
 | `feature:login` | Sign-in screen (address, user name, password) |
 | `feature:settings` | Settings: account, sign out, LLM key (write only), change password, connection test |
 | `feature:home` | Folder list pane (stacked Home or left pane of the list-detail layout) |

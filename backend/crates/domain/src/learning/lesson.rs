@@ -58,7 +58,7 @@ impl fmt::Display for LessonStatus {
 /// to it ([`StoredLesson`]).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Lesson {
-    /// Non-blocking quality warnings of the saved document (issue #14).
+    /// Non-blocking quality warnings of the saved document.
     pub quality_warnings: Vec<LessonQualityWarning>,
     pub id: LessonId,
     pub topic_id: TopicId,
@@ -246,7 +246,7 @@ impl LessonCursor {
     }
 }
 
-/// A lesson in progress, for the cross-topic "continue" list (issue #13).
+/// A lesson in progress, for the cross-topic "continue" list.
 #[derive(Debug, Clone, PartialEq)]
 pub struct InProgressLesson {
     pub lesson: Lesson,

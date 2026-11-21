@@ -1,6 +1,6 @@
-# Tab Fonti e avanzamento della ricerca (Fase 4)
+# Tab Fonti e avanzamento della ricerca
 
-> **Fase 10**: la tab ha in cima la sezione «I tuoi documenti» (PDF caricati). Specifica in §13; le regole degli altri paragrafi valgono per le sole fonti web.
+> La tab ha in cima la sezione «I tuoi documenti» (PDF caricati). Specifica in §13; le regole degli altri paragrafi valgono per le sole fonti web.
 
 > Contratto dati: **da scrivere** (tech lead); i campi che servono sono in §10 «Proposte di contratto». Componenti base: `../base-components.md` (`Surface`, `ListRow`, `StatusPanel`, `Button`, `ProgressBar`, `Disclosure`, `TabRow`). Tablet orizzontale per primo (ADR 0003), poi compact. Terminologia: «fonti», «mission», «Tutor», «argomento» (mai «Resource», «Topic», «job»).
 > Formato di riferimento: `RESOURCES-FORMAT.md` della skill `teach` (Matt Pocock): fonti ad alta fiducia, gruppi *Knowledge* / *Wisdom (Communities)*, ogni voce con titolo + URL + una riga di annotazione + «Use for», sezione *Gaps*, opt-out dalle community.
@@ -23,10 +23,10 @@ Principi applicati:
 
 ## 2. Posizione, presenza e tab iniziale
 
-- Da Fase 4 la `TabRow` diventa **Chat · Fonti · Mission** (ordine finale con tutte: Lezioni · Chat · Glossario · Fonti · Mission, `topic.md`; le tab senza contenuto reale restano assenti). La tab Fonti è **sempre presente** (anche prima della conferma: ha uno stato vuoto che spiega, §4.1), non è mai disabilitata. Nessun badge o contatore sulla tab.
-- **Tab iniziale**, aggiorna `topic.md`: `new`/`interviewing`/`mission_proposed` → Chat; **`researching` → Fonti** (qui c'è l'avanzamento; prima era Mission); `ready` → Lezioni quando esisterà (Fase 6), fino ad allora Fonti. Poi l'ultima scelta per sessione. Cambiare tab non perde scroll né stato.
+- Ordine delle tab: Lezioni · Chat · Cosa sai · Fonti · Mission (`topic.md`). La tab Fonti è **sempre presente** (anche prima della conferma: ha uno stato vuoto che spiega, §4.1), non è mai disabilitata. Nessun badge o contatore sulla tab.
+- **Tab iniziale** (`topic.md` F1): `new`/`interviewing`/`mission_proposed` → Chat; **`researching` → Fonti** (qui c'è l'avanzamento); `ready` → Lezioni. Poi l'ultima scelta per sessione. Cambiare tab non perde scroll né stato.
 - **Nessuna transizione automatica** alla conferma della mission (invariato, `mission.md` §3): l'utente decide; la card confermata e il pannello contestuale offrono «Vedi l'avanzamento» (§7).
-- Il flag `ResearchAvailable` di `mission.md` §5 si **accende** in Fase 4: la «frase onesta» e il chip «Mission confermata» spariscono, vedi §7.
+- Con la ricerca in corso il chip dice «Cerco le fonti…» e le altre viste danno un puntatore, vedi §7.
 
 ## 3. Layout
 
@@ -154,7 +154,7 @@ Ordine dall'alto (expanded: colonna principale; il riepilogo sta nella colonna l
 1. (compact/medium) riga riepilogo + «Aggiorna le fonti» (§3.2).
 2. Banner di cambio mission, se serve (§6.1).
 3. Gruppo **Conoscenza** (`ui.title3` «Conoscenza · 6», sotto `ui.bodyS` `inkSoft`: «Da qui prendo ciò che ti insegno.»).
-4. Gruppo **Community** (`ui.title3` «Community · 2», sotto: «Dove trovi l'esperienza pratica di chi lo fa.»). Omesso se vuoto. Se la ricerca non ha cercato community (dal 2026-11-15, issue #15, sono facoltative: si cercano solo se l'utente le chiede in chat): `ui.bodyS` `inkMuted`: «Non ho cercato community: se ne vuoi, chiedimelo in chat e poi aggiorna le fonti.» al posto del gruppo (§10 `communities_skipped`).
+4. Gruppo **Community** (`ui.title3` «Community · 2», sotto: «Dove trovi l'esperienza pratica di chi lo fa.»). Omesso se vuoto. Se la ricerca non ha cercato community (dal 2026-11-15 sono facoltative: si cercano solo se l'utente le chiede in chat): `ui.bodyS` `inkMuted`: «Non ho cercato community: se ne vuoi, chiedimelo in chat e poi aggiorna le fonti.» al posto del gruppo (§10 `communities_skipped`).
 5. **Cosa non ho trovato** (§5), se esistono gap.
 
 Margini: 32 dp sopra i titoli di gruppo (24 compact), 8 dp fra titolo e riga di sottotitolo, 12 dp fra sottotitolo e card.
@@ -173,7 +173,7 @@ Margini: 32 dp sopra i titoli di gruppo (24 compact), 8 dp fra titolo e riga di 
 └────────────────────────────────────────────────┘
 ```
 
-- **Fase 11**: con `error.code` = `llm_key_missing` / `llm_key_rejected` il pannello è `LlmKeyNotice` (`../llm-key.md` §6) invece di quello sotto; lo stesso per `409`/`502` alla nuova ricerca o all'aggiornamento (`../llm-key.md` §5). Con `llm_credit_exhausted` (job o `502`): pannello `credit` con «Riprova» (`../llm-key.md` §9).
+- Con `error.code` = `llm_key_missing` / `llm_key_rejected` il pannello è `LlmKeyNotice` (`../llm-key.md` §6) invece di quello sotto; lo stesso per `409`/`502` alla nuova ricerca o all'aggiornamento (`../llm-key.md` §5). Con `llm_credit_exhausted` (job o `502`): pannello `credit` con «Riprova» (`../llm-key.md` §9).
 - Testi per `error.code` (stesso lessico di chat §9.2, mai il `message` grezzo in primo piano):
 
 | Codice | Titolo | Corpo |
@@ -246,15 +246,14 @@ Principio: **un solo posto mostra i dettagli** (la tab Fonti); gli altri danno u
 | Dove | In corso | Completato |
 |---|---|---|
 | **Chip di stato** (sotto il titolo, tutte le schermate) | `researching`: «Cerco le fonti…», icona `search`, variante neutral, **statica** (nessuna animazione: l'avanzamento è nella tab) | `ready`: «Pronto per le lezioni», `check-circle`, variante accent. Annuncio TalkBack al cambio: «Fonti pronte. Pronto per le lezioni.» (Polite) |
-| **Card «Mission confermata»** (chat, `mission.md` §2.2) | al posto della frase onesta di Fase 3: `ui.body` `inkSoft` «Sto cercando le fonti per la tua mission.» + Button testuale «Vedi l'avanzamento» (cambia tab) | riga «Ho trovato 8 fonti.» + Button testuale «Vedi le fonti» |
+| **Card «Mission confermata»** (chat, `mission.md` §2.2) | `ui.body` `inkSoft` «Sto cercando le fonti per la tua mission.» + Button testuale «Vedi l'avanzamento» (cambia tab) | riga «Ho trovato 8 fonti.» + Button testuale «Vedi le fonti» |
 | **ContextPane** (tab Chat ≥ 1100 dp, `mission.md` §4.5) | sotto la sintesi: `ui.bodyS` `inkSoft` «Cerco le fonti…» con spinner 16 dp + Button testuale «Vedi l'avanzamento» | «8 fonti pronte.» + «Vedi le fonti». Nessun bottone primario |
-| **Tab Mission, «Cosa succede ora»** (`mission.md` §4.3.4) | il `StatusPanel info` «La mission è salvata» di Fase 3 **si sostituisce** con una riga: titolo «Cerco le fonti…», corpo «Le scelgo in base alla tua mission. Di solito ci vogliono pochi minuti.» + «Vedi l'avanzamento» | la sezione sparisce (nulla da dire: le fonti hanno la loro tab); resta solo la riga «Le fonti sono della versione N» se serve (§6.1) |
+| **Tab Mission, «Cosa succede ora»** (`mission.md` §4.3.4) | un `StatusPanel info` con una riga: titolo «Cerco le fonti…», corpo «Le scelgo in base alla tua mission. Di solito ci vogliono pochi minuti.» + «Vedi l'avanzamento» | la sezione sparisce (nulla da dire: le fonti hanno la loro tab); resta solo la riga «Le fonti sono della versione N» se serve (§6.1) |
 | **Toast** (se l'utente è in un'altra tab/schermata dell'argomento al completamento; 4 s) | — | «Ho trovato 8 fonti.» con azione «Vedi» → tab Fonti. Se il job fallisce: «La ricerca delle fonti non è riuscita.» con azione «Vedi» |
 | **Lista cartella** (`folder.md`) | riga con chip «Cerco le fonti…» | «Pronto per le lezioni» |
 
 - Il Toast è mostrato **una sola volta** per job e **solo se** l'utente non sta già guardando la tab Fonti.
 - Al **rientro nell'argomento** a ricerca finita mentre l'app era chiusa: nessun toast; la tab iniziale è già quella giusta e il chip è aggiornato.
-- Le frasi «Per ora non posso ancora cercare le fonti…» di `mission.md` §5 vanno rimosse quando `ResearchAvailable` è vero.
 
 ## 8. Card di una fonte (`ResourceRow`)
 
@@ -379,13 +378,13 @@ Solo `feedbackAppear` (200 ms) per la comparsa di pannello/banner, crossfade `fa
 ## 12. Indicazioni per llm-engineer (Researcher)
 
 - **Annotazione** = cosa copre, una-due frasi, italiana, senza aggettivi di marketing; **`use_for`** = frase nominale che completi «Usala per: …» (es. «capire perché il compilatore rifiuta le reference»), legata a un punto concreto della mission, non generica («approfondire», «imparare Rust»).
-- Meno ma migliori: 5-12 fonti totali; Knowledge prima per importanza; Community solo se l'utente le ha chieste (dal 2026-11-15, issue #15).
+- Meno ma migliori: 5-12 fonti totali; Knowledge prima per importanza; Community solo se l'utente le ha chieste (dal 2026-11-15).
 - **Gap**: una riga ciascuno, in forma di **argomento** non trovato («Esempi di test d'integrazione con `sqlx`»), ≤ 100 caratteri, senza giudizi e senza proposte di rimedio; solo lacune vere rispetto ai criteri di successo della mission.
 - `title` e `domain` reali (nessun URL inventato; URL verificati dalla pagina scaricata); solo `https`.
 - `progress.message`: fatti già avvenuti, in italiano, brevi; mai stime di tempo né percentuali.
 
 
-## 13. «I tuoi documenti» (Fase 10, PDF caricati)
+## 13. «I tuoi documenti» (PDF caricati)
 
 Contratto: `docs/contracts/documents.md`, `resources.md` v1.1. Terminologia per l'utente: «documento», «PDF» (mai `Document`, `Resource`, «import», «job», «sezione dati»).
 

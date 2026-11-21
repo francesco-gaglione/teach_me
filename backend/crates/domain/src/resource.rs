@@ -31,7 +31,7 @@ pub enum ResourceKind {
     Knowledge,
     /// Places where people learn together.
     Community,
-    /// An uploaded PDF (phase 10). Created and removed by the document, never
+    /// An uploaded PDF. Created and removed by the document, never
     /// by a research.
     Document,
 }

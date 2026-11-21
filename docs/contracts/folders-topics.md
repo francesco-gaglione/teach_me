@@ -1,7 +1,7 @@
 # Contratto: Cartelle e Topic
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.1** (2026-11-10), Fase 1.
-> **Fase 11 (v1.1):** cartelle e argomenti appartengono all'utente della sessione. Gli elenchi contengono solo i suoi, il nome della cartella è unico **per utente**, `position` è per utente; una cartella o un argomento altrui risponde `404`, anche come destinazione di uno spostamento (`users.md` §4).
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.1** (2026-11-10).
+> **v1.1:** cartelle e argomenti appartengono all'utente della sessione. Gli elenchi contengono solo i suoi, il nome della cartella è unico **per utente**, `position` è per utente; una cartella o un argomento altrui risponde `404`, anche come destinazione di uno spostamento (`users.md` §4).
 > Valgono tutte le regole di `api-conventions.md` (prefisso `/api/v1`, errori, paginazione, date, id). I path sotto omettono il prefisso.
 
 ## 1. Risorse
@@ -42,7 +42,7 @@
 | Campo | Tipo | Note |
 |---|---|---|
 | `title` | string | Trim come `name`. 1-120 caratteri. Unico **nella stessa cartella**, case-insensitive |
-| `state` | enum | `new` · `interviewing` · `mission_proposed` · `researching` · `ready` (ciclo di vita in `docs/mvp.md` §5). Alla creazione è `new`. **Non modificabile via API**: cambia solo per effetto dei flussi delle fasi 2-4. L'app mappa valori sconosciuti su `Unknown` |
+| `state` | enum | `new` · `interviewing` · `mission_proposed` · `researching` · `ready` (ciclo di vita in `docs/mvp.md` §5). Alla creazione è `new`. **Non modificabile via API**: cambia solo per effetto dei flussi di intervista e ricerca. L'app mappa valori sconosciuti su `Unknown` |
 | `language` | enum | `"it"` \| `"en"` (ISO 639-1 minuscolo). Sempre presente nelle risposte. Alla creazione è il valore scelto nel corpo, oppure `"it"` se assente. **Non modificabile via API**: la lingua è dell'argomento e non cambia (ADR 0019). L'app mappa valori sconosciuti su `Unknown` |
 
 `updated_at` cambia a ogni modifica della risorsa stessa (rinomina, spostamento, cambio di stato). Creare o eliminare un Topic **non** modifica `updated_at` della cartella.
@@ -90,7 +90,7 @@ PATCH /topics/{id}            { "title": "Rust avanzato", "folder_id": "01933b4e
 
 ### Eliminazione
 
-- `DELETE /folders/{id}` elimina **la cartella e tutti i suoi Topic** (e, dalle fasi successive, tutto ciò che appartiene a quei Topic: chat, mission, fonti, lezioni, record, schede). Operazione irreversibile: l'app chiede conferma nominando la cartella e il numero di Topic (`topic_count`).
+- `DELETE /folders/{id}` elimina **la cartella e tutti i suoi Topic** (e tutto ciò che appartiene a quei Topic: chat, mission, fonti, lezioni, record, schede). Operazione irreversibile: l'app chiede conferma nominando la cartella e il numero di Topic (`topic_count`).
 - `DELETE /topics/{id}` elimina il Topic e tutto ciò che gli appartiene. L'app chiede conferma nominando il Topic.
 - Le `position` delle altre cartelle non vengono ricompattate (possono avere buchi; contano solo per l'ordine).
 

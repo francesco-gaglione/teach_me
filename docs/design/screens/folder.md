@@ -1,6 +1,6 @@
 # Schermata Cartella
 
-> Nuova in Fase 1. Raggiungibile da Home (tocco su una cartella). Componenti: `../base-components.md` (TopBar, ListRow, StatusChip §5 e §10.3, Button, `InputDialog` §10.1, `ConfirmDialog` §8, `ActionMenu` §10.2, Skeleton §10.4, `ErrorState` §10.5, Toast). Terminologia: `../design-system.md` §11. Pattern di errore e testi dei dialog identici a `home.md`: qui si specificano le differenze.
+> Raggiungibile da Home (tocco su una cartella). Componenti: `../base-components.md` (TopBar, ListRow, StatusChip §5 e §10.3, Button, `InputDialog` §10.1, `ConfirmDialog` §8, `ActionMenu` §10.2, Skeleton §10.4, `ErrorState` §10.5, Toast). Terminologia: `../design-system.md` §11. Pattern di errore e testi dei dialog identici a `home.md`: qui si specificano le differenze.
 
 ## Scopo didattico
 
@@ -36,7 +36,7 @@ Colonna scorrevole, margini 16 dp, `contentMaxWidth` 840 dp, padding inferiore 8
 | `new` | Definiamo la mission | `message-circle` | neutral |
 | `interviewing` | Definiamo la mission | `message-circle` | neutral |
 | `mission_proposed` | Conferma la mission | `flag` | info |
-| `researching` | Mission confermata (Fase 3, finché non esiste la ricerca) · Cerco le fonti… (dalla Fase 4) | `check-circle` · `search` (statica nella lista) | neutral |
+| `researching` | Cerco le fonti… | `search` (statica nella lista) | neutral |
 | `ready` | Pronto per le lezioni | `check-circle` | accent |
 | sconosciuto (`Unknown`) | Stato non riconosciuto | `help-circle` | neutral |
 
@@ -49,7 +49,7 @@ Colonna scorrevole, margini 16 dp, `contentMaxWidth` 840 dp, padding inferiore 8
 | Stato | Contenuto |
 |---|---|
 | Caricamento | TopBar con il nome (noto dalla navigazione), skeleton 3 righe; "Sto ancora caricando…" dopo 8 s. |
-| **Vuoto** | Niente illustrazione. `ui.title1` "Nessun argomento qui"; `ui.bodyL` "Un argomento è qualcosa che vuoi imparare, ad esempio *Rust* o *Fotografia*. Ti aiuto a capire perché ti serve e preparo le lezioni."; primario grande "Crea il primo argomento". *(In Fase 1 la seconda frase non è ancora vera: finché le fasi 2-6 non arrivano si omette e resta solo la prima.)* |
+| **Vuoto** | Niente illustrazione. `ui.title1` "Nessun argomento qui"; `ui.bodyL` "Un argomento è qualcosa che vuoi imparare, ad esempio *Rust* o *Fotografia*. Ti aiuto a capire perché ti serve e preparo le lezioni."; primario grande "Crea il primo argomento". |
 | Lista | Come in layout. |
 | Errore di caricamento | `ErrorState` come Home. `404` (cartella eliminata altrove): torna a Home con Toast "Questa cartella non esiste più." |
 | Errore di aggiornamento | Banner come Home: "Non riesco ad aggiornare gli argomenti." |
@@ -69,7 +69,7 @@ Se ci sono più di 50 argomenti, caricamento della pagina successiva allo scorri
 
 Errori sul campo `title`: `empty` "Dai un titolo all'argomento." · `too_long` "Al massimo 120 caratteri: ora sono 134." (dal server: "Al massimo 120 caratteri.") · `duplicate` "In questa cartella c'è già un argomento con questo titolo." Errori di azione: come Home con "L'argomento non è stato creato." (rete) e `404` cartella: dialog chiuso, torna a Home, Toast "Questa cartella non esiste più."
 
-Successo: dialog chiuso, riga in fondo con scorrimento, focus sulla riga, Toast "Argomento «Rust» creato" con azione testuale **"Apri"** (6 s) che porta alla schermata Argomento. **Dalla Fase 2** (quando c'è la Chat per definire la mission) dopo la creazione si **apre direttamente l'argomento**: è il passo successivo naturale e l'unica idea sensata per la schermata. In Fase 1 si resta in lista perché l'argomento non ha ancora nulla da fare.
+Successo: dialog chiuso, riga in fondo con scorrimento, focus sulla riga, Toast "Argomento «Rust» creato" con azione testuale **"Apri"** (6 s) che porta alla schermata Argomento. Dopo la creazione si **apre direttamente l'argomento** (la Chat per definire la mission): è il passo successivo naturale.
 
 ## Rinomina argomento
 
@@ -91,7 +91,7 @@ Stessi dialog e testi di `home.md` (il conteggio per il dialog di eliminazione �
 
 ## Spostare un argomento in un'altra cartella: **rimandato**
 
-Decisione: **non in Fase 1.** Motivi: (1) richiede un selettore di cartelle e un percorso di errore in più (`duplicate` nella cartella di destinazione, che compare in un luogo diverso dal campo di rinomina); (2) con pochi argomenti vuoti, ricrearlo costa quasi nulla; (3) l'API è già pronta, aggiungerlo dopo non cambia nulla di quanto sopra. Va fatto prima che gli argomenti accumulino contenuto (da Fase 3 in poi), quindi lo si inserisce nel backlog della **Fase 3**.
+Decisione: **non previsto per ora.** Motivi: (1) richiede un selettore di cartelle e un percorso di errore in più (`duplicate` nella cartella di destinazione, che compare in un luogo diverso dal campo di rinomina); (2) con pochi argomenti vuoti, ricrearlo costa quasi nulla; (3) l'API è già pronta, aggiungerlo dopo non cambia nulla di quanto sopra. Conviene farlo prima che gli argomenti accumulino contenuto (mission, fonti, lezioni).
 
 Progetto già pronto per quando servirà: voce di menu "Sposta in…" (`folder-input`) → `BottomSheet` (§9) "Sposta «Rust» in" con elenco radio delle cartelle (`ChoiceRow` §9, la cartella attuale selezionata e etichettata "Qui" non selezionabile di nuovo), bottone "Sposta" (primario, disabilitato finché non si sceglie un'altra cartella, con testo "Scegli una cartella diversa"). `duplicate` → `StatusPanel danger` nello sheet: "Nella cartella «Hobby» c'è già un argomento con questo titolo. Rinominalo prima di spostarlo." Dopo lo spostamento: riga rimossa, Toast "«Rust» spostato in «Hobby»".
 

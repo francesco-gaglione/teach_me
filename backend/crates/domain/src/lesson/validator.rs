@@ -38,11 +38,11 @@ impl Default for ValidatorConfig {
 ///
 /// Two modes, decided by which fields are set:
 ///
-/// * **Fixture mode** (`ValidationContext::fixture()`, Phase 5): no Topic is
+/// * **Fixture mode** (`ValidationContext::fixture()`): no Topic is
 ///   available, so `sources[].resource_id` may be `null`, `resource_id` and
 ///   `lesson_link.lesson_id` existence checks are skipped, and `[[key]]` may
 ///   only refer to the document's own glossary.
-/// * **Production mode** (Phase 6): build the context with
+/// * **Production mode** : build the context with
 ///   [`ValidationContext::production`] from the Topic's resources and
 ///   lessons. `null` resource ids become `unknown_resource` and every
 ///   resource/lesson id must belong to the Topic. The document must stand on

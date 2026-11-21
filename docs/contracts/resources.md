@@ -1,8 +1,8 @@
 # Contratto: Fonti (ricerca del Researcher)
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.3** (2026-11-15), Fasi 4 e 10 (documenti caricati: `documents.md`).
-> **Issue #15 (v1.3):** le community sono **facoltative**: il Researcher le cerca solo se le preferenze le chiedono; altrimenti `communities_skipped` è `true` e tutte le ricerche vanno a fonti `knowledge`. Le fonti `community` non entrano mai nelle lezioni (le scarta il backend prima del Planner).
-> **Fase 11 (v1.2):** l'avvio e l'aggiornamento della ricerca senza chiave LLM rispondono `409 llm_key_missing` (`users.md` §3).
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.3** (2026-11-15). Per i documenti caricati: `documents.md`.
+> **v1.3:** le community sono **facoltative**: il Researcher le cerca solo se le preferenze le chiedono; altrimenti `communities_skipped` è `true` e tutte le ricerche vanno a fonti `knowledge`. Le fonti `community` non entrano mai nelle lezioni (le scarta il backend prima del Planner).
+> **v1.2:** l'avvio e l'aggiornamento della ricerca senza chiave LLM rispondono `409 llm_key_missing` (`users.md` §3).
 > Valgono `api-conventions.md`, `mission.md` e `jobs.md`. Spec visiva: `docs/design/screens/resources.md`. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti

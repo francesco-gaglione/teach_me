@@ -5,7 +5,7 @@
 
 ## Contesto
 
-La Fase 0 ha progettato e implementato l'app pensando al telefono in verticale: `design-system.md` §6 prevede per le finestre larghe (expanded, > 840 dp) solo centratura e larghezza massima, "nessun layout a due pannelli". Il proprietario studia soprattutto su **tablet in orizzontale**; il telefono viene dopo.
+L'app è stata progettata e realizzata pensando al telefono in verticale: `design-system.md` §6 prevede per le finestre larghe (expanded, > 840 dp) solo centratura e larghezza massima, "nessun layout a due pannelli". Il proprietario studia soprattutto su **tablet in orizzontale**; il telefono viene dopo.
 
 ## Decisione
 
@@ -18,6 +18,6 @@ La Fase 0 ha progettato e implementato l'app pensando al telefono in verticale: 
 ## Conseguenze
 
 - `docs/design/design-system.md` §6 va aggiornato (via `learning-designer`): la regola "nessun layout a due pannelli" decade.
-- Le specifiche di Home, Cartella, Argomento (Fase 1) vanno completate con il layout expanded prima di chiudere la Fase 1; le bozze di Lezione e Ripasso andranno riviste quando si arriva alle loro fasi.
+- Le specifiche di Home, Cartella, Argomento vanno completate con il layout expanded; le bozze di Lezione e Ripasso vanno riviste alla loro realizzazione.
 - In Android serve una dipendenza per le window size class (es. `androidx.compose.material3.adaptive` o `androidx.window`), da scegliere coerentemente col design system custom (che non usa Material).
-- Il test di accettazione della Fase 0 è stato fatto su telefono: le verifiche su tablet entrano nell'accettazione della Fase 1.
+- Il test di accettazione iniziale è stato fatto su telefono: le verifiche su tablet fanno parte dell'accettazione di Home, Cartella e Argomento.

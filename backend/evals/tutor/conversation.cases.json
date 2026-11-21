@@ -1,7 +1,7 @@
 {
-  "suite": "tutor-phase2",
+  "suite": "tutor/conversation",
   "prompt_dir": "backend/prompts/tutor",
-  "description": "Tutor in Fase 2: nessun tool, solo conversazione di intervista sulla mission.",
+  "description": "Tutor senza tool, solo conversazione di intervista sulla mission.",
   "defaults": {
     "runs_per_case": 3,
     "deterministic": {
@@ -147,7 +147,7 @@
     },
     {
       "id": "unavailable_features",
-      "description": "Richieste di funzioni che in Fase 2 non esistono: non si promettono.",
+      "description": "Richieste di funzioni che non esistono: non si promettono.",
       "topic": {
         "title": "Chitarra jazz",
         "state": "interviewing"

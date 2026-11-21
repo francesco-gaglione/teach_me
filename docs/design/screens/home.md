@@ -1,14 +1,14 @@
 # Schermata Home
 
-> Raffinata in Fase 1 (cartelle). Componenti: `../base-components.md` (TopBar, ListRow, Surface, Button, StatusPanel, Toast, `InputDialog` §10.1, `ConfirmDialog` §8, `ActionMenu` §10.2, Skeleton §10.4, `ErrorState` §10.5). Token: `../tokens.json`. Terminologia: `../design-system.md` §11 (si dice **argomento**, mai "Topic").
+> Componenti: `../base-components.md` (TopBar, ListRow, Surface, Button, StatusPanel, Toast, `InputDialog` §10.1, `ConfirmDialog` §8, `ActionMenu` §10.2, Skeleton §10.4, `ErrorState` §10.5). Token: `../tokens.json`. Terminologia: `../design-system.md` §11 (si dice **argomento**, mai "Topic").
 
 ## Scopo didattico
 
-> **Fase 11**: l'icona Impostazioni ora porta anche a utente, uscita, password e chiave (`settings.md`). La banda sulla chiave LLM è in `../llm-key.md` §4.1.
+> L'icona Impostazioni porta a utente, uscita, password e chiave (`settings.md`). La banda sulla chiave LLM è in `../llm-key.md` §4.1.
 
 Home risponde a: **"che cosa faccio ora per imparare?"**. Priorità a regime: (1) il ripasso di oggi (il ritorno spaziato fissa la memoria, Bjork); (2) riprendere la lezione in corso; (3) navigare fra cartelle. Niente streak né contatori di attività (P9).
 
-**Stato per fase.** Fase 1: solo il punto (3). **Fase 8: esiste il punto (1)**, specificato in fondo (§ «Ripasso di oggi»). Il punto (2), «Riprendi la lezione», entra in Home con il contratto v1.8 (§«Riprendi la lezione»). Finché una card non è vera non si mostra, nemmeno come placeholder: direbbe una cosa non vera e occuperebbe attenzione con rumore (P2).
+I punti (1) e (2) sono specificati in fondo (§ «Ripasso di oggi», § «Riprendi la lezione»). Finché una card non è vera non si mostra, nemmeno come placeholder: direbbe una cosa non vera e occuperebbe attenzione con rumore (P2).
 
 ## Layout (compact, 360 dp)
 
@@ -44,7 +44,7 @@ Colonna scorrevole, margini 16 dp (`screenMarginCompact`), larghezza max `conten
 | **Caricamento (primo)** | Titolo "Cartelle" + skeleton di 3 righe (§10.4). Nessun bottone "Nuova cartella" finché non si sa se la lista è vuota. Dopo 8 s: "Sto ancora caricando…". Il timeout di rete (10 s) porta a *Errore di caricamento*. |
 | **Vuoto** (nessuna cartella) | Niente illustrazione. Centrato nello spazio: `ui.title1` "Inizia da una cartella"; `ui.bodyL` "Una cartella raccoglie gli argomenti che vuoi studiare, ad esempio *Lavoro* o *Hobby*."; Button primario grande "Crea la prima cartella". Larghezza testo max `readingMaxWidth`. |
 | **Lista** | Come in layout. |
-| **Errore di caricamento (nessun dato)** | `ErrorState`: `StatusPanel danger` titolo "Non riesco a raggiungere il backend", corpo "Controlla che il dispositivo sia collegato alla rete e che il backend sia acceso." Bottoni: primario "Riprova", testuale "Apri le impostazioni". Un `401` non si mostra qui: apre l'accesso (`login.md`, regola globale della Fase 11). Errore `5xx`: titolo "Il backend ha avuto un problema", corpo "Riprova fra poco. Se continua, controlla i log del backend.", primario "Riprova". |
+| **Errore di caricamento (nessun dato)** | `ErrorState`: `StatusPanel danger` titolo "Non riesco a raggiungere il backend", corpo "Controlla che il dispositivo sia collegato alla rete e che il backend sia acceso." Bottoni: primario "Riprova", testuale "Apri le impostazioni". Un `401` non si mostra qui: apre l'accesso (`login.md`, regola globale). Errore `5xx`: titolo "Il backend ha avuto un problema", corpo "Riprova fra poco. Se continua, controlla i log del backend.", primario "Riprova". |
 | **Errore di aggiornamento (dati già visibili)** | Banner `StatusPanel danger` sopra "Cartelle": "Non riesco ad aggiornare l'elenco." + bottoni testuali "Riprova", "Chiudi". La lista resta com'è. Scompare da solo al primo caricamento riuscito. |
 | **Senza sessione** (primo avvio, sessione finita) | Home non si vede: si apre l'accesso (`login.md`). |
 | **Senza chiave LLM** (`has_llm_key = false` o rifiuto noto) | Banda di suggerimento in cima, non bloccante: `../llm-key.md` §4.1. Non sostituisce nessuno degli stati sopra. |
@@ -176,7 +176,7 @@ Classe expanded (≥ 840 dp, riferimento 1280 × 800). Home e Cartella **diventa
 
 ---
 
-## Ripasso di oggi (Fase 8)
+## Ripasso di oggi
 
 Spec della schermata che la card apre: `review.md`. Dati: `GET /reviews/due?limit=1` → `due_count`, `estimated_minutes`, `next_due_at` (`reviews.md` §3.1). Si interroga in parallelo alle cartelle a ogni `ON_START` (dopo un flush della coda dei voti, max 2 s: `review.md` §8).
 
@@ -286,7 +286,7 @@ Il ripasso si apre sopra il list-detail a tutta finestra (come un argomento); In
 - Nessun annuncio automatico all'apparire della card (non è un evento).
 - Font 200%: titolo e riga di stato a capo, pulsante min 48 dp che può andare su due righe.
 
-### Riprendi la lezione (Fase 8b, contratto `lessons.md` v1.8)
+### Riprendi la lezione (contratto `lessons.md` v1.8)
 
 Fonte: `GET /lessons?status=in_progress&limit=1` (primo elemento = attività più recente; `Lesson` + `topic_title` + `last_activity_at`). La card compare **sotto** quella del ripasso. Motivo del cambio rispetto alla decisione precedente: ora esiste la query globale, e la card ripaga il ritorno nel punto in cui si era (effetto Zeigarnik, senza ansia: nessun contatore).
 

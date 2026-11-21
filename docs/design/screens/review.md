@@ -1,6 +1,6 @@
-# Schermata Ripasso (Fase 8)
+# Schermata Ripasso
 
-> Completa la bozza di Fase 0. Contratto: `../../contracts/reviews.md` (vincolante: `ReviewCard`, `DueReviews`, voto con `review_count`, annulla entro 10 minuti, sospendi). Componenti: `../base-components.md` (TopBar §6, Button §1, Progress §9, ConfirmDialog §8, ActionMenu §10.2, Skeleton §10.4, ErrorState §10.5, Popover come in `lesson.md` §8.1). Modello della scheda: `../components/flashcard.md` (stesso aspetto e stessi voti). Principi: `../design-system.md` §1 (P1-P13). Riferimento di progetto: **expanded 1280 × 800 dp** (ADR 0003); poi medium e compact.
+> Contratto: `../../contracts/reviews.md` (vincolante: `ReviewCard`, `DueReviews`, voto con `review_count`, annulla entro 10 minuti, sospendi). Componenti: `../base-components.md` (TopBar §6, Button §1, Progress §9, ConfirmDialog §8, ActionMenu §10.2, Skeleton §10.4, ErrorState §10.5, Popover come in `lesson.md` §8.1). Modello della scheda: `../components/flashcard.md` (stesso aspetto e stessi voti). Principi: `../design-system.md` §1 (P1-P13). Riferimento di progetto: **expanded 1280 × 800 dp** (ADR 0003); poi medium e compact.
 > **Nessun token nuovo.** Un solo elemento nuovo, `UndoRow` (§5), composto con token esistenti.
 
 ## 1. Scopo didattico
@@ -307,7 +307,7 @@ Principio come `lesson.md` §8.1: **registrare un voto non è mai un passo che l
 | Sessione offline | una sessione già caricata si completa offline (le 20 schede hanno già `intervals_preview`). Se **non** si è riusciti a caricare la sessione, §11 (errore) |
 | `409` all'invio | la scheda è cambiata (voto già applicato, reinvio della coda, sospesa): il voto si **scarta** in silenzio e la scheda si ricarica alla prossima apertura. Se almeno un voto è stato scartato, la **fine sessione** aggiunge una riga `ui.bodyS` `inkSoft`: «Un voto non è stato applicato perché la scheda era già cambiata.» (plurale: «{n} voti non sono stati applicati perché le schede erano già cambiate.») |
 | `422` | bug o dato fuori intervallo: scarto silenzioso e log; nessun messaggio |
-| `401` | la coda si ferma (non si scarta, resta legata all'utente) e si apre l'accesso (`login.md`: regola globale della Fase 11, con la riga «{coda} restano su questo dispositivo…»). Dopo l'accesso con lo stesso utente si riprende dall'inizio della coda; con un altro utente i voti restano nell'archivio del primo |
+| `401` | la coda si ferma (non si scarta, resta legata all'utente) e si apre l'accesso (`login.md`: regola globale, con la riga «{coda} restano su questo dispositivo…»). Dopo l'accesso con lo stesso utente si riprende dall'inizio della coda; con un altro utente i voti restano nell'archivio del primo |
 | `404` | scheda eliminata: scarto silenzioso |
 | Annulla con voto in coda | vedi §5 (rimozione locale) |
 | Home e coda | Home mostra `due_count` meno i voti in coda per quelle schede (evita "schede che sembrano ancora in scadenza dopo averle votate"). Prima di mostrare Home si tenta un flush, attendendo al massimo 2 s |

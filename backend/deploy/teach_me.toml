@@ -21,9 +21,9 @@ model = "claude-sonnet-5-5"
 
 [llm.roles.researcher]
 model = "claude-sonnet-5-5"
-# 6, not 4 (issue #15, 2026-11-15): with 4 the model fires every search in the
+# 6, not 4 (2026-11-15): with 4 the model fires every search in the
 # first step and delivers 3-6 sources, often no community; with 6 it delivers
-# 5-8 in every run of `researcher/phase4`, for ~0.04 $ more per research.
+# 5-8 in every run of `researcher/sources`, for ~0.04 $ more per research.
 max_searches = 6
 
 [llm.roles.planner]
@@ -32,13 +32,13 @@ model = "claude-sonnet-5-5"
 [llm.roles.generator]
 model = "claude-sonnet-5-5"
 # `low`: con `medium` il ragionamento era il 60-80% dell'output e i piani da 4-5 concetti
-# finivano i token senza scrivere la lezione (eval Fase 12, backend/evals/README.md).
+# finivano i token senza scrivere la lezione (eval rich-lessons, backend/evals/README.md).
 effort = "low"
 # Tetto di output della chiamata (ragionamento compreso; vale anche per la riparazione).
 # Una lezione a `low` usa ~8k token.
 max_output_tokens = 32000
 # Web fetch of the sources: on, one page per lesson (the primary source).
-# Issue #26 (2026-11-19, prompt generator-issue26-v14): injection in a read
+# (2026-11-19, prompt generator-v14): injection in a read
 # page ignored, no unsupported citations, same cost as without the tool.
 # With Anthropic, 1-3 here is the only switch; 0 turns it off.
 max_fetches = 1

@@ -1,7 +1,7 @@
 {
-  "suite": "tutor/issue30-en",
+  "suite": "tutor/english",
   "prompt_dir": "backend/prompts/tutor",
-  "description": "Issue #30 (ADR 0019): English versions of two phase2 cases. Topic language en.",
+  "description": "English versions of two cases of `tutor/conversation`. Topic language en.",
   "defaults": {
     "runs_per_case": 1,
     "deterministic": {

@@ -82,7 +82,7 @@ pub fn plan_web_fetch(sources: &[&Resource], max_fetches: u32) -> Option<WebFetc
     }
     // Only the sources the budget can read are listed and allowed: the kickoff
     // tells the model to read every listed page, and a listed page past
-    // `max_uses` comes back as `max_uses_exceeded` (issue #26, 2026-11-19).
+    // `max_uses` comes back as `max_uses_exceeded`.
     let limit = usize::try_from(max_fetches)
         .unwrap_or(usize::MAX)
         .min(MAX_FETCH_SOURCES);

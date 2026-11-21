@@ -1,4 +1,4 @@
-//! Lesson generation (phase 6): the `lesson_generation` job handler.
+//! Lesson generation: the `lesson_generation` job handler.
 //! Planner → Generator → Validator → up to two repairs → atomic save.
 //! Contract: `docs/contracts/lessons.md` §1 and §4.
 

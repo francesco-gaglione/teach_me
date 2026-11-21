@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-13
-- Issue Gitea #8. Il proprietario ha deciso i punti 1-7 il 2026-11-13, dopo aver ascoltato i campioni; i punti 8-14 sono scelte del tech lead che ne derivano. Contratto: `docs/contracts/audio.md`.
+- Il proprietario ha deciso i punti 1-7 il 2026-11-13, dopo aver ascoltato i campioni; i punti 8-14 sono scelte del tech lead che ne derivano. Contratto: `docs/contracts/audio.md`.
 - Aggiornata il 2026-11-16: il punto 1 passa al modello 1.7B (sezione «Aggiornamento 2026-11-16» in fondo).
 
 ## Problema
@@ -52,8 +52,8 @@ Memoria di picco circa 1,5 GB. Con 8 thread va **più veloce** che con 16 (il co
 
 - Circa 2,5 secondi di CPU per ogni secondo d'audio: una lezione di 10-15 minuti di ascolto richiede 25-40 minuti di lavoro in background su 8 thread.
 - Un servizio in più sul server, circa 1,5 GB di RAM in uso e 2,4 GB di modello su disco.
-- La cache delle clip si pulisce da sola (issue #20, 2026-11-15). «Uso» di una clip è l'ultima volta che è stata indicata a un utente in un manifest o all'apertura di una lezione, registrata con precisione di un giorno. Un passaggio giornaliero (il primo cinque minuti dopo l'avvio) cancella riga e file delle clip non usate da 90 giorni; i campioni delle voci in elenco restano sempre. Una clip cancellata che serve di nuovo si rigenera come una mai fatta (punto 9). Lo stesso passaggio cancella i file senza riga più vecchi di 24 ore (per esempio dopo il ripristino di un backup del database); i più giovani possono essere una clip in registrazione. Il controllo dell'ultimo uso è nello stesso statement che cancella la riga e un lock in memoria lo ordina rispetto ai manifest, così il passaggio non cancella mai una clip appena promessa. Con la lettura ad alta voce spenta (`TEACH_ME_TTS_URL` vuoto) il passaggio non gira. Le concessioni salvate prima di questa versione hanno la data della prima concessione, non dell'ultimo uso: nessuna aveva ancora 90 giorni, quindi non serve una migrazione.
-- Il modello vocale è fissato a una revisione di Hugging Face (`85e237c…`, `deploy/tts/Dockerfile`, issue #20). Cambiarla è una decisione: le clip in cache sono indirizzate dal nome del modello, non dalla revisione, e resterebbero con la voce dei pesi vecchi.
+- La cache delle clip si pulisce da sola (2026-11-15). «Uso» di una clip è l'ultima volta che è stata indicata a un utente in un manifest o all'apertura di una lezione, registrata con precisione di un giorno. Un passaggio giornaliero (il primo cinque minuti dopo l'avvio) cancella riga e file delle clip non usate da 90 giorni; i campioni delle voci in elenco restano sempre. Una clip cancellata che serve di nuovo si rigenera come una mai fatta (punto 9). Lo stesso passaggio cancella i file senza riga più vecchi di 24 ore (per esempio dopo il ripristino di un backup del database); i più giovani possono essere una clip in registrazione. Il controllo dell'ultimo uso è nello stesso statement che cancella la riga e un lock in memoria lo ordina rispetto ai manifest, così il passaggio non cancella mai una clip appena promessa. Con la lettura ad alta voce spenta (`TEACH_ME_TTS_URL` vuoto) il passaggio non gira. Le concessioni salvate prima di questa versione hanno la data della prima concessione, non dell'ultimo uso: nessuna aveva ancora 90 giorni, quindi non serve una migrazione.
+- Il modello vocale è fissato a una revisione di Hugging Face (`85e237c…`, `deploy/tts/Dockerfile`). Cambiarla è una decisione: le clip in cache sono indirizzate dal nome del modello, non dalla revisione, e resterebbero con la voce dei pesi vecchi.
 - Nuovi contratti: `audio.md`; aggiunte additive a `users.md` (voce dell'utente) e `lessons.md` (l'apertura di una lezione prepara l'audio).
 - Nuova dipendenza Android: Media3 ExoPlayer.
 

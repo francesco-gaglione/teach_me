@@ -94,10 +94,9 @@ kind = "anthropic"
 # history_token_budget = 8000      # estimated tokens of chat history sent
 
 [llm.roles.researcher]
-# max_searches = 4                 # web searches per research (max_uses); production uses 6 (issue #15)
-
+# max_searches = 4                 # web searches per research (max_uses); production uses 6
 [llm.roles.generator]
-# Reasoning effort of the Generator. `low` since the Phase 12 evals
+# Reasoning effort of the Generator. `low` since the rich-lesson evals
 # (backend/evals/README.md): at `medium` the reasoning took 60-80% of the output
 # and lessons of 4-5 concepts ran out of tokens before the document was written.
 # effort = "low"

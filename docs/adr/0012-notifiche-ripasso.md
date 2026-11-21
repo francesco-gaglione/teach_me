@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-13
-- Issue Gitea #7. Il proprietario ha chiuso il 2026-11-13 le tre domande aperte (punti 1-3); i punti 4-8 sono scelte del tech lead che ne derivano.
+- Il proprietario ha chiuso il 2026-11-13 le tre domande aperte (punti 1-3); i punti 4-8 sono scelte del tech lead che ne derivano.
 
 ## Problema
 

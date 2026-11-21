@@ -34,7 +34,7 @@ Titolo 200 caratteri: va a capo, nessuna ellissi; URL lunghissimo: si mostra sol
 Esattamente **uno** per lezione (`primary_source_count`), nella sezione finale. `why` = **perché questa fonte e cosa troverai** («Spiega X con Y; utile per Z»), non un riassunto della lezione né un "per saperne di più". Scegliere la fonte che meglio estende l'obiettivo, non la più generica. Ogni fonte in `sources` deve comparire (citata o primaria).
 
 
-## Variante «Dal tuo PDF» (Fase 10: `source.url == null`)
+## Variante «Dal tuo PDF» (`source.url == null`)
 
 La fonte primaria può essere un PDF caricato dall'utente (di norma lo è, se la lezione segue un suo documento). Senza URL la card **non è un bottone**:
 

@@ -1,4 +1,4 @@
-# Schermata Chat con il Tutor (Fase 2)
+# Schermata Chat con il Tutor
 
 > Contratto dati: `../../contracts/chat.md`. Vive dentro la schermata Argomento (`topic.md`): non è una schermata a sé, è il **contenuto** dell'Argomento. Componenti: `../base-components.md` (§12 nuovi). Tablet orizzontale per primo (ADR 0003), poi telefono.
 > Terminologia: «argomento», «mission» (si spiega la prima volta qui, vedi stato vuoto), «Tutor».
@@ -14,7 +14,7 @@ La chat è il luogo dove l'utente **formula il proprio perché** (la mission). F
 
 ## 2. Layout expanded (tablet orizzontale, riferimento 1280 × 800 dp)
 
-Chat dentro l'Argomento, a tutta finestra (design-system §5.1). In Fase 2 non c'è `TabRow` (una sola tab), quindi dall'alto: TopBar → chip di stato → area chat.
+Chat dentro l'Argomento, a tutta finestra (design-system §5.1). Dall'alto: TopBar → chip di stato → `TabRow` → area chat.
 
 ```
 |<------------------------------- 1280 dp ------------------------------------>|
@@ -44,9 +44,9 @@ Regole:
 
 - **Colonna chat**: larghezza `readingMaxWidth` 600 dp; lista messaggi e composer **hanno la stessa colonna** (stessi bordi sinistro/destro: il campo è allineato al testo che si legge). Scorrimento verticale su *tutta la larghezza* dell'area (la lista riempie la finestra, il contenuto è centrato nella colonna): così la rotellina/trackpad e il tocco nei margini scorrono la chat.
 - **Pannello di contesto** (`contextPaneWidth` 280 dp, gap 32 dp dalla colonna, a destra): visibile se la larghezza finestra ≥ **1100 dp**. Gruppo colonna + gap + pannello = 912 dp, **centrato** nell'area; senza pannello (< 1100) la colonna è centrata da sola. Il pannello è **fisso** (non scorre con i messaggi), allineato in alto alla prima riga della lista, senza riquadro: titolo `ui.title3` + testo `ui.body` `inkSoft` su `bg`, separato dalla colonna solo dallo spazio.
-  - **Contenuto in Fase 2** (la mission non esiste ancora): titolo «La tua mission»; testo «Ancora da definire. La mission è lo scopo per cui impari «Rust»: guida cosa ti insegno e in che ordine.» (nome dell'argomento interpolato tra «»). Niente altro. Motivazione: pre-training (Mayer), spiegare il termine *a vista* mentre se ne parla; nessuna funzione finta.
-  - **Fase 3**: il testo diventa la sintesi della mission (perché, criteri) con «Apri la mission»; contenuto per stato in `mission.md` §4.5.
-  - Sotto 1100 dp il pannello **non compare** (in Fase 2 il suo contenuto è già nello stato vuoto e nel dialogo con il Tutor; da Fase 3 diventa un bottone "Mission" che apre un `BottomSheet`).
+  - **Contenuto senza mission**: titolo «La tua mission»; testo «Ancora da definire. La mission è lo scopo per cui impari «Rust»: guida cosa ti insegno e in che ordine.» (nome dell'argomento interpolato tra «»). Niente altro. Motivazione: pre-training (Mayer), spiegare il termine *a vista* mentre se ne parla; nessuna funzione finta.
+  - **Con la mission**: il testo diventa la sintesi della mission (perché, criteri) con «Apri la mission»; contenuto per stato in `mission.md` §4.5.
+  - Sotto 1100 dp il pannello **non compare** (la mission si apre dalla tab Mission, `mission.md` §4.1).
 - **Altezza**: l'area chat riempie il resto fino al fondo della finestra. A 1280 × 800 con tastiera virtuale (~350 dp) restano ≈ 330 dp utili tra chip e composer: lista e composer devono funzionare lo stesso (TopBar + chip **scorrono via** con la lista se l'altezza utile < 480 dp, come in design-system §5.1; il composer resta ancorato sopra la tastiera).
 - Margini: `screenMarginExpanded` 32 dp ai lati della finestra (rilevante solo sotto i 1000 dp, dove la colonna si restringe: la colonna è `min(600, larghezza − 2 × margine)`).
 - **Medium (600-839)**: come compact con colonna centrata a 600 dp e margini 24; nessun pannello.
@@ -295,7 +295,7 @@ Le ownership di Rust funzionano così: ogni valo      ← testo parziale, invari
 └──────────────────────────────────────────────────┘
 ```
 
-- **Fase 11**: con `error.code` = `llm_key_missing` / `llm_key_rejected` il panel è `LlmKeyNotice` (`../llm-key.md` §6), senza «Riprova» finché la chiave non cambia; con `llm_credit_exhausted` è `LlmKeyNotice` `credit` **con «Riprova»** e senza rimando alle Impostazioni (`../llm-key.md` §9.3). Con chiave nota come mancante o rifiutata, sopra il composer c'è un suggerimento non bloccante (`../llm-key.md` §4.2); il composer resta attivo.
+- Con `error.code` = `llm_key_missing` / `llm_key_rejected` il panel è `LlmKeyNotice` (`../llm-key.md` §6), senza «Riprova» finché la chiave non cambia; con `llm_credit_exhausted` è `LlmKeyNotice` `credit` **con «Riprova»** e senza rimando alle Impostazioni (`../llm-key.md` §9.3). Con chiave nota come mancante o rifiutata, sopra il composer c'è un suggerimento non bloccante (`../llm-key.md` §4.2); il composer resta attivo.
 - Il panel è in seguito al testo (contiguità), a 12 dp, larghezza della colonna.
 - Titolo/corpo per `error.code`:
 
@@ -333,19 +333,19 @@ Il backend **continua a generare** anche se l'app si disconnette (contratto §2)
 - Dopo **30 s** senza riuscire: sotto il messaggio, «Non riesco a raggiungere il backend. La risposta continua a prepararsi sul server e la ritroverai qui.» + Button testuale «Riprova ora» (forza un tentativo). Nessun `danger`: non è una risposta fallita.
 - Se la connessione ritorna e il messaggio è nel frattempo `complete`: il testo viene sostituito dal definitivo (nessuna notifica speciale), annuncio di §11.
 - Se non c'è un turno in corso, la perdita dello stream è **invisibile** (riconnessione silenziosa); si vede solo se si tenta di inviare (§9.3).
-- Offline all'apertura: la cronologia già caricata non è in cache in Fase 2 → `ErrorState` del primo caricamento. (Se in futuro c'è cache: mostrare i messaggi e un banner.)
+- Offline all'apertura: la cronologia già caricata non è in cache → `ErrorState` del primo caricamento.
 
 ### 9.7 Topic eliminato / 404
 
 Come `topic.md`: ritorno alla Cartella con Toast «Questo argomento non esiste più.» (la bozza si perde: è accettato).
 
-## 10. Posto per la card nativa di proposta della mission (Fase 3)
+## 10. Card nativa di proposta della mission
 
-> **Specifica completa in `mission.md`** (anatomia, stati, streaming, accessibilità). Valgono qui le regole di inserimento sotto. Correzioni: il pannello di contesto da Fase 3 ha il contenuto di `mission.md` §4.5; sotto 1100 dp **non** c'è un BottomSheet «Mission» ma la tab Mission (`mission.md` §4.1); i bottoni della card sono disabilitati (con motivo) mentre un turno è in corso; la card resta confermabile anche dopo che l'utente ha scritto (finché non arriva una nuova bozza).
+> **Specifica completa in `mission.md`** (anatomia, stati, streaming, accessibilità). Valgono qui le regole di inserimento sotto. Il pannello di contesto ha il contenuto di `mission.md` §4.5; sotto 1100 dp **non** c'è un BottomSheet «Mission» ma la tab Mission (`mission.md` §4.1); i bottoni della card sono disabilitati (con motivo) mentre un turno è in corso; la card resta confermabile anche dopo che l'utente ha scritto (finché non arriva una nuova bozza).
 
-La card **non si disegna ora**. Si inserirà come **parte** (`{"type": "mission_proposal", …}`) del messaggio `assistant`, quindi dentro il `TutorMessage` e non come elemento separato della lista: il renderer di un messaggio itera le `parts` **in ordine** e per ognuna sceglie il composable (`text` → `MarkdownText`; `mission_proposal` → la card; tipo sconosciuto → saltato). Ordine, gap e footer sono già quelli giusti: la card è un blocco di larghezza piena colonna dopo il testo del Tutor, con gap 12 dp, **fuori** dal `SelectionContainer`; il footer Copia ignora le parti non testuali (§4.1). Poiché le parti native arrivano intere (non token per token), durante lo streaming la card compare quando la sua parte è completa e **non** causa rimescolamenti del testo sopra. Lo stato della card (proposta attiva / confermata / sostituita da una nuova proposta) si deriva dallo stato del Topic e dal messaggio più recente, non da un flag nel testo; il composer **resta attivo** accanto alla card, perché discutere la proposta a parole deve essere sempre possibile quanto premere «Conferma». Il pannello di contesto (expanded) mostrerà la sintesi della mission una volta confermata; prima della conferma riflette la bozza se esiste. Chip di stato: `mission_proposed` → «Conferma la mission» (topic.md) senza altre modifiche alla chat. Dettagli visivi, bottoni e semantica (annuncio «Mission proposta», `Role.Button`) nella specifica della Fase 3.
+La card è una **parte** (`{"type": "mission_proposal", …}`) del messaggio `assistant`, quindi dentro il `TutorMessage` e non come elemento separato della lista: il renderer di un messaggio itera le `parts` **in ordine** e per ognuna sceglie il composable (`text` → `MarkdownText`; `mission_proposal` → la card; tipo sconosciuto → saltato). Ordine, gap e footer sono già quelli giusti: la card è un blocco di larghezza piena colonna dopo il testo del Tutor, con gap 12 dp, **fuori** dal `SelectionContainer`; il footer Copia ignora le parti non testuali (§4.1). Poiché le parti native arrivano intere (non token per token), durante lo streaming la card compare quando la sua parte è completa e **non** causa rimescolamenti del testo sopra. Lo stato della card (proposta attiva / confermata / sostituita da una nuova proposta) si deriva dallo stato del Topic e dal messaggio più recente, non da un flag nel testo; il composer **resta attivo** accanto alla card, perché discutere la proposta a parole deve essere sempre possibile quanto premere «Conferma». Il pannello di contesto (expanded) mostra la sintesi della mission una volta confermata; prima della conferma riflette la bozza se esiste. Chip di stato: `mission_proposed` → «Conferma la mission» (topic.md) senza altre modifiche alla chat. Dettagli visivi, bottoni e semantica (annuncio «Mission proposta», `Role.Button`) in `mission.md`.
 
-### 10.1 «Punto di partenza» nella card in chat (v1.2, Fase 12)
+### 10.1 «Punto di partenza» nella card in chat (v1.2)
 
 Specifica completa in `mission.md` §2.5; qui solo ciò che riguarda la chat.
 
@@ -358,7 +358,7 @@ Specifica completa in `mission.md` §2.5; qui solo ciò che riguarda la chat.
 - **Composer**: «Modifica» e la card non cambiano; il placeholder specifico del punto di partenza si usa solo dall'invito della tab Mission.
 - **TalkBack**: il testo è un solo nodo dopo l'heading; «, nuovo» in coda all'etichetta se c'è la pill. Ordine di lettura nella card come in `mission.md` §6.
 
-## 10b. Card della lezione richiesta (`LessonRequestCard`, issue 17)
+## 10b. Card della lezione richiesta (`LessonRequestCard`)
 
 > Contratto: `../../contracts/lessons.md` §12 (parte `lesson_request`, ammissibilità), §4 (step del job). Specifica gemella della card della mission (§10, `mission.md` §2). Riferimento: tablet orizzontale; poi compact.
 
@@ -488,14 +488,14 @@ Il Tutor non genera blocchi SDUI ma **testo markdown** per questo schermo. Per r
 7. Spiegare «mission» la prima volta che si usa il termine (la schermata lo fa anche nello stato vuoto, ma il Tutor non deve darlo per scontato).
 8. Tono: seconda persona informale, sobrio; niente «Bravo!» generico, niente punti esclamativi su un errore, niente «Ottima domanda!». Una conferma è specifica.
 9. Non ripetere nella risposta ciò che l'utente ha appena detto (a parte una riformulazione di una riga se serve a verificare di aver capito).
-10. Prima di proporre la mission, il Tutor riassume in 2-3 righe cosa ha capito e chiede conferma a parole se manca qualcosa (la card di Fase 3 arriva dopo).
+10. Prima di proporre la mission, il Tutor riassume in 2-3 righe cosa ha capito e chiede conferma a parole se manca qualcosa (la card della mission arriva dopo).
 11. **Lezione richiesta (§10b)**: se la persona chiede la prossima lezione, il Tutor scrive **una frase** prima della card («Preparo la prossima lezione.») e chiama `request_lesson`; non descrive le fasi, non promette tempi, non ripete «Lezione pronta» (lo dice la card). Se la lezione è già in preparazione lo dice («Ce n'è già una in preparazione») senza richiamare il tool a vuoto. Se il Topic non è pronto spiega che cosa manca (mission da confermare, ricerca in corso) in una frase. Se esiste una lezione non ancora chiusa, può ricordarlo in una frase (i record nascono alla chiusura: `topic.md` F3.B), ma se la persona insiste la richiede comunque (autonomia).
 
 ## 13. Costanti (non in `tokens.json`; metterle in codice con questi nomi)
 
 `ChatMaxChars = 8000` · `ChatCounterThreshold = 7000` · `UserBubbleMaxFraction = 0.8` (1.0 se fontScale > 1,3) · `ComposerMaxHeightFraction = 0.4` · `ComposerMaxLines = 8` · `AtBottomThreshold = 80.dp` · `StreamApplyIntervalMs = 100` · `PrefetchOlderIndex = 5` · `ContextPaneMinWindow = 1100.dp` · `StreamSlowHintMs = 20_000` · `ReconnectHintMs = 30_000` · `PulseCycleMs = 1600` (opacità 0,45-1,0).
 
-## Aggiunte del tech lead (implementazione Fase 2)
+## Aggiunte del tech lead
 
 - Riprova fallito per rete: toast "Non sono riuscito a riprovare. Controlla la connessione." (il messaggio resta `failed` con il suo pannello).
 - Lo stream si considera caduto dopo 45 s senza dati né ping (3 heartbeat persi) e si riconnette: per l'utente vale lo stato "Connessione persa. Riconnetto…".

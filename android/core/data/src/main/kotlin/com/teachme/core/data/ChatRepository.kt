@@ -13,7 +13,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Thin adapter: the chat has no cache in phase 2, every call goes to the backend. Every message and stream event that
+ * Thin adapter: the chat has no cache, every call goes to the backend. Every message and stream event that
  * says something about the key (a failure for a key code, a finished answer) is reported to [llmKey] on its way in, with
  * its own date: this is the one place where chat data enters the app (see [LlmKeyMonitor.noteObserved]).
  */

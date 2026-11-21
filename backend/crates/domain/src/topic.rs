@@ -31,7 +31,7 @@ impl TopicTitle {
 }
 
 /// Lifecycle of a topic (`docs/mvp.md` §5). `Researching` is entered on mission
-/// confirmation; `Ready` arrives with phase 4.
+/// confirmation; `Ready` is set once the sources are annotated.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TopicState {
     New,

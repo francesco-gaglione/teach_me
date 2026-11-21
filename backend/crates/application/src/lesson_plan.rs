@@ -13,7 +13,7 @@ const TITLE_MAX: usize = 120;
 const OBJECTIVE_MAX: usize = 200;
 const WHY_NOW_MAX: usize = 400;
 /// Every lesson has at least 4 concepts: with fewer, real lessons stayed under
-/// the target length (owner decision after the Phase 12 evals).
+/// the target length (owner decision after the rich-lesson evals).
 const CONCEPTS: std::ops::RangeInclusive<usize> = 4..=5;
 /// A `general` prerequisite adds a recall section to the lesson, which counts
 /// against the 3-6 sections the lesson may have (`sdui.md`).
@@ -524,7 +524,7 @@ mod tests {
     pub(crate) const RESOURCE_2: u128 = 0x52;
     const DOCUMENT: u128 = 0xd0;
 
-    /// A concept with the Phase 12 fields, valid.
+    /// A concept with the concept fields, valid.
     pub(crate) fn concept(name: &str, key_point: &str) -> Value {
         json!({
             "name": name,

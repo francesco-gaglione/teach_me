@@ -1,6 +1,6 @@
 # `open_answer`
 
-> Comune: [_exercises.md](_exercises.md). Il Grader (backend, Fase 7) valuta la risposta con la `rubric`, che **l'app non riceve** (contratto §7).
+> Comune: [_exercises.md](_exercises.md). Il Grader (backend) valuta la risposta con la `rubric`, che **l'app non riceve** (contratto §7).
 
 ## Scopo didattico
 **Produzione con parole proprie** (effetto di auto-spiegazione, Chi; generation effect): la forma di richiamo più forte e quindi più faticosa (difficoltà desiderabile). Serve a verificare la comprensione, non la formulazione: feedback sul *contenuto* (cosa c'è, cosa manca), con tono di sostegno. Non è un test: nessun punteggio.
@@ -37,7 +37,6 @@
 | **Risposta registrata** (`outcome: pending`, o rinuncia del client, o coda locale per rete assente) | la risposta conta come **svolta** (non blocca «Continua»). `StatusPanel info`, titolo «Risposta registrata»; corpo e azione in §Risposta registrata. Nessun colore d'errore, nessun punto esclamativo |
 | Errore irreversibile (`422` o altro 4xx) | `StatusPanel info` «Risposta registrata», corpo «Non sono riuscito a valutare questa risposta. L'ho salvata.» (nessuna azione) |
 | bloccato / lezione riaperta | come valutata (feedback visibile), o come registrata se ancora `pending` (con «Valuta ora» finché la lezione non è `completed`) |
-| **Fase 5 (Grader assente)** | non più attuale: dalla Fase 7 il Grader valuta. Se il backend risponde sempre `pending`, vale «Risposta registrata» |
 
 **Nessuna riprova**: dopo la valutazione non si riscrive (la risposta aperta non si riprova a caso, e il backend registra un solo tentativo). Proprio per questo **il feedback deve insegnare**, non solo giudicare: dice cosa c'è, cosa manca e l'idea giusta (`../generator-guidelines.md`). Per proseguire il discorso: «Ne parlo col Tutor» (sotto).
 
@@ -78,7 +77,7 @@ Se in futuro si volesse mostrarla (per esempio un tag «Idea da chiarire»), ser
 La tua risposta  (riquadro surfaceSunken)
 ```
 
-- **Fase 11, chiave LLM nota come mancante o rifiutata**: corpo e bottone cambiano come in `../llm-key.md` §5.1 («Inserisci la chiave» / «Sostituisci la chiave» al posto di «Valuta ora»). Con chiave `Set` ma credito esaurito visto in sessione, corpo dedicato e «Valuta ora» invariato (`../llm-key.md` §9.5).
+- **Chiave LLM nota come mancante o rifiutata**: corpo e bottone cambiano come in `../llm-key.md` §5.1 («Inserisci la chiave» / «Sostituisci la chiave» al posto di «Valuta ora»). Con chiave `Set` ma credito esaurito visto in sessione, corpo dedicato e «Valuta ora» invariato (`../llm-key.md` §9.5).
 - **Corpo** per origine (stesso titolo):
   - il backend ha salvato la risposta ma il Grader non ha risposto in tempo (`outcome: pending`): «La valuto appena riesco. Al più tardi lo faccio quando completi la lezione.»;
   - la risposta è solo nella coda locale (rete assente o nessuna risposta dal backend): «Non riesco a raggiungere il server: la invio e la valuto appena torna la connessione.»

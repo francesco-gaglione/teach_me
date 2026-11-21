@@ -140,7 +140,7 @@ fun ResearchContextNote(
     }
 }
 
-/** "Cosa succede ora" in the Mission tab: replaces the honest note of phase 3; empty once the sources are current. */
+/** "Cosa succede ora" in the Mission tab: empty once the sources are current. */
 @Composable
 internal fun ResearchTabNote(
     research: ResearchPointer,

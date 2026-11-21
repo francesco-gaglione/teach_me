@@ -1,7 +1,7 @@
 //! Text the agents read about the topic's uploaded documents: the index (title,
 //! pages, sections) for the Tutor, Researcher and Planner, and the excerpts
 //! (the text of the sections the Planner chose) for the Generator.
-//! Formats are the ones listed for `llm-engineer` in the phase 10 report.
+//! Formats are the ones listed for `llm-engineer`.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;

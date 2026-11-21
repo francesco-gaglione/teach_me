@@ -44,7 +44,7 @@ data class ReviewFlushResult(
  * Sends the persistent queue of grades to the backend, one request per grade, oldest first (review.md section 8).
  * Idempotent: every grade carries the `review_count` it was given on, so a grade the backend already applied answers `409`
  * and is dropped, never applied twice. One flush at a time. A flush belongs to the user whose queue it read: it only
- * sends with that user's session, and stops if the user changes under it (Phase 11, ADR 0008).
+ * sends with that user's session, and stops if the user changes under it (ADR 0008).
  */
 class ReviewSyncer(
     private val repository: ReviewRepository,

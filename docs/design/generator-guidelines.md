@@ -1,6 +1,6 @@
 # Linee guida per gli agenti: Grader, Recorder (e note per il Planner)
 
-> Destinatario: `llm-engineer`. Complemento di `components/README.md` (linee guida per il **Generator**: come comporre una lezione, che resta il riferimento). Qui: **Grader** e **Recorder** (Fase 7) più poche note per il **Planner** che l'interfaccia dà per scontate. Il contratto dati è `docs/contracts/lessons.md` (§2, §5.1, §6): le **garanzie** (quali esercizi contano, limiti, esistenza delle prove) le impone il backend; qui c'è ciò che il backend non può controllare: **il tono, la scelta di cosa merita un record, e la qualità del testo che la persona leggerà**. Dove una raccomandazione richiede una modifica del contratto è segnalato come «Proposta» e va al tech lead.
+> Destinatario: `llm-engineer`. Complemento di `components/README.md` (linee guida per il **Generator**: come comporre una lezione, che resta il riferimento). Qui: **Grader** e **Recorder** più poche note per il **Planner** che l'interfaccia dà per scontate. Il contratto dati è `docs/contracts/lessons.md` (§2, §5.1, §6): le **garanzie** (quali esercizi contano, limiti, esistenza delle prove) le impone il backend; qui c'è ciò che il backend non può controllare: **il tono, la scelta di cosa merita un record, e la qualità del testo che la persona leggerà**. Dove una raccomandazione richiede una modifica del contratto è segnalato come «Proposta» e va al tech lead.
 
 Principi di fondo (da `design-system.md` §1): **P6** feedback specifico, spiegato, mai giudicante; **P9** niente punteggi, lodi vuote, colpa; **P5** la difficoltà è desiderabile; linguaggio di **competenza** («sai fare», «hai dimostrato»), non di prestazione («bravo», «ottimo», «8 su 10»). Lingua: italiano, **seconda persona singolare informale** («tu»), frasi brevi.
 
@@ -122,7 +122,7 @@ Solo termini che la persona ha **dimostrato di saper usare** (§3.1: prove forti
 
 ### 3.5 Schede di ripasso (`ReviewCard`)
 
-Ciascuna legata a **un** record o termine prodotto qui. Sono il materiale del ripasso spaziato (Fase 8): devono reggersi **fuori contesto**.
+Ciascuna legata a **un** record o termine prodotto qui. Sono il materiale del ripasso spaziato: devono reggersi **fuori contesto**.
 
 - `front` (1-300): una **domanda di richiamo**, non di riconoscimento: la risposta deve essere prodotta, non scelta. A risposta breve (1-3 frasi o un'espressione). Mai la risposta nel fronte, mai sì/no, mai «Come detto nella lezione 2».
 - `back` (1-600): la risposta in **1-3 frasi**, con il **perché** quando aiuta a ricordare. Md inline.
@@ -144,7 +144,7 @@ L'app dice alla persona che la prossima lezione è scelta «in base alla tua mis
 - Se l'ultima lezione non è `completed`, i record non sono aggiornati: il piano deve dichiarare nel suo ragionamento che parte da meno informazioni (l'app suggerisce comunque di completare prima la lezione aperta, `topic.md` F3.B).
 - `title` della lezione: nome del concetto (non il numero, non «Parte 3»); `objective`: capacità osservabile («Saper dire quale riferimento vive più a lungo in una funzione con due parametri»), mai «Capire X» generico.
 
-- **Concetti e sezioni (Fase 12).** Il piano elenca **4 o 5 concetti** (esattamente 4 se serve il richiamo: richiamo + 4 concetti + chiusura = 6 sezioni, il massimo): ogni concetto diventa una sezione, e le sezioni totali sono 5-6 con richiamo e chiusura comprese (`components/README.md` §1.1, §1.4). **Come si arriva a 4 senza riempitivo: `components/README.md` §1.5**. Per ogni concetto il piano dichiara il motivo di ammissione (`nuova capacità`, `prerequisito promosso`, `caso limite`, `confronto col già noto`); se l'argomento non regge 4 concetti che passano il test, il Planner allarga l'argomento a un `objective` vicino e lo dichiara nel ragionamento, non aggiunge concetti ripetuti, fuori mission o anticipazioni. Per ogni concetto il piano dà `example` (un caso concreto con valori, **diverso** da quello che userà l'esercizio), `steps` (i passaggi dell'esempio, in ordine) e, se esiste, `pitfall` (la convinzione errata tipica, in una frase); senza `pitfall` reale il campo resta vuoto, non si inventa.
+- **Concetti e sezioni.** Il piano elenca **4 o 5 concetti** (esattamente 4 se serve il richiamo: richiamo + 4 concetti + chiusura = 6 sezioni, il massimo): ogni concetto diventa una sezione, e le sezioni totali sono 5-6 con richiamo e chiusura comprese (`components/README.md` §1.1, §1.4). **Come si arriva a 4 senza riempitivo: `components/README.md` §1.5**. Per ogni concetto il piano dichiara il motivo di ammissione (`nuova capacità`, `prerequisito promosso`, `caso limite`, `confronto col già noto`); se l'argomento non regge 4 concetti che passano il test, il Planner allarga l'argomento a un `objective` vicino e lo dichiara nel ragionamento, non aggiunge concetti ripetuti, fuori mission o anticipazioni. Per ogni concetto il piano dà `example` (un caso concreto con valori, **diverso** da quello che userà l'esercizio), `steps` (i passaggi dell'esempio, in ordine) e, se esiste, `pitfall` (la convinzione errata tipica, in una frase); senza `pitfall` reale il campo resta vuoto, non si inventa.
 - **Prerequisiti per base.** `record` = dimostrato (non si ripassa); `mission` = dichiarato dalla persona (non c'è sezione, ma un richiamo di ≤ 15 parole alla prima menzione); `general` = **da richiamare** (sezione di richiamo, max 3, `components/README.md` §1.2). Un prerequisito si classifica `general` quando nessun record né la mission lo coprono, **anche se sembra ovvio**: l'ovvio per chi scrive il piano non lo è per chi studia.
 - **Termini nuovi.** Il piano dichiara i termini che il testo non può dare per noti; il Generator li definisce alla prima menzione (`components/README.md` §1.3).
 
@@ -155,7 +155,7 @@ L'app dice alla persona che la prossima lezione è scelta «in base alla tua mis
 **Recorder**: 1. Ogni record è una capacità o un'idea chiarita, non un diario? 2. Il `title` dice l'idea giusta? 3. `body` ed `evidence` in seconda persona, senza lodi e senza `id`? 4. Nessun record da prova debole sola (`quiz_single`, `flashcard`)? 5. Termini: usati correttamente dalla persona, `definition` senza `[[ ]]`? 6. Ogni scheda richiede di produrre una risposta e si regge da sola? 7. Se le prove non bastano, l'output è vuoto?
 
 
-## 6. Lezioni dal PDF dell'utente (Fase 10)
+## 6. Lezioni dal PDF dell'utente
 
 Quando nel contesto ci sono estratti di un documento caricato (`{{excerpts_section}}`), la lezione cambia natura: non è «una buona spiegazione del tema», è **una guida dentro il materiale che la persona ha scelto**. L'interfaccia lo rende evidente (intestazione «Dal tuo PDF: …», citazioni senza link, fonte primaria non tappabile: `screens/lesson.md` §3.3, `components/primary_source.md`); la lezione deve meritarlo.
 
@@ -171,7 +171,7 @@ Quando nel contesto ci sono estratti di un documento caricato (`{{excerpts_secti
 
 Controllo: aprendo il PDF alle pagine citate, ogni affermazione con `[^key]` si ritrova. Se non è così, togli la citazione o l'affermazione.
 
-## 7. Sintesi per il prompt del Generator: lezioni più ricche (Fase 12)
+## 7. Sintesi per il prompt del Generator: lezioni più ricche
 
 Fonte delle regole: `components/README.md` §1.1-1.4 e `screens/lesson.md` §4.1-4.2. Qui solo i numeri, per tradurli in prompt e in eval.
 

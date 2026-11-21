@@ -132,7 +132,7 @@ impl Case {
 
 #[derive(Debug, Clone)]
 pub struct Suite {
-    /// `<role dir>/<file stem>`, e.g. `tutor/phase2`. What `--suite` takes.
+    /// `<role dir>/<file stem>`, e.g. `tutor/conversation`. What `--suite` takes.
     pub id: String,
     pub role: Role,
     pub defaults: Value,
@@ -464,7 +464,7 @@ mod tests {
 
     #[test]
     fn parses_defaults_and_case_overrides() {
-        let suite = Suite::parse("tutor/phase2", SUITE).unwrap();
+        let suite = Suite::parse("tutor/conversation", SUITE).unwrap();
         assert_eq!(suite.role, Role::Tutor);
         assert_eq!(suite.runs_per_case(None), 3);
         assert_eq!(suite.runs_per_case(Some(1)), 1);
@@ -497,7 +497,7 @@ mod tests {
 
     #[test]
     fn reads_both_spellings_of_a_criterion() {
-        let suite = Suite::parse("tutor/phase2", SUITE).unwrap();
+        let suite = Suite::parse("tutor/conversation", SUITE).unwrap();
         let c = criteria(suite.cases[0].get("rubric"));
         assert_eq!(c.len(), 2);
         assert_eq!(c[0].weight, 2.0);
@@ -624,18 +624,18 @@ mod tests {
         let suites = load(&dir, &[]).unwrap();
         let ids: Vec<_> = suites.iter().map(|s| s.id.as_str()).collect();
         for expected in [
-            "tutor/phase2",
-            "tutor/phase3",
-            "tutor/phase12",
-            "researcher/phase4",
-            "generator/phase6",
-            "generator/phase10",
-            "planner/phase10",
-            "planner/phase12",
-            "generator/phase12",
-            "generator/phase12-fetch",
-            "grader/phase7",
-            "recorder/phase7",
+            "tutor/conversation",
+            "tutor/tools",
+            "tutor/starting-point",
+            "researcher/sources",
+            "generator/lessons",
+            "generator/pdf",
+            "planner/pdf",
+            "planner/concepts",
+            "generator/rich-lessons",
+            "generator/web-fetch",
+            "grader/grading",
+            "recorder/records",
         ] {
             assert!(ids.contains(&expected), "{expected} missing from {ids:?}");
         }

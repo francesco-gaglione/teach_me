@@ -116,7 +116,7 @@ pub async fn run(env: &Env, suite: &Suite, case: &Case) -> anyhow::Result<RoleRu
     app.preferences(&case.array("preferences")).await?;
     let sources = case.array("sources");
     app.resources(&sources).await?;
-    // Uploaded PDFs (Phase 10): their text is what the Generator must follow.
+    // Uploaded PDFs: their text is what the Generator must follow.
     let documents = case.array("documents");
     app.documents(&documents).await?;
 
@@ -762,7 +762,7 @@ pub fn generator_checks(spec: &Map<String, Value>, f: &Facts<'_>) -> Vec<Check> 
     let level2 =
         |b: &Value| kind(b) == "heading" && b.get("level").and_then(Value::as_u64) == Some(2);
 
-    // The shape of a Phase 12 lesson (and the prose count) lives in `shape`.
+    // The shape of a rich lesson (and the prose count) lives in `shape`.
     let (shape_spec, rest): (Map<String, Value>, Map<String, Value>) = rest
         .into_iter()
         .partition(|(k, _)| shape::KEYS.contains(&k.as_str()));
@@ -1614,9 +1614,9 @@ mod tests {
         let suites = crate::suite::load(
             &dir,
             &[
-                "generator/phase6".into(),
-                "generator/phase10".into(),
-                "generator/phase12".into(),
+                "generator/lessons".into(),
+                "generator/pdf".into(),
+                "generator/rich-lessons".into(),
             ],
         )
         .unwrap();

@@ -1,4 +1,4 @@
-# Revisione dell'esperienza MVP (Fase 9)
+# Revisione dell'esperienza MVP
 
 > Data 2026-11-09. Contro: principi P1-P13 (`design-system.md` §1) e criterio di successo `mvp.md` §1. Materiale: spec in `screens/` e `components/`, `generator-guidelines.md`, prompt `backend/prompts/*/system.md` (sola lettura) e due lezioni reali generate da Sonnet con i loro tentativi, voti, record e schede (`samples/lesson-01-ownership.json`, `samples/lesson-02-result-question-mark.json`).
 > **Limite onesto**: non ho usato l'app costruita (nessun test su schermo, nessun utente). Le conclusioni sulle schermate vengono dalle specifiche; quelle sui contenuti dai dati reali. Un campione di due lezioni mostra problemi, non ne misura la frequenza.
@@ -43,7 +43,7 @@ Feedback di 475, 505 e 572 caratteri: al limite alto del range delle linee guida
 - *Dopo l'MVP* (android-dev + tech lead): dopo un `partial`, un bottone "Riscrivi con questa idea" che apre un secondo tentativo (`attempt_number` 2) senza cambiare il voto già dato. È la difficoltà desiderabile che oggi manca ai quiz aperti.
 
 ### 6. Il confronto Go/Rust è fatto di blocchi in fila, e `missing_component` non viene mai usato → llm-engineer
-Lezione 2, sezione 2: due blocchi `code` (Go, poi Rust) uno dopo l'altro; per confrontarli l'utente deve scorrere e tenere l'altro a mente (contiguità spaziale, Mayer). In tablet orizzontale un confronto affiancato costerebbe meno carico. Nessuna delle due lezioni contiene `missing_component`, quindi la Fase 9 non raccoglierebbe questo bisogno.
+Lezione 2, sezione 2: due blocchi `code` (Go, poi Rust) uno dopo l'altro; per confrontarli l'utente deve scorrere e tenere l'altro a mente (contiguità spaziale, Mayer). In tablet orizzontale un confronto affiancato costerebbe meno carico. Nessuna delle due lezioni contiene `missing_component`, quindi la raccolta dei componenti mancanti non registrerebbe questo bisogno.
 - *Prompt*: "Quando ti serve un confronto affiancato (A contro B, prima contro dopo) usa `missing_component` con `wanted: code_compare` e come `fallback` i due `code` consecutivi". Così la classifica dei componenti mancanti parte con un dato reale e l'utente non perde nulla.
 - *Candidato di catalogo v2*: `code_compare` (due colonne in expanded, impilato in compact).
 

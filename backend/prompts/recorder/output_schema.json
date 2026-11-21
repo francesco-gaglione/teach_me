@@ -1,5 +1,5 @@
 {
-  "version": "recorder-issue29-v6",
+  "version": "recorder-v6",
   "name": "recorder_output",
   "schema": {
     "type": "object",

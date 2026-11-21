@@ -67,7 +67,7 @@ private val LONG_NOTES_DOC =
         (1..14).joinToString(",") { """{"id":"p$it","type":"paragraph","text":"n$it; $FILLER"}""" } +
         "]}"
 
-/** The palette, the keyboard shortcuts, the limit toast and the screen reader side of the handwriting (stage 4). */
+/** The palette, the keyboard shortcuts, the limit toast and the screen reader side of the handwriting. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "it-w360dp-h640dp-xxhdpi")

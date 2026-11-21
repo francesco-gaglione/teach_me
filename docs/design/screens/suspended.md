@@ -1,4 +1,4 @@
-# Schermata Schede sospese (issue #12)
+# Schermata Schede sospese
 
 > Contratto: `../../contracts/reviews.md` v1.3 (§2 `suspension`/`suspended_at`, §3.2 `unsuspend`, §3.3 `GET /reviews/suspended`). Componenti esistenti: `../base-components.md` (TopBar §6, ListRow §4, Button §1, StatusPanel §5, Toast §9, Skeleton §10.4, ErrorState §10.5). **Nessun token e nessun componente nuovo.** Sotto-schermata di Impostazioni, `settings/suspended`.
 > Mostra e riattiva **solo** le schede sospese dall'utente (`suspension: user`); quelle superate da un record nuovo non compaiono (decisione del proprietario).

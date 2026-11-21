@@ -1,7 +1,7 @@
 {
- "suite": "generator/issue22",
+ "suite": "generator/exercise-code",
  "prompt_dir": "generator",
- "description": "Issue #22 (`generator-phase12-v7`): il codice da leggere negli esercizi sta nel campo `code`, non inline nella domanda. Un caso, 1 run. Defaults e piano come in `phase12`.",
+ "description": "Prompt `generator-v7`: il codice da leggere negli esercizi sta nel campo `code`, non inline nella domanda. Un caso, 1 run. Defaults e piano come in `generator/rich-lessons`.",
  "defaults": {
   "runs_per_case": 1,
   "streaming": true,
@@ -124,7 +124,7 @@
     "description": "durata calcolata dal backend sulle parole reali del documento: misura se 4-5 concetti rientrano nella lezione da 10-15 minuti (il modello non la calcola più)"
    }
   },
-  "notes": "Ogni run: Context Assembler reale -> Generator -> Validator -> (repair)*. Input del caso come phase6 più `records` (stessa forma di `planner/phase12`: number, kind, lesson_number, title, body), che il runner scrive nell'argomento prima della run e che l'Assembler passa in `{{records_section}}` (i record citati da `plan.prerequisites` per primi). Id e URL delle fonti sono inventati a scopo di test (URL plausibili, non verificati). I controlli Fase 12 sono più severi del Validator (che impone solo 6 sezioni e 2200 parole). Quelli senza `severity` sono errori. `prose_words_target` e `paragraph_words` solo avvisi: si riporta la quota di run dentro la fascia. Dal 2026-11-11 ogni piano ha 4-5 concetti (decisione del proprietario: con 2-3 concetti la prosa restava sotto le 1200 parole). `estimated_minutes` lo calcola il backend (sostituisce il valore del modello): il controllo `estimated_minutes_formula` non c'è più, resta `estimated_minutes_range` come avviso sulla durata reale. I due casi `*_block_budget` (Fase 12 blocco C) misurano il budget dei blocchi nelle due configurazioni al limite: 5 concetti senza richiamo (5 h2 + chiusura = 6 sezioni) e 4 concetti con richiamo (stesse 6 sezioni). Il giudice consigliato è Sonnet (Haiku si è mostrato inaffidabile sulle rubriche: vedi README)."
+  "notes": "Ogni run: Context Assembler reale -> Generator -> Validator -> (repair)*. Input del caso come in `generator/lessons` più `records` (stessa forma di `planner/concepts`: number, kind, lesson_number, title, body), che il runner scrive nell'argomento prima della run e che l'Assembler passa in `{{records_section}}` (i record citati da `plan.prerequisites` per primi). Id e URL delle fonti sono inventati a scopo di test (URL plausibili, non verificati). I controlli di lunghezza sono più severi del Validator (che impone solo 6 sezioni e 2200 parole). Quelli senza `severity` sono errori. `prose_words_target` e `paragraph_words` solo avvisi: si riporta la quota di run dentro la fascia. Dal 2026-11-11 ogni piano ha 4-5 concetti (decisione del proprietario: con 2-3 concetti la prosa restava sotto le 1200 parole). `estimated_minutes` lo calcola il backend (sostituisce il valore del modello): il controllo `estimated_minutes_formula` non c'è più, resta `estimated_minutes_range` come avviso sulla durata reale. I due casi `*_block_budget` misurano il budget dei blocchi nelle due configurazioni al limite: 5 concetti senza richiamo (5 h2 + chiusura = 6 sezioni) e 4 concetti con richiamo (stesse 6 sezioni). Il giudice consigliato è Sonnet (Haiku si è mostrato inaffidabile sulle rubriche: vedi README)."
  },
  "pass_criteria": {
   "validator": "`validator_pass_within_3` sì; `validator_pass_first_try` sì, altrimenti il repair deve aver risolto `inline_code_too_long`",
@@ -135,7 +135,7 @@
  "cases": [
   {
    "id": "rust_read_snippet_code_field",
-   "description": "Issue #22. Lezione di Rust su prestiti (stesso piano e stessi record di `rust_second_lesson_records_no_recall`) in cui due esercizi chiedono di LEGGERE un frammento di più istruzioni: un `quiz_single` («questo frammento compila?») e l'`open_answer` («perché non compila»). Atteso: lezione valida al primo tentativo (nessun `inline_code_too_long`, o risolto dal repair), almeno un esercizio con il campo `code` `{language, code}` con una istruzione per riga e righe <= 60 caratteri, domande che NON ripetono il codice, nessun numero di riga, nessun commento che dia la risposta, opzioni del quiz che sono risposte e non varianti di codice. Rischio: l'intero frammento dentro la domanda come span `` `let mut v = ...; ...` `` (il difetto dell'issue).",
+   "description": "Lezione di Rust su prestiti (stesso piano e stessi record di `rust_second_lesson_records_no_recall`) in cui due esercizi chiedono di LEGGERE un frammento di più istruzioni: un `quiz_single` («questo frammento compila?») e l'`open_answer` («perché non compila»). Atteso: lezione valida al primo tentativo (nessun `inline_code_too_long`, o risolto dal repair), almeno un esercizio con il campo `code` `{language, code}` con una istruzione per riga e righe <= 60 caratteri, domande che NON ripetono il codice, nessun numero di riga, nessun commento che dia la risposta, opzioni del quiz che sono risposte e non varianti di codice. Rischio: l'intero frammento dentro la domanda come span `` `let mut v = ...; ...` `` (il difetto dell'issue).",
    "topic": {
     "title": "Ownership e borrowing in Rust"
    },

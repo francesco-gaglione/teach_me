@@ -45,15 +45,15 @@
 
 **Contenuti inattesi.** Il renderer non assume mai che il Validator abbia girato: testo vuoto → il blocco non si disegna (e non conta come esercizio); testo oltre il limite → si disegna intero senza troncare (il limite protegge il Generator, non l'interfaccia); `id` duplicato → vince il primo e il secondo si ignora; campo obbligatorio mancante → blocco non renderizzabile → riga neutra di fallback ([missing_component.md](missing_component.md)). Un errore di parsing di **un** blocco non invalida la lezione.
 
-> Per Grader, Recorder e Planner (Fase 7): [../generator-guidelines.md](../generator-guidelines.md).
+> Per Grader, Recorder e Planner: [../generator-guidelines.md](../generator-guidelines.md).
 
 ## Linee guida generali per il Generator
 
-Da consegnare a `llm-engineer` (Fase 6). Ogni punto ha la sua base didattica; il Validator ne applica una parte (nomi dei codici tra parentesi), il resto è nel prompt e negli eval.
+Da consegnare a `llm-engineer`. Ogni punto ha la sua base didattica; il Validator ne applica una parte (nomi dei codici tra parentesi), il resto è nel prompt e negli eval.
 
 ### 1. Cosa vuol dire "lezione fatta bene"
 
-> **Confermate dal proprietario il 2026-11-15** (issue #16): al massimo 6 sezioni (richiamo + 4 concetti + chiusura, §1.1), esercizio del richiamo `required: false` (§1.2), formula della durata con le costanti di §1.4.
+> **Confermate dal proprietario il 2026-11-15**: al massimo 6 sezioni (richiamo + 4 concetti + chiusura, §1.1), esercizio del richiamo `required: false` (§1.2), formula della durata con le costanti di §1.4.
 
 1. **Una vittoria sola, osservabile.** `objective` è una capacità ("Saper prevedere se una variabile è ancora usabile dopo un assegnamento"), non un argomento ("Ownership"). Ogni sezione e ogni esercizio devono servire *quella* capacità; ciò che non serve si toglie (coerenza di Mayer). L'app mostra `objective` sotto il titolo: **non** ripeterlo in un paragrafo iniziale.
 2. **Spiega per intero, poi fai richiamare.** Tra due esercizi (o tra l'inizio della sezione e il primo esercizio) ci sono **al massimo 300 parole** di prosa (`paragraph` + `callout`, titolo compreso; il codice non conta). Oltre 350 parole consecutive senza esercizio è un difetto (proposta di `warning`, vedi report). Nessuna sezione di sola spiegazione dopo un'altra di sola spiegazione (retrieval practice, Bjork; segmentazione). Eccezioni: la sezione 0 (intro) e la chiusura non hanno esercizi. Una spiegazione completa non è una spiegazione lunga: 300 parole sono un tetto, non un obiettivo; una sezione che spiega bene in 180 parole resta di 180.
@@ -177,7 +177,7 @@ Una sola frase (o poche) con 1-3 vuoti; ogni vuoto è **una parola o un token** 
 
 ### 8. Flashcard
 
-Solo per **fatti da fissare** (definizioni, firme, differenze), una per sezione al massimo, `front` = una domanda precisa a risposta breve, `back` = la risposta in 1-3 frasi + (opzionale) la ragione. Mai risposta già contenuta nel `front`. Diventeranno schede di ripasso (Fase 7): devono avere senso fuori dal contesto della lezione (niente "come nell'esempio sopra").
+Solo per **fatti da fissare** (definizioni, firme, differenze), una per sezione al massimo, `front` = una domanda precisa a risposta breve, `back` = la risposta in 1-3 frasi + (opzionale) la ragione. Mai risposta già contenuta nel `front`. Diventeranno schede di ripasso : devono avere senso fuori dal contesto della lezione (niente "come nell'esempio sopra").
 
 ### 9. Risposta aperta
 

@@ -1,9 +1,9 @@
 # Contratto: Chat con il Tutor ed eventi SSE
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.3** (2026-11-18), Fase 2.
-> **Issue #17 (v1.3):** nuova parte `lesson_request` (lezione richiesta in chat, `lessons.md` §12).
-> **Fase 12 (v1.2):** un messaggio fallito può avere `error.code` `llm_credit_exhausted` (`users.md` §3); lo snapshot `mission_proposal` può avere `starting_point` (`mission.md` §8).
-> **Fase 11 (v1.1):** l'invio e il retry di un messaggio senza chiave LLM rispondono `409 llm_key_missing` senza creare nulla; un messaggio fallito può avere `error.code` `llm_key_rejected` o `llm_key_missing` (`users.md` §3). Messaggi ed eventi sono visibili solo al proprietario dell'argomento.
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.3** (2026-11-18).
+> **v1.3:** nuova parte `lesson_request` (lezione richiesta in chat, `lessons.md` §12).
+> **v1.2:** un messaggio fallito può avere `error.code` `llm_credit_exhausted` (`users.md` §3); lo snapshot `mission_proposal` può avere `starting_point` (`mission.md` §8).
+> **v1.1:** l'invio e il retry di un messaggio senza chiave LLM rispondono `409 llm_key_missing` senza creare nulla; un messaggio fallito può avere `error.code` `llm_key_rejected` o `llm_key_missing` (`users.md` §3). Messaggi ed eventi sono visibili solo al proprietario dell'argomento.
 > Valgono `api-conventions.md` (prefisso `/api/v1`, errori, paginazione, date, id, §10 eventi SSE) e `folders-topics.md`. I path sotto omettono il prefisso.
 
 ## 1. Risorsa `ChatMessage`
@@ -28,7 +28,7 @@
 |---|---|---|
 | `role` | enum | `user` · `assistant`. (I messaggi di sistema e i tool call interni non sono esposti.) |
 | `status` | enum | `streaming` (risposta in generazione) · `complete` · `failed`. I messaggi `user` sono sempre `complete` |
-| `parts` | array | Contenuto ordinato. In v1 c'è solo `{"type": "text", "text": ...}`; dalla Fase 3 si aggiungono parti native (es. `mission_proposal`; dalla v1.3 `lesson_request`, `lessons.md` §12; dalla Fase 12 il suo snapshot della mission può avere `starting_point`, assente nei messaggi più vecchi: `mission.md` §8). L'app **ignora le parti di tipo sconosciuto** (le salta, non crasha). Un messaggio `streaming` contiene il testo accumulato fino a quel momento |
+| `parts` | array | Contenuto ordinato. In v1 c'è solo `{"type": "text", "text": ...}`; si aggiungono parti native (es. `mission_proposal`; dalla v1.3 `lesson_request`, `lessons.md` §12; dalla v1.2 il suo snapshot della mission può avere `starting_point`, assente nei messaggi più vecchi: `mission.md` §8). L'app **ignora le parti di tipo sconosciuto** (le salta, non crasha). Un messaggio `streaming` contiene il testo accumulato fino a quel momento |
 | `error` | object \| null | Solo con `status: failed`: `{ "code", "message" }` come in `api-conventions.md` §7 (senza `request_id`, `details`). Codici tipici: `upstream_failed`, `rate_limited`, `internal`, `llm_key_rejected`, `llm_key_missing`, `llm_credit_exhausted` (dalla v1.2) |
 | `error.message` | string | Il testo di `message` è nella lingua dell'argomento della chat (ADR 0019). |
 | `last_event_id` | int \| null | Id dell'ultimo evento SSE il cui contenuto è già riflesso in questo messaggio (per uno `streaming`: l'ultimo `message_delta` incluso in `parts`, oppure il `message_created` se `parts` è vuoto). `null` solo per messaggi creati prima di questo campo. Serve al client per non applicare due volte lo stesso delta (§4) |
@@ -56,7 +56,7 @@ POST /topics/{id}/messages
 ```
 
 - `text`: trim; 1-8000 caratteri (code point). Errori `422` con `details` come in `folders-topics.md` §3: `{field: "text", issue: "empty" | "too_long"}`.
-- `lesson_id` (facoltativo, dalla Fase 7): la chat è stata aperta da una lezione (`lessons.md` §7).
+- `lesson_id` (facoltativo): la chat è stata aperta da una lezione (`lessons.md` §7).
 - Il backend salva subito il messaggio `user`, crea il messaggio `assistant` in stato `streaming` (con `parts: []`) e avvia la generazione **in background**: la generazione continua anche se l'app si disconnette.
 - Risposta `202`:
 
@@ -69,7 +69,7 @@ POST /topics/{id}/messages
 
 - **Un solo turno alla volta per Topic**: se c'è già un messaggio `assistant` in `streaming` → `409 conflict`.
 - I due casi di `409 conflict` della chat (turno già in corso; messaggio non riprovabile) hanno lo stesso `code`; l'app li distingue dall'endpoint chiamato.
-- Primo messaggio in un Topic `new` → il Topic passa a `interviewing` (evento `topic_updated`, `docs/mvp.md` §5). Nessun'altra transizione di stato in Fase 2.
+- Primo messaggio in un Topic `new` → il Topic passa a `interviewing` (evento `topic_updated`, `docs/mvp.md` §5). Nessun'altra transizione di stato.
 
 ### Riprova
 
@@ -110,6 +110,6 @@ Regole:
 
 ## 5. Contesto inviato al modello (informativo)
 
-Non fa parte del contratto HTTP, ma fissa l'intento: il Tutor riceve dal Context Assembler il prompt di sistema del ruolo, i dati del Topic (titolo, stato) e la cronologia della chat (troncata ai messaggi più recenti entro un budget di token). In Fase 2 non ci sono tool: arrivano in Fase 3. I messaggi `failed` e l'assistant in `streaming` non entrano nella cronologia inviata al modello (dettagli in `backend/prompts/llm-port.md` §10, decisioni in `docs/adr/0004-llm-provider-port.md`).
+Non fa parte del contratto HTTP, ma fissa l'intento: il Tutor riceve dal Context Assembler il prompt di sistema del ruolo, i dati del Topic (titolo, stato) e la cronologia della chat (troncata ai messaggi più recenti entro un budget di token). I messaggi `failed` e l'assistant in `streaming` non entrano nella cronologia inviata al modello (dettagli in `backend/prompts/llm-port.md` §10, decisioni in `docs/adr/0004-llm-provider-port.md`).
 
 Il testo del Tutor usa il sottoinsieme di markdown definito in `docs/design/screens/chat.md` (paragrafi, grassetto, corsivo, codice inline e a blocchi, elenchi fino a 2 livelli, link `https`); il backend lo inoltra così com'è, l'app lo rende. Il testo dell'utente è letterale.

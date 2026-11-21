@@ -1,7 +1,7 @@
 # Schermata Impostazioni
 
 > Componenti: `../base-components.md` (TopBar, TextField, Button, StatusPanel, StatusChip, ListRow, Toast, ConfirmDialog, composizioni di §16). Token: `../tokens.json`.
-> Raggiungibile da Home (icona `settings`) e dai messaggi su chiave LLM mancante o rifiutata (`../llm-key.md`). **Non è più la schermata iniziale**: il primo avvio porta all'accesso (`login.md`). Rivista in Fase 11 (multiutenza): sparisce il token, entrano utente, uscita, password e chiave LLM.
+> Raggiungibile da Home (icona `settings`) e dai messaggi su chiave LLM mancante o rifiutata (`../llm-key.md`). **Non è più la schermata iniziale**: il primo avvio porta all'accesso (`login.md`). Multiutenza: ci sono utente, uscita, password e chiave LLM (nessun token).
 
 ## Scopo
 
@@ -243,7 +243,7 @@ Niente campo token né indirizzo modificabile, niente selettore del tema, niente
 
 ---
 
-## Sotto-schermata: Componenti mancanti (Fase 9)
+## Sotto-schermata: Componenti mancanti
 
 > Strumento per il proprietario-sviluppatore, **non didattico**: nessun principio P1-P12 in gioco, solo leggibilità. Contratto: `../../contracts/component-requests.md`. Raggiungibile solo da Impostazioni.
 

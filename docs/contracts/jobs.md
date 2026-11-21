@@ -1,13 +1,13 @@
 # Contratto: Job (operazioni lunghe)
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.4** (2026-11-11), Fasi 4, 6, 7, 10.
-> **Fase 12 (v1.4):** nuovo codice di errore `llm_credit_exhausted` (credito del provider LLM esaurito, `users.md` §3): il retry è ammesso senza cambiare la chiave.
-> **Fase 11 (v1.3):** ogni job appartiene al proprietario dell'argomento e usa la sua chiave LLM; nuovi codici di errore `llm_key_missing` e `llm_key_rejected` (`users.md` §3). Il job di ricerca nato dalla conferma di una mission senza chiave fallisce con `llm_key_missing` e riparte con il retry. Il retry di un job LLM senza chiave risponde `409 llm_key_missing`.
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.4** (2026-11-11).
+> **v1.4:** nuovo codice di errore `llm_credit_exhausted` (credito del provider LLM esaurito, `users.md` §3): il retry è ammesso senza cambiare la chiave.
+> **v1.3:** ogni job appartiene al proprietario dell'argomento e usa la sua chiave LLM; nuovi codici di errore `llm_key_missing` e `llm_key_rejected` (`users.md` §3). Il job di ricerca nato dalla conferma di una mission senza chiave fallisce con `llm_key_missing` e riparte con il retry. Il retry di un job LLM senza chiave risponde `409 llm_key_missing`.
 > Valgono `api-conventions.md` (che per i job rimanda qui: questo documento sostituisce l'esempio del suo §9) e `chat.md` §4 per lo stream SSE. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti
 
-- Un **job** è un'operazione lunga eseguita in background dal backend per un Topic: `research` (ricerca delle fonti, `resources.md`), `lesson_generation` e `lesson_completion` (`lessons.md`, Fasi 6-7), `document_import` (`documents.md`, Fase 10).
+- Un **job** è un'operazione lunga eseguita in background dal backend per un Topic: `research` (ricerca delle fonti, `resources.md`), `lesson_generation` e `lesson_completion` (`lessons.md`), `document_import` (`documents.md`).
 - Per ogni coppia (Topic, `kind`) può esserci **un solo job attivo** (`queued` o `running`). Eccezione: per `lesson_completion` la regola vale per (lezione, `kind`): esiste un solo job per lezione e lezioni diverse possono chiudersi in parallelo. Per `document_import` esiste un solo job per documento (il retry riusa quello), e resta un solo import attivo per Topic.
 - Il backend esegue i job anche se l'app è chiusa. Dopo un riavvio del backend un job rimasto `running` torna `queued` e riparte; dopo 3 partenze interrotte fallisce con `interrupted`.
 - Un job fallito **non** viene ritentato da solo: lo ritenta l'utente (§3). Il retry riusa lo stesso job (stesso `id`).
@@ -34,7 +34,7 @@
 
 | Campo | Regole |
 |---|---|
-| `kind` | `research` (Fase 4), `lesson_generation`, `lesson_completion` (Fasi 6-7), `document_import` (Fase 10). L'app mostra un testo generico per valori sconosciuti |
+| `kind` | `research`, `lesson_generation`, `lesson_completion`, `document_import`. L'app mostra un testo generico per valori sconosciuti |
 | `lesson_id` | `null`, tranne `lesson_completion`: la lezione che si chiude (`lessons.md` §6) |
 | `document_id` | `null`, tranne `document_import`: il `Document` che si importa (`documents.md`), presente da quando il job è creato (v1.2) |
 | `status` | `queued` \| `running` \| `succeeded` \| `failed` |

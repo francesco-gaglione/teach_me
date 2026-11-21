@@ -67,7 +67,7 @@ android {
 
 /**
  * Copies the SDUI contract fixtures (docs/contracts/fixtures, top-level lessons only) into the assets of
- * the DEBUG variant, so phase 5 can open them without a backend. They never reach a release build.
+ * the DEBUG variant, so the app can open them without a backend. They never reach a release build.
  */
 abstract class CopyLessonFixtures : DefaultTask() {
     @get:InputDirectory

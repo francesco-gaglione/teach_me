@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-21
-- Issue Gitea #30 ("supporto all'inglese"). Decisione del tech lead. Contratti toccati: `docs/contracts/folders-topics.md`, `docs/contracts/api-conventions.md` §7, `docs/contracts/sdui.md` §2 e schema `sdui-schema-v1.json`, `docs/contracts/lessons.md` §3.1.
+- Richiesta "supporto all'inglese". Decisione del tech lead. Contratti toccati: `docs/contracts/folders-topics.md`, `docs/contracts/api-conventions.md` §7, `docs/contracts/sdui.md` §2 e schema `sdui-schema-v1.json`, `docs/contracts/lessons.md` §3.1.
 
 ## Problema
 

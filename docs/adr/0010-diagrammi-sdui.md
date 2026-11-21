@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-12
-- Issue Gitea #3 ("Diagrammi e disegni"). La issue lasciava quattro domande aperte; il proprietario ha chiesto di implementarla senza rispondere, quindi le ha chiuse il tech lead con le scelte qui sotto, confermate dal proprietario il 2026-11-13. Sono tutte reversibili per aggiunta (nessuna preclude le alternative).
+- Richiesta "Diagrammi e disegni". La richiesta lasciava quattro domande aperte; il proprietario ha chiesto di implementarla senza rispondere, quindi le ha chiuse il tech lead con le scelte qui sotto, confermate dal proprietario il 2026-11-13. Sono tutte reversibili per aggiunta (nessuna preclude le alternative).
 
 ## Problema
 

@@ -1,8 +1,8 @@
 {
-  "suite": "grader/issue30-en",
+  "suite": "grader/english",
   "prompt_dir": "backend/prompts/grader",
   "schema_file": "backend/prompts/grader/output_schema.json",
-  "description": "Issue #30 (ADR 0019): English versions of two phase7 cases.",
+  "description": "English versions of two cases of `grader/grading`.",
   "defaults": {
     "runs_per_case": 1,
     "deterministic": {
@@ -40,7 +40,7 @@
         "correct": 300,
         "partial": 350,
         "incorrect": 350,
-        "note": "Fase 9: soglie indicative; 0 violazioni in >= 90% delle run, mai oltre 450. Baseline reale: 475, 505, 572 caratteri."
+        "note": "Soglie indicative; 0 violazioni in >= 90% delle run, mai oltre 450. Baseline reale: 475, 505, 572 caratteri."
       },
       "partial_single_gap": "rubrica one_gap_only: un partial indica una sola lacuna"
     },
@@ -152,6 +152,6 @@
     "rubric_mean": ">= 0.8",
     "latency": "p95 < 12 s con il modello di default (margine sul tetto di 20 s)",
     "model_comparison": "prima di fissare Haiku 5.5: confrontarlo con Sonnet 5.5 sugli stessi 6 casi x 3 run; passare a Sonnet solo se l'accordo di verdetto di Haiku è inferiore",
-    "phase9_feedback_length": "feedback_chars_max_by_verdict rispettato in >= 90% delle run, mediana <= 300 caratteri; rubrica one_gap_only >= 0.8 sui casi partial; nessuna regressione di verdict_agreement"
+    "feedback_length": "feedback_chars_max_by_verdict rispettato in >= 90% delle run, mediana <= 300 caratteri; rubrica one_gap_only >= 0.8 sui casi partial; nessuna regressione di verdict_agreement"
   }
 }

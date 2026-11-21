@@ -1,6 +1,6 @@
 # Lettura ad alta voce (schermata Lezione e Impostazioni)
 
-> Issue #8, ADR 0013, contratto `docs/contracts/audio.md` §4 e §6. Estende `lesson.md` (parte della §3.2 «Dove stanno le azioni») e `settings.md`. Non è un blocco SDUI. Sostituisce le scelte della fase 1 dove indicato («Sostituisce»). Tablet orizzontale per primo, poi compact.
+> ADR 0013, contratto `docs/contracts/audio.md` §4 e §6. Estende `lesson.md` (parte della §3.2 «Dove stanno le azioni») e `settings.md`. Non è un blocco SDUI. Tablet orizzontale per primo, poi compact.
 
 ## 0. Principi
 
@@ -11,7 +11,7 @@
 
 ## 1. Controllo «Ascolta» per blocco
 
-**Conferma la posizione della fase 1** (sotto il blocco, allineato a fine riga: lontano dall'inizio delle righe, non compete con la lettura), **ma sostituisce l'aspetto**: il testo «Ascolta» ripetuto sotto ogni paragrafo è rumore (contiguità sì, ripetizione no).
+**Posizione**: sotto il blocco, allineato a fine riga: lontano dall'inizio delle righe, non compete con la lettura. **Aspetto**: il testo «Ascolta» ripetuto sotto ogni paragrafo è rumore (contiguità sì, ripetizione no).
 
 Visibile **su tutti i blocchi leggibili** (non solo al focus: su touch non c'è hover, e un controllo nascosto non si scopre), ma **silenzioso**: solo icona nello stato a riposo.
 

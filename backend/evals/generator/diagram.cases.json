@@ -1,7 +1,7 @@
 {
   "suite": "generator/diagram",
   "prompt_dir": "generator",
-  "description": "Issue #3: il blocco SDUI `diagram` (`docs/contracts/sdui.md` §4 e §10, `generator-phase12-v6`). Quattro casi con piano fisso (input), come `generator/phase12`: tre argomenti che HANNO una struttura (`flow` con diramazione, `tree`, `cycle`: ciascuno atteso con almeno una figura valida, al massimo 2) e uno che NON ne ha (atteso nessuna figura). Controlli deterministici: il Validator reale (`validator_pass_*`, che comprende `diagram_structure`), `must_include_block_types: [\"diagram\"]` e `block_type_count` (`{\"diagram\": [1, 2]}` nei positivi, `[0, 0]` nel negativo: nel caso senza struttura una figura è per definizione decorativa, quindi niente `[0, 1]`), più tutti i controlli di forma e lunghezza di `generator/phase12`, `concept_chain` compreso (ignora `diagram`, come i `glossary_term`). La qualità della figura (struttura reale, posizione, testi, risposta non anticipata) resta alla rubrica del giudice (`figure_*`).",
+  "description": "Il blocco SDUI `diagram` (`docs/contracts/sdui.md` §4 e §10, `generator-v6`). Quattro casi con piano fisso (input), come `generator/rich-lessons`: tre argomenti che HANNO una struttura (`flow` con diramazione, `tree`, `cycle`: ciascuno atteso con almeno una figura valida, al massimo 2) e uno che NON ne ha (atteso nessuna figura). Controlli deterministici: il Validator reale (`validator_pass_*`, che comprende `diagram_structure`), `must_include_block_types: [\"diagram\"]` e `block_type_count` (`{\"diagram\": [1, 2]}` nei positivi, `[0, 0]` nel negativo: nel caso senza struttura una figura è per definizione decorativa, quindi niente `[0, 1]`), più tutti i controlli di forma e lunghezza di `generator/rich-lessons`, `concept_chain` compreso (ignora `diagram`, come i `glossary_term`). La qualità della figura (struttura reale, posizione, testi, risposta non anticipata) resta alla rubrica del giudice (`figure_*`).",
   "defaults": {
     "runs_per_case": 2,
     "streaming": true,
@@ -131,7 +131,7 @@
     "diagram_present_in_positive_cases": "`block_type_count: {\"diagram\": [1, 2]}` (e `must_include_block_types` con `diagram`) in >= 80% delle run dei tre casi positivi (`flow_http_cache_branch`, `tree_python_exception_hierarchy`, `cycle_tdd_red_green_refactor`)",
     "no_decorative_figure": "`list_of_types_no_decorative_figure`: `block_type_count: {\"diagram\": [0, 0]}` in 100% delle run, più la rubrica `no_decorative_figure`",
     "figure_quality": "rubriche `figure_adds_structure`, `figure_position`, `figure_text_quality`, `figure_no_answer_leak`, `figure_count`, e quella di layout di ciascun caso: media >= 0.8",
-    "regression": "i controlli di `generator/phase12` (lunghezze, sezioni, `concept_chain`, callout, quiz, citazioni) non peggiorano rispetto alla baseline di quella suite",
+    "regression": "i controlli di `generator/rich-lessons` (lunghezze, sezioni, `concept_chain`, callout, quiz, citazioni) non peggiorano rispetto alla baseline di quella suite",
     "rubric_mean": ">= 0.8"
   },
   "cases": [
@@ -751,7 +751,7 @@
     },
     {
       "id": "list_of_types_no_decorative_figure",
-      "description": "Argomento che NON ha struttura da disegnare: il piano è quello di `generator/phase12` `narrow_plan_four_concepts_no_filler` (formato del messaggio di commit, un elenco piatto di tipi, un suffisso `!`, una regola «un commit, un tipo»). Atteso: nessuna figura, oppure al massimo una sola e non decorativa. Rischio: un albero o un flusso dei tipi di commit che ripete l'elenco già scritto in prosa («figura decorativa», Mayer: principio di coerenza), o un `flow` di due nodi. Questo caso misura la dimensione opposta degli altri tre: la lezione non peggiora per una figura inutile.",
+      "description": "Argomento che NON ha struttura da disegnare: il piano è quello di `generator/rich-lessons` `narrow_plan_four_concepts_no_filler` (formato del messaggio di commit, un elenco piatto di tipi, un suffisso `!`, una regola «un commit, un tipo»). Atteso: nessuna figura, oppure al massimo una sola e non decorativa. Rischio: un albero o un flusso dei tipi di commit che ripete l'elenco già scritto in prosa («figura decorativa», Mayer: principio di coerenza), o un `flow` di due nodi. Questo caso misura la dimensione opposta degli altri tre: la lezione non peggiora per una figura inutile.",
       "topic": {
         "title": "Conventional Commits"
       },

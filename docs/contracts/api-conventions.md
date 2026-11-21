@@ -1,7 +1,7 @@
 # Convenzioni delle API
 
 > Contratto condiviso tra backend (`backend/`) e app (`android/`). Proprietario: tech lead.
-> Versione: **v1.3** (2026-11-11, Fase 12: `502 llm_credit_exhausted`; v1.2 2026-11-10, Fase 11: accesso con nome utente e password, isolamento per utente; v1.1 Fase 10: `415`, limite di upload). Ogni endpoint specifico (cartelle, topic, chat...) ha il suo file in `docs/contracts/` e rispetta queste regole.
+> Versione: **v1.3** (2026-11-11: `502 llm_credit_exhausted`; v1.2 2026-11-10: accesso con nome utente e password, isolamento per utente; v1.1: `415`, limite di upload). Ogni endpoint specifico (cartelle, topic, chat...) ha il suo file in `docs/contracts/` e rispetta queste regole.
 
 ## 1. Trasporto e versionamento
 
@@ -42,7 +42,7 @@ Prima dell'accesso l'app verifica l'indirizzo con `GET /health` (senza autentica
 
 - Tutti gli id sono **UUID v7** (ordinati nel tempo), serializzati come stringa minuscola con trattini: `"01933b4e-8f2a-7c3d-9e1f-2a3b4c5d6e7f"`.
 - Gli id li genera sempre il backend (port `IdGenerator`). Un id malformato in un path → `400 invalid_id`.
-- Gli id dei blocchi SDUI (`block.id`) sono un'eccezione: stringhe stabili scelte dal Generator, uniche nella lezione (vedi `sdui.md`, fase 5).
+- Gli id dei blocchi SDUI (`block.id`) sono un'eccezione: stringhe stabili scelte dal Generator, uniche nella lezione (vedi `sdui.md`).
 
 ## 5. Date e ore
 
@@ -133,11 +133,11 @@ Tutte le liste usano la paginazione a **cursore**, anche quelle piccole (così i
 
 ## 9. Job (operazioni lunghe)
 
-Ricerca delle fonti, generazione delle lezioni e chiusura della lezione girano come job asincroni. Risorsa, endpoint ed eventi: **`jobs.md`** (v1, Fase 4), che sostituisce l'esempio provvisorio che stava qui.
+Ricerca delle fonti, generazione delle lezioni e chiusura della lezione girano come job asincroni. Risorsa, endpoint ed eventi: **`jobs.md`** (v1).
 
 ## 10. Eventi SSE
 
-Endpoint: `GET /api/v1/topics/{id}/events` (contratto dettagliato in fase 2). Formato di ogni evento:
+Endpoint: `GET /api/v1/topics/{id}/events` (contratto dettagliato in `chat.md` §4). Formato di ogni evento:
 
 ```
 id: 42
@@ -158,7 +158,7 @@ data: {"type":"job_updated","topic_id":"...","at":"2026-11-08T14:36:09.502Z","pa
 |---|---|---|
 | `Authorization: Bearer <token>` | richiesta | autenticazione |
 | `X-Request-Id` | entrambe | se il client lo invia (UUID) il backend lo riusa, altrimenti lo genera; sempre presente in risposta e nei log |
-| `X-App-Version` | richiesta | versione dell'app (es. `0.1.0`), per log e, dalla fase 5, per la compatibilità del catalogo SDUI |
+| `X-App-Version` | richiesta | versione dell'app (es. `0.1.0`), per log e per la compatibilità del catalogo SDUI |
 | `Location` | risposta | URL della risorsa creata (201) |
 | `Accept-Language` | richiesta | opzionale: lingua del `message` degli errori (`en` se la prima lingua supportata è l'inglese, altrimenti italiano; §7, ADR 0019) |
 

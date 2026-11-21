@@ -28,9 +28,9 @@ Se questo ciclo funziona end-to-end, l'MVP è fatto. Tutto il resto è ottimizza
 | Ripasso | Schede FSRS generate da termini e record, schermata "Ripasso di oggi" su tutti i Topic |
 | Monitoraggio | Livello 1: blocco `missing_component` con fallback + lista delle richieste |
 | Provider | Solo l'adapter **Anthropic**, ma dietro il port `LlmProvider` già definitivo |
-| Infrastruttura | Un solo binario Rust, SQLite, accesso via Tailscale. Dalla Fase 11: più utenti con nome utente e password, dati isolati e chiave LLM per utente (ADR 0008, `contracts/users.md`) |
+| Infrastruttura | Un solo binario Rust, SQLite, accesso via Tailscale. Più utenti con nome utente e password, dati isolati e chiave LLM per utente (ADR 0008, `contracts/users.md`) |
 
-### Fuori dall'MVP (roadmap, sezione 11)
+### Fuori dall'MVP
 
 - Adapter OpenAI-compatible (OpenAI, OpenRouter, Ollama/llama.cpp/vLLM)
 - Reference document (cheat sheet). Il glossario copre l'essenziale
@@ -94,7 +94,7 @@ flowchart TB
 | Port | Responsabilità | Adapter MVP | Adapter futuri |
 |---|---|---|---|
 | `LlmProvider` | messaggi, tool calling, output strutturato, streaming, capability | Anthropic | OpenAI-compatible (OpenAI, OpenRouter, locali) |
-| `SearchProvider` | cerca sul web e restituisce risultati | da scegliere (sezione 12) | altri motori |
+| `SearchProvider` | cerca sul web e restituisce risultati | da scegliere (sezione 11) | altri motori |
 | `PageFetcher` | scarica e ripulisce il testo di una pagina | reqwest + estrazione testo | — |
 | `ReviewScheduler` | calcola il prossimo ripasso | FSRS | — |
 | `*Repository` | persistenza di ogni aggregato | SQLite | Postgres |
@@ -325,7 +325,7 @@ flowchart LR
     CAT --> GEN
 ```
 
-Nell'MVP il raggruppamento è per nome esatto di `wanted`; il clustering semantico arriva nella fase 3.
+Nell'MVP il raggruppamento è per nome esatto di `wanted`; il clustering semantico è fuori dall'MVP.
 
 ## 8. Modello dati
 
@@ -409,16 +409,6 @@ flowchart TD
 
 Stack proposto: Kotlin, Jetpack Compose, kotlinx.serialization (i blocchi sono una `sealed class` polimorfica, e un tipo sconosciuto diventa automaticamente `Unknown` → fallback), Ktor client per HTTP e SSE, Koin o Hilt per la DI.
 
-## 11. Roadmap dopo l'MVP
-
-| Fase | Contenuto |
-|---|---|
-| **1 — MVP** | questo documento |
-| **2 — Provider** | adapter OpenAI-compatible: OpenAI, OpenRouter, Ollama/llama.cpp/vLLM; fallback per i modelli senza output strutturato |
-| **3 — Monitoraggio** | clustering semantico delle `ComponentRequest`, feedback per blocco, statistiche per tipo di componente |
-| **4 — Contenuti** | reference document, immagini, diagrammi, nuovi componenti in base al backlog |
-| **5 — Comfort** | notifiche dei ripassi, cache offline, generazione delle lezioni in streaming blocco per blocco |
-
-## 12. Decisioni aperte
+## 11. Decisioni aperte
 
 Tutte decise il 2026-11-08: vedi `docs/adr/0005-mvp-open-decisions.md` (D1 ricerca con gli strumenti web lato server di Anthropic; D2 schede solo fronte/retro; D3 lezioni in italiano con termini tecnici originali; D4 FSRS con un crate esistente dietro `ReviewScheduler`).

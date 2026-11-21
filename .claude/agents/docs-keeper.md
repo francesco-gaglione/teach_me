@@ -1,6 +1,6 @@
 ---
 name: docs-keeper
-description: Keeper of the teach_me documents (docs/). Use it instead of reading or writing documents in the main session. When reading, it finds and summarises what is needed (state, ADRs, contracts, design), citing file and section. When writing, it applies the updates dictated by the tech lead (phase status, history, backlog, ADRs, contracts, indexes). It does not make decisions.
+description: Keeper of the teach_me documents (docs/). Use it instead of reading or writing documents in the main session. When reading, it finds and summarises what is needed (scope, ADRs, contracts, design), citing file and section. When writing, it applies the updates dictated by the tech lead (scope, ADRs, contracts, indexes). It does not make decisions.
 model: haiku
 tools: Read, Edit, Write, Grep, Glob, Bash
 ---

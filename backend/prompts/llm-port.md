@@ -1,10 +1,10 @@
-# Port `LlmProvider`, configurazione dei modelli, Context Assembler (Fase 2)
+# Port `LlmProvider`, configurazione dei modelli, Context Assembler
 
 Proposta di `llm-engineer` per `rust-backend-dev` e per l'ADR del tech lead. Verificata sulla documentazione Anthropic disponibile (skill `claude-api`, cache del 2026-10-06; modelli e prezzi vanno riverificati sulla pagina ufficiale prima del rilascio). Dove un dettaglio di wire format non è stato verificato lo dico in "Da verificare".
 
 ## 1. Principi di forma
 
-1. **Il port è una conversazione a un turno**: una richiesta, un assistant message in risposta. Il ciclo dei tool (Fase 3) sta in `application`, non nel port: così lo stesso port serve chat, Planner, Generator, Grader.
+1. **Il port è una conversazione a un turno**: una richiesta, un assistant message in risposta. Il ciclo dei tool sta in `application`, non nel port: così lo stesso port serve chat, Planner, Generator, Grader.
 2. **Il ruolo, non il modello, nella richiesta.** Il dominio conosce `LlmRole`; id del modello, effort, limiti e provider stanno nella configurazione.
 3. **Nessun parametro che un provider non supporta in modo uniforme.** Niente `temperature`/`top_p`: sui modelli Anthropic attuali sono rimossi (400) e con `anthropic-version: 2026-10-21` sono rifiutati su tutti. Se un adapter locale ne ha bisogno, li legge dalla configurazione del ruolo, non dalla richiesta.
 4. **Tipi con `#[non_exhaustive]`** dove prevedo estensioni (`ToolChoice`, `StopReason`, `ToolDef`, `LlmError`): aggiungere varianti non rompe i chiamanti.
@@ -32,7 +32,7 @@ pub struct LlmRequest {
     pub system: Vec<SystemBlock>,
     /// Alternati user/assistant; l'ultimo è `User`.
     pub messages: Vec<LlmMessage>,
-    pub tools: Vec<ToolDef>,                 // vuoto in Fase 2
+    pub tools: Vec<ToolDef>,                 // vuoto per la sola conversazione
     pub tool_choice: ToolChoice,             // Auto di default
     pub output: OutputFormat,                // Text di default
     /// Se None vale il default del ruolo in config.
@@ -169,18 +169,18 @@ pub trait LlmProvider: Send + Sync {
 
 Perché `complete` ha un default basato su `stream`: un solo percorso da testare, e le richieste con `max_tokens` alto (Generator, fino a 128K di output) devono comunque usare lo streaming verso Anthropic per non incorrere nei timeout HTTP.
 
-## 3. Come regge le fasi successive senza cambiare forma
+## 3. Come regge i ruoli successivi senza cambiare forma
 
-**Fase 3, tool del Tutor.** `request.tools` con `ToolDef::Function` (`save_mission_draft`, `save_preference`, `propose_mission_change`), `tool_choice = Auto`. Lo stream emette `ToolCallStarted/InputDelta/Finished`, poi `Finished { stop_reason: ToolUse }`. Il caso d'uso in `application`:
+**Tool del Tutor.** `request.tools` con `ToolDef::Function` (`save_mission_draft`, `save_preference`, `propose_mission_change`), `tool_choice = Auto`. Lo stream emette `ToolCallStarted/InputDelta/Finished`, poi `Finished { stop_reason: ToolUse }`. Il caso d'uso in `application`:
 1. accumula le `Part` dell'assistant (testo, `ToolUse`, `ProviderBlock`) e le **rimanda così come sono** nel messaggio successivo (i blocchi di thinking dei modelli attuali vanno restituiti intatti nello stesso ciclo);
 2. se `stop_reason` è `MaxTokens` o `Refusal` **non esegue i tool** (l'input potrebbe essere troncato);
 3. esegue i tool, aggiunge un unico messaggio `User` con **tutti** i `ToolResult` (anche in caso di errore, con `is_error: true`) e richiama il port;
 4. ripete fino a `EndTurn`, con un tetto di iterazioni (proposta: 5).
 L'SSE verso l'app inoltra solo `TextDelta`; i tool call sono interni (contratto chat §1). Se il modello scrive testo prima del tool call, quel testo è già stato inviato come delta: va bene, è parte del messaggio.
 
-**Fase 6, output strutturato del Generator/Planner.** `output = OutputFormat::JsonSchema { name, schema }`, `tools` vuoto. Con capability `Native` l'adapter Anthropic usa `output_config.format = {type: "json_schema", schema}` e il testo restituito è JSON conforme; con `Emulated` l'adapter aggiunge al sistema l'istruzione di rispondere solo con JSON secondo lo schema (e, se il provider ha una modalità JSON, la usa). **In ogni caso `application` parsa e valida con il Validator e fa repair** (max 3 tentativi: re-invio con l'errore): lo schema nativo garantisce la sintassi, non le regole semantiche del catalogo. Perciò il port restituisce testo, non un `Value` già "garantito". Il Generator può restituire JSON molto lungo: usa `stream` (o `complete` che lo usa) e `max_output_tokens` alto.
+**Output strutturato del Generator/Planner.** `output = OutputFormat::JsonSchema { name, schema }`, `tools` vuoto. Con capability `Native` l'adapter Anthropic usa `output_config.format = {type: "json_schema", schema}` e il testo restituito è JSON conforme; con `Emulated` l'adapter aggiunge al sistema l'istruzione di rispondere solo con JSON secondo lo schema (e, se il provider ha una modalità JSON, la usa). **In ogni caso `application` parsa e valida con il Validator e fa repair** (max 3 tentativi: re-invio con l'errore): lo schema nativo garantisce la sintassi, non le regole semantiche del catalogo. Perciò il port restituisce testo, non un `Value` già "garantito". Il Generator può restituire JSON molto lungo: usa `stream` (o `complete` che lo usa) e `max_output_tokens` alto.
 
-**Fase 7, Grader/Recorder.** Stessa forma, ruolo diverso (modello economico), richieste brevi; `complete`.
+**Grader/Recorder.** Stessa forma, ruolo diverso (modello economico), richieste brevi; `complete`.
 
 **Cosa non cambia:** `LlmRequest`, `LlmEvent`, `LlmProvider`. Cosa può crescere senza rompere: varianti `non_exhaustive` (nuovo `ToolDef` per la ricerca web lato server, nuovi `StopReason`), campi opzionali nuovi su `LlmRequest` (si costruisce con un builder o `..Default`, vedi §11).
 
@@ -272,9 +272,9 @@ Senza SDK Rust ufficiale: `reqwest` + SSE a mano. Endpoint `POST {base_url}/v1/m
 
 Usage: `input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens`.
 
-Opzione `refusal_fallback` (default **off** in Fase 2): la documentazione prevede, per Sonnet 5.5 sulla Claude API, `fallbacks: "default"` con beta `server-side-fallback-2026-07-01` per riprovare lato server dopo un rifiuto dei classificatori di sicurezza. Per un tutor di chat il rifiuto è raro; l'header beta sbagliato romperebbe ogni richiesta con un 400, quindi va attivata solo dopo averla provata con la chiave reale.
+Opzione `refusal_fallback` (default **off**): la documentazione prevede, per Sonnet 5.5 sulla Claude API, `fallbacks: "default"` con beta `server-side-fallback-2026-07-01` per riprovare lato server dopo un rifiuto dei classificatori di sicurezza. Per un tutor di chat il rifiuto è raro; l'header beta sbagliato romperebbe ogni richiesta con un 400, quindi va attivata solo dopo averla provata con la chiave reale.
 
-**Da verificare in integrazione con chiave reale (rust-backend-dev):** valore corretto di `anthropic-version`; subset di JSON Schema accettato da `output_config.format` (servirà alla Fase 6: schemi strict, `additionalProperties: false`); forma esatta degli eventi `error`; che `usage` nel `message_start` e nel `message_delta` sia cumulativo.
+**Da verificare in integrazione con chiave reale (rust-backend-dev):** valore corretto di `anthropic-version`; subset di JSON Schema accettato da `output_config.format` (servono schemi strict, `additionalProperties: false`); forma esatta degli eventi `error`; che `usage` nel `message_start` e nel `message_delta` sia cumulativo.
 
 ## 9. Configurazione dei modelli per ruolo
 
@@ -314,17 +314,17 @@ Regole:
 
 | Ruolo | Modello | Effort | Motivazione |
 |---|---|---|---|
-| **Tutor** (Fase 2-3) | `claude-sonnet-5-5` ($2/$10) | `low` | Conversazione breve su tablet: latenza e costo contano più della profondità. Serve però giudizio per fare push-back sulla vaghezza e rispettare regole di stile: Haiku 5.5 è più economico ma meno affidabile su istruzioni sottili (da misurare con l'eval, vedi sotto). Per la sola Fase 2 le risposte sono ~100 token: costo trascurabile |
-| **Interviewer** (Fase 3, se separato dal Tutor) | `claude-sonnet-5-5` | `medium` | Qualità della mission = qualità di tutto il resto; poche chiamate |
-| **Researcher** (Fase 4) | `claude-sonnet-5-5` | `medium` | Molto input (pagine), classificazione di affidabilità e annotazioni; Opus non necessario |
-| **Planner** (Fase 6) | `claude-opus-5-5` ($4/$20) | `medium` | Una chiamata per lezione, decide la zona di sviluppo prossimale: l'errore costa una lezione intera |
-| **Generator** (Fase 6) | `claude-opus-5-5` | `high` | Output lungo e vincolato da un catalogo; vale la qualità. Da confrontare con Sonnet 5.5 a effort alto: se l'eval (validità al primo tentativo, qualità didattica) non peggiora, si passa a Sonnet e si dimezza il costo |
-| **Grader** (Fase 7) | `claude-haiku-5-5` ($0.10/$0.50) | `medium` | Chiamate frequenti e brevi con rubrica; confrontare con Sonnet sull'accordo con giudizi umani prima di fissare. Nota: il tokenizer di Haiku 5.5 conta ~30% di token in più, e per i rifiuti non c'è fallback lato server |
-| **Recorder** (Fase 7) | `claude-sonnet-5-5` | `medium` | "Coverage ≠ learning": distinguere ciò che è stato dimostrato richiede giudizio; chiamata una per lezione |
+| **Tutor** | `claude-sonnet-5-5` ($2/$10) | `low` | Conversazione breve su tablet: latenza e costo contano più della profondità. Serve però giudizio per fare push-back sulla vaghezza e rispettare regole di stile: Haiku 5.5 è più economico ma meno affidabile su istruzioni sottili (da misurare con l'eval, vedi sotto). Nella conversazione senza tool le risposte sono ~100 token: costo trascurabile |
+| **Interviewer** (se separato dal Tutor) | `claude-sonnet-5-5` | `medium` | Qualità della mission = qualità di tutto il resto; poche chiamate |
+| **Researcher** | `claude-sonnet-5-5` | `medium` | Molto input (pagine), classificazione di affidabilità e annotazioni; Opus non necessario |
+| **Planner** | `claude-opus-5-5` ($4/$20) | `medium` | Una chiamata per lezione, decide la zona di sviluppo prossimale: l'errore costa una lezione intera |
+| **Generator** | `claude-opus-5-5` | `high` | Output lungo e vincolato da un catalogo; vale la qualità. Da confrontare con Sonnet 5.5 a effort alto: se l'eval (validità al primo tentativo, qualità didattica) non peggiora, si passa a Sonnet e si dimezza il costo |
+| **Grader** | `claude-haiku-5-5` ($0.10/$0.50) | `medium` | Chiamate frequenti e brevi con rubrica; confrontare con Sonnet sull'accordo con giudizi umani prima di fissare. Nota: il tokenizer di Haiku 5.5 conta ~30% di token in più, e per i rifiuti non c'è fallback lato server |
+| **Recorder** | `claude-sonnet-5-5` | `medium` | "Coverage ≠ learning": distinguere ciò che è stato dimostrato richiede giudizio; chiamata una per lezione |
 
-Tutte le scelte sono ipotesi iniziali, da confermare con gli eval di ciascuna fase.
+Tutte le scelte sono ipotesi iniziali, da confermare con gli eval di ciascun ruolo.
 
-## 10. Context Assembler, Fase 2 (Tutor)
+## 10. Context Assembler del Tutor (conversazione senza tool)
 
 Funzione pura in `application` (nessun I/O): riceve prompt compilati (`include_str!`), Topic, messaggi dal repository e i limiti del ruolo; restituisce `LlmRequest`.
 
@@ -339,15 +339,15 @@ assemble_tutor_request(prompts, topic, messages, limits) -> LlmRequest
 2. **Cronologia.** Dal repository: gli ultimi 200 messaggi del Topic, riordinati dal più vecchio. Esclusi: messaggi `failed` e il messaggio `assistant` in `streaming` (è quello che si sta generando); i messaggi `user` consecutivi (possibile dopo un fallimento) si uniscono con `"\n\n"`. Ogni messaggio diventa un `LlmMessage` con un solo `Part::Text`. Deve finire con un `User` (garantito dal contratto: si genera in risposta all'ultimo messaggio user, anche nel retry).
 3. **Troncamento a budget di token, senza chiamate extra.** Stima locale: `tokens(testo) = ceil(chars / 3) + 6` per messaggio (`chars` = code point, non byte). Per l'italiano `chars/3` sovrastima del 10-30% rispetto ai tokenizer attuali: è voluto, l'errore va dalla parte sicura; il budget (default 8000) è molto sotto la finestra (200K-1M) quindi la precisione è irrilevante. Algoritmo: sommare dal più recente al più vecchio finché si resta nel budget; si scartano solo messaggi **interi** dal più vecchio, mai si taglia il testo di un messaggio (anche se l'ultimo da solo supera il budget, lo si include); la cronologia inviata deve iniziare con un messaggio `User` (si scarta un eventuale `Assistant` iniziale). Se è stato scartato qualcosa, `history_note` assume il testo del README, altrimenti stringa vuota. Per ruoli futuri con modelli locali il budget effettivo è `min(history_token_budget, context_window - max_output - stima del sistema)`.
    Calibrazione facoltativa: il log confronta stima e `usage.input_tokens` reale; se lo scarto supera il 50% si rivede il divisore. `count_tokens` dell'API resta per gli eval, non per il percorso di richiesta.
-4. **Breakpoint di prompt caching** (max 4 per richiesta, qui 3): fine blocco A, fine blocco B, ultimo messaggio della richiesta. L'API cerca all'indietro il prefisso già in cache, quindi il turno successivo riusa tutto fino al messaggio del turno precedente. Ordine di rendering Anthropic: tools, system, messages; in Fase 3 le definizioni dei tool (stabili) precedono il sistema e rientrano nel prefisso del blocco A. Sui provider senza breakpoint i flag sono ignorati.
-   Realismo: in Fase 2 il prefisso statico è ~700 token, poco sopra la soglia minima di cache (512 token sui modelli 5.x), e la TTL di default è 5 minuti: il risparmio è minimo. Si implementa comunque il meccanismo (costa nulla) perché in Fase 3 (tool) e soprattutto in Fase 6 (prompt grandi) è la leva principale. Si controlla con `usage.cache_read_tokens` nei log; se resta 0 con prefissi uguali, c'è un invalidatore (variabile che cambia, ordine dei campi nei tool, ecc.).
-   Effetto collaterale: il troncamento a scorrimento sposta l'inizio della cronologia a ogni turno e invalida la cache dei messaggi; ottimizzazione facoltativa (non per la Fase 2): tagliare a blocchi di 8 messaggi allineati all'ordinale assoluto, così il prefisso resta stabile per 8 turni.
+4. **Breakpoint di prompt caching** (max 4 per richiesta, qui 3): fine blocco A, fine blocco B, ultimo messaggio della richiesta. L'API cerca all'indietro il prefisso già in cache, quindi il turno successivo riusa tutto fino al messaggio del turno precedente. Ordine di rendering Anthropic: tools, system, messages; con i tool le definizioni dei tool (stabili) precedono il sistema e rientrano nel prefisso del blocco A. Sui provider senza breakpoint i flag sono ignorati.
+   Realismo: nella sola conversazione il prefisso statico è ~700 token, poco sopra la soglia minima di cache (512 token sui modelli 5.x), e la TTL di default è 5 minuti: il risparmio è minimo. Si implementa comunque il meccanismo (costa nulla) perché con i tool e soprattutto con i prompt grandi (Generator, Planner) è la leva principale. Si controlla con `usage.cache_read_tokens` nei log; se resta 0 con prefissi uguali, c'è un invalidatore (variabile che cambia, ordine dei campi nei tool, ecc.).
+   Effetto collaterale: il troncamento a scorrimento sposta l'inizio della cronologia a ogni turno e invalida la cache dei messaggi; ottimizzazione facoltativa (non per la sola conversazione): tagliare a blocchi di 8 messaggi allineati all'ordinale assoluto, così il prefisso resta stabile per 8 turni.
 5. **Parametri**: `tools: []`, `tool_choice: Auto`, `output: Text`, `max_output_tokens: None` (default del ruolo), `trace_label: "tutor.chat"`.
 6. **Test**: titolo con ritorni a capo ripuliti; stato `new` e `interviewing`; cronologia con messaggio `failed` e unione degli `user` consecutivi; troncamento che parte con un `Assistant` (viene scartato); messaggio singolo oltre il budget; `history_note` presente solo se si è scartato; nessuna variabile `{{...}}` residua nel risultato; blocco A identico byte per byte tra due Topic.
 
-## 10bis. Context Assembler e ciclo dei tool, Fase 3 (Tutor con mission)
+## 10bis. Context Assembler e ciclo dei tool (Tutor con mission)
 
-Estende §10; dove non detto, §10 resta valido. Prompt: `prompts/tutor/` (`tutor-phase3-v1`).
+Estende §10; dove non detto, §10 resta valido. Prompt: `prompts/tutor/` (`tutor-v1`).
 
 ### 10.1 Cosa si aggiunge al contesto
 - **Tool**: `tools.json` -> `LlmRequest.tools` (stesso ordine sempre, schemi byte-identici: i tool precedono il sistema nel prefisso di cache; cambiare l'ordine o un carattere invalida tutto), `tool_choice: Auto`.
@@ -357,7 +357,7 @@ Estende §10; dove non detto, §10 resta valido. Prompt: `prompts/tutor/` (`tuto
 - **Cache**: breakpoint invariati (fine A, fine B, ultimo messaggio = 3 su 4). B cambia a ogni conferma/bozza/preferenza, quindi quel turno paga la riscrittura di B (poche centinaia di token) ma non di A + tool (~3.5K token, il grosso). Sotto la soglia minima di cache il flag è inerte, non dannoso.
 
 ### 10.2 Ciclo dei tool (application)
-1. Si chiama `stream`; i `TextDelta` vanno all'SSE come in Fase 2. Il testo scritto **prima** del tool call è già stato inviato: è l'introduzione alla card.
+1. Si chiama `stream`; i `TextDelta` vanno all'SSE come nella sola conversazione. Il testo scritto **prima** del tool call è già stato inviato: è l'introduzione alla card.
 2. A `Finished { ToolUse }` si eseguono i tool **in ordine di blocco** (anche più d'uno), si produce un solo messaggio `User` con tutti i `ToolResult` (`is_error` dal file dei risultati) e si richiama il port. I `ProviderBlock` e le `Part` dell'assistant si rimandano intatti (§3).
 3. **Tetto: 4 iterazioni del ciclo** (5 chiamate al modello al massimo), poi si chiude il messaggio con il testo ottenuto e `warn!`. Il caso normale è 1-2 giri: tool -> risultato -> (testo vuoto o poche parole). Ritentare dopo un errore di validazione conta come iterazione.
 4. Se `stop_reason` è `MaxTokens`/`Refusal` non si eseguono i tool (§3).
@@ -369,15 +369,15 @@ Estende §10; dove non detto, §10 resta valido. Prompt: `prompts/tutor/` (`tuto
 10. Dedup: `unchanged` se i quattro campi (dopo trim) coincidono con la bozza aperta (o, per `propose_mission_change`, con la confermata); preferenza duplicata = stesso `scope` e testo uguale ignorando maiuscole e spazi.
 
 ### 10.3 Modelli con tool inaffidabili
-Se `capabilities.tools == false` (modelli locali), il Tutor funziona come in Fase 2 (nessun tool, niente card): `system.md` va reso senza le sezioni "Proporre la bozza", "Cambiare", "Preferenze" (da fare con un secondo file `system_no_tools.md` quando serve il primo provider locale; non ora). Per tool call con JSON malformato da modelli piccoli: restituire `invalid_input_shape`, massimo un nuovo tentativo.
+Se `capabilities.tools == false` (modelli locali), il Tutor funziona come nella sola conversazione (nessun tool, niente card): `system.md` va reso senza le sezioni "Proporre la bozza", "Cambiare", "Preferenze" (da fare con un secondo file `system_no_tools.md` quando serve il primo provider locale; non ora). Per tool call con JSON malformato da modelli piccoli: restituire `invalid_input_shape`, massimo un nuovo tentativo.
 
 ### 10.4 Interviewer come modalità del Tutor, non ruolo separato
 Scelta: **stessa chiamata e stesso prompt del Tutor**, con le regole dell'intervista nel prompt statico e lo stato nel contesto.
 - *Latenza*: un ruolo separato richiederebbe un passaggio di routing (o una seconda chiamata a ogni turno per decidere "intervista o chat") prima di rispondere. Con la modalità, la risposta parte subito e in streaming.
 - *Costo*: un solo prefisso (A + tool) in cache per tutte le conversazioni; due ruoli = due prefissi, meno riuso. L'intervista è 3-6 turni brevi: nessuna ragione di un modello diverso.
 - *Qualità*: la conversazione è una sola, con la stessa voce; un passaggio di consegne tra Interviewer e Tutor perde contesto (preferenze dette in passing, correzioni dopo la card) e crea il caso "chi gestisce questo messaggio?". Il prompt unico gestisce naturalmente "preferenza detta durante l'intervista" e "cambio mission in `ready`".
-- *Rischio accettato*: un prompt più lungo (~3K token) e regole che competono. Mitigazione: eval di Fase 3 (`evals/tutor/phase3.cases.json`) sui turni dell'intervista e sul rispetto dello stile; se il Tutor in `ready` degrada, si separa il blocco dell'intervista in un secondo file di sistema incluso solo quando manca la mission confermata (stessa struttura, A diventa A1+A2).
-- Il ruolo `Interviewer` resta nell'enum (`LlmRole`) ma in Fase 3 non è usato; la config `[llm.roles.interviewer]` non serve.
+- *Rischio accettato*: un prompt più lungo (~3K token) e regole che competono. Mitigazione: eval (`evals/tutor/tools.cases.json`) sui turni dell'intervista e sul rispetto dello stile; se il Tutor in `ready` degrada, si separa il blocco dell'intervista in un secondo file di sistema incluso solo quando manca la mission confermata (stessa struttura, A diventa A1+A2).
+- Il ruolo `Interviewer` resta nell'enum (`LlmRole`) ma non è usato; la config `[llm.roles.interviewer]` non serve.
 - Modello consigliato: `claude-sonnet-5-5`; effort `low` come baseline Tutor. Da confrontare con `medium` sui casi vaghi dell'eval (la valutazione della vaghezza è la parte che richiede giudizio).
 
 ## 11. Decisioni per il tech lead (ADR)
@@ -392,7 +392,7 @@ Scelta: **stessa chiamata e stesso prompt del Tutor**, con le regole dell'interv
 8. **Fallimento all'avvio senza chiave**: warn e avvio comunque (proposta) oppure errore bloccante.
 9. **Rendering del testo in app**: risolto, l'app rende un sottoinsieme di markdown (docs/design/screens/chat.md §12) e il prompt lo segue.
 
-## 12. Strumenti lato server e Researcher, Fase 4 (approvata dal tech lead il 2026-11-09, con le correzioni del contratto `docs/contracts/resources.md`: sostituzione in blocco delle fonti, limiti di lunghezza, `invalid_output`)
+## 12. Strumenti lato server e Researcher (approvata dal tech lead il 2026-11-09, con le correzioni del contratto `docs/contracts/resources.md`: sostituzione in blocco delle fonti, limiti di lunghezza, `invalid_output`)
 
 Proposta di `llm-engineer` per `rust-backend-dev`, da implementare dopo l'approvazione del tech lead. Basata su ADR 0005 D1, sulla documentazione ufficiale (web search tool, server tools, structured outputs, consultate il 2026-11-09) e su due chiamate reali con Haiku 5.5 via OpenRouter (§12.7). Il prompt è in `backend/prompts/researcher/`.
 
@@ -462,7 +462,7 @@ La documentazione dice che `output_config.format` è **incompatibile con le cita
 
 ### 12.5 Portabilità: se il provider non ha la ricerca lato server
 
-Il prompt non dipende dallo strumento Anthropic: parla di "strumento di ricerca" e di "risultati visti". Con `server_web_search = false` il caso d'uso passa a un ciclo di tool *lato client* come in Fase 3: `ToolDef::Function { name: "web_search", input_schema: {query} }` (ed eventualmente `fetch_page {url}`), eseguiti da un port `SearchProvider`/`PageFetcher` (`docs/mvp.md` §3: SearXNG, Brave, Tavily), risultati restituiti come `tool_result` con titolo, URL e snippet. Il Validator degli URL usa lo stesso insieme (URL restituiti dal `SearchProvider`). Nell'MVP non si implementa: se un ruolo `researcher` è configurato su un provider senza `server_web_search`, errore di configurazione chiaro all'avvio.
+Il prompt non dipende dallo strumento Anthropic: parla di "strumento di ricerca" e di "risultati visti". Con `server_web_search = false` il caso d'uso passa a un ciclo di tool *lato client* come per i tool del Tutor: `ToolDef::Function { name: "web_search", input_schema: {query} }` (ed eventualmente `fetch_page {url}`), eseguiti da un port `SearchProvider`/`PageFetcher` (`docs/mvp.md` §3: SearXNG, Brave, Tavily), risultati restituiti come `tool_result` con titolo, URL e snippet. Il Validator degli URL usa lo stesso insieme (URL restituiti dal `SearchProvider`). Nell'MVP non si implementa: se un ruolo `researcher` è configurato su un provider senza `server_web_search`, errore di configurazione chiaro all'avvio.
 
 ### 12.6 Streaming con OpenRouter: i risultati non arrivano
 
@@ -487,9 +487,9 @@ Non provati: `pause_turn`, `max_uses` superato, errore di ricerca, `web_search_2
 - `max_uses`: **4** di partenza. Ogni ricerca porta 16-22k token di input e ogni passo successivo del loop rilegge tutto: il costo cresce più che linearmente con le ricerche in sequenza. Il prompt chiede di raggruppare le query indipendenti nello stesso passo. Da ritarare con gli eval (2 vs 4 vs 6).
 - Cache: `system.md` (~1,7k token) è sotto la soglia minima cacheable di molti modelli, il breakpoint è innocuo ma probabilmente inerte; il vero risparmio è il caching del prefisso tra i passi del loop, che il lato server applica da solo (osservato). Variabile in fondo: `context.md` dopo `system.md`, come per il Tutor. `{{today}}` solo in `context.md`.
 
-## 13. Fasi 6-7: Planner, Generator, Grader, Recorder (proposta di `llm-engineer`, `phase6-7-v1`/`v2`)
+## 13. Planner, Generator, Grader, Recorder (proposta di `llm-engineer`)
 
-Contratto: `docs/contracts/lessons.md`. Prompt e segnaposto: `README.md` (sezione «Fasi 6-7»). Verificato il 2026-11-09 sulla documentazione ufficiale degli structured outputs (`platform.claude.com/docs/en/build-with-claude/structured-outputs`); prezzi dal §9 di questo file. Non è stata fatta nessuna chiamata a un modello.
+Contratto: `docs/contracts/lessons.md`. Prompt e segnaposto: `README.md` (sezione «Planner, Generator, Grader, Recorder»). Verificato il 2026-11-09 sulla documentazione ufficiale degli structured outputs (`platform.claude.com/docs/en/build-with-claude/structured-outputs`); prezzi dal §9 di questo file. Non è stata fatta nessuna chiamata a un modello.
 
 ### 13.1 Chiamate per ruolo
 
@@ -544,7 +544,7 @@ Assunzioni (da verificare con `usage` reale): lezione con ~10 record, ~15 termin
 | **Economica** (Sonnet Planner e Generator, Haiku Grader, Sonnet Recorder) | 0,04 $ | 0,12 $ / 0,09 $ | 0,0005 $ | 0,05 $ | **0,21 / 0,25 / 0,43 $** |
 | **Prove** (Haiku per Planner, Generator, Recorder) | 0,003 $ | 0,008 $ / 0,006 $ | 0,0005 $ | 0,003 $ | **0,01 / 0,02 / 0,03 $** |
 
-Il Generator pesa circa il 70% del costo (output con thinking). Per le prove con credito limitato: Generator Haiku (o Sonnet a effort `medium`), consapevoli che più riparazioni e qualità didattica inferiore sono attese; la qualità si decide con `evals/generator/phase6.cases.json` prima di fissare il default (Opus vs Sonnet a `high`: se la qualità didattica e la validità al primo colpo non peggiorano, Sonnet dimezza il costo). Il Recorder, saltato quando non c'è nessun tentativo superato, risparmia ~0,05 $.
+Il Generator pesa circa il 70% del costo (output con thinking). Per le prove con credito limitato: Generator Haiku (o Sonnet a effort `medium`), consapevoli che più riparazioni e qualità didattica inferiore sono attese; la qualità si decide con `evals/generator/lessons.cases.json` prima di fissare il default (Opus vs Sonnet a `high`: se la qualità didattica e la validità al primo colpo non peggiorano, Sonnet dimezza il costo). Il Recorder, saltato quando non c'è nessun tentativo superato, risparmia ~0,05 $.
 
 ### 13.7 Rischi e da verificare
 
@@ -555,7 +555,7 @@ Il Generator pesa circa il 70% del costo (output con thinking). Per le prove con
 5. **Primo uso degli schemi nativi:** latenza di compilazione sulla prima richiesta (grammatica in cache 24 h).
 6. **Verificare all'integrazione:** `max_tokens` del Generator (20000) contro il limite del modello; `effort` ammesso per Haiku 5.5.
 
-## 14. Web fetch lato server per il Generator, Fase 12 blocco C (ADR 0009)
+## 14. Web fetch lato server per il Generator (ADR 0009)
 
 Decisione e parametri: `docs/adr/0009-web-fetch-generator.md`. Questa sezione è la specifica per l'adapter e il caso d'uso. Legenda: **[doc]** = ricavato dalla documentazione ufficiale di Anthropic e OpenRouter (ricerca di `llm-engineer`, 2026-11-11, pagine non rilette in questo passaggio); **[NON PROVATO]** = nessuna chiamata reale fatta (manca la chiave).
 
@@ -588,13 +588,13 @@ Decisione e parametri: `docs/adr/0009-web-fetch-generator.md`. Questa sezione è
 |---|---|---|
 | Anthropic diretto, modelli Claude | `true` | `web_fetch_20250910` **[provato 2026-11-15]** con Haiku 5.5: 1 lettura, ~12k token d'ingresso per una pagina del libro di Rust |
 | OpenRouter con modelli Claude | `false` finché non si prova | inoltra `web_search_20250305` (provato); `web_fetch_20250910` **[NON PROVATO]**: è il punto 1 dell'ADR. Ripiego: `openrouter:web_fetch`, forma della risposta non documentata nel formato Messages |
-| OpenAI-compatible, locali | `false` | il Generator lavora come oggi (dalle annotazioni). Alternativa futura: `fetch_page {url}` lato client eseguito dal backend, fuori fase |
+| OpenAI-compatible, locali | `false` | il Generator lavora come oggi (dalle annotazioni). Alternativa futura: `fetch_page {url}` lato client eseguito dal backend |
 
 Con `server_web_fetch = false` o `max_fetches = 0` il backend **non** invia lo strumento né l'elenco «Fonti da leggere» (`generator/kickoff_web.md`): il prompt non cambia, la sezione «Quando hai lo strumento di lettura web» di `system.md` non si applica.
 
 ### 14.5 Prova minima prima di accendere (dall'ADR)
 
-Haiku 5.5, una pagina breve, `max_uses: 1`, con `output_config.format`, prima su OpenRouter poi su API diretta. Osservare: 200 o 400; presenza di `web_fetch_tool_result` e di `usage.server_tool_use.web_fetch_requests`; se il testo troncato è segnalato; comportamento con una pagina vietata da robots.txt. Poi l'eval `generator/phase12-fetch` (`backend/evals/README.md`).
+Haiku 5.5, una pagina breve, `max_uses: 1`, con `output_config.format`, prima su OpenRouter poi su API diretta. Osservare: 200 o 400; presenza di `web_fetch_tool_result` e di `usage.server_tool_use.web_fetch_requests`; se il testo troncato è segnalato; comportamento con una pagina vietata da robots.txt. Poi l'eval `generator/web-fetch` (`backend/evals/README.md`).
 
 ### 14.6 Fatti dell'implementazione
 

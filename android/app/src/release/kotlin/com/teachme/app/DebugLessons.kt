@@ -8,7 +8,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 
-/** Release builds ship no sample lessons: there is nothing to show here until phase 6 brings the backend. */
+/** Release builds ship no sample lessons: lessons come from the backend. */
 @Composable
 @Suppress("UNUSED_PARAMETER", "unused")
 fun ColumnScope.DebugLessonsSection(onOpenLesson: (String) -> Unit) = Unit

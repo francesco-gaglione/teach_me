@@ -388,7 +388,7 @@ async fn a_dry_run_lists_cases_and_estimates_without_calling() {
 async fn the_grader_and_recorder_suites_run_through_the_real_use_cases() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
     let mut suites =
-        evals::suite::load(&dir, &["grader/phase7".into(), "recorder/phase7".into()]).unwrap();
+        evals::suite::load(&dir, &["grader/grading".into(), "recorder/records".into()]).unwrap();
     // One quick case of each.
     for s in &mut suites {
         s.cases.retain(|c| {
@@ -468,7 +468,7 @@ async fn the_grader_and_recorder_suites_run_through_the_real_use_cases() {
 #[tokio::test]
 async fn a_tool_conversation_runs_the_real_tools_and_the_confirm_event() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(&dir, &["tutor/phase3".into()]).unwrap();
+    let mut suites = evals::suite::load(&dir, &["tutor/tools".into()]).unwrap();
     suites[0].cases.retain(|c| c.id == "vague_becomes_precise");
     let provider = Arc::new(Fake {
         tutor_text: "Quanto tempo hai ogni giorno per studiare?".into(),
@@ -510,7 +510,7 @@ async fn a_tool_conversation_runs_the_real_tools_and_the_confirm_event() {
 #[tokio::test]
 async fn the_generator_case_reaches_the_model_through_the_fixed_plan() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(&dir, &["generator/phase6".into()]).unwrap();
+    let mut suites = evals::suite::load(&dir, &["generator/lessons".into()]).unwrap();
     suites[0]
         .cases
         .retain(|c| c.id == "rust_second_lesson_recall_and_link");
@@ -576,11 +576,8 @@ fn case_filters_apply_per_suite() {
 #[tokio::test]
 async fn the_pdf_suites_seed_documents_and_read_back_the_excerpts() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(
-        &dir,
-        &["planner/phase10".into(), "generator/phase10".into()],
-    )
-    .unwrap();
+    let mut suites =
+        evals::suite::load(&dir, &["planner/pdf".into(), "generator/pdf".into()]).unwrap();
     for s in &mut suites {
         s.cases.retain(|c| {
             matches!(
@@ -593,7 +590,7 @@ async fn the_pdf_suites_seed_documents_and_read_back_the_excerpts() {
     // valid plan for the first case. The Generator's answer is no lesson, so
     // its run ends in validation errors, which is what this test lets happen.
     let plan = || -> String {
-        let suite = suites.iter().find(|s| s.id == "planner/phase10").unwrap();
+        let suite = suites.iter().find(|s| s.id == "planner/pdf").unwrap();
         let c = &suite.cases[0];
         let doc = &c.array("documents")[0];
         json!({
@@ -625,7 +622,7 @@ async fn the_pdf_suites_seed_documents_and_read_back_the_excerpts() {
     let planner = report
         .suites
         .iter()
-        .find(|s| s.id == "planner/phase10")
+        .find(|s| s.id == "planner/pdf")
         .unwrap();
     let run = &planner.cases[0].runs[0];
     assert_eq!(run.status, RunStatus::Completed, "{:?}", run.error);
@@ -651,7 +648,7 @@ async fn the_pdf_suites_seed_documents_and_read_back_the_excerpts() {
     let generator = report
         .suites
         .iter()
-        .find(|s| s.id == "generator/phase10")
+        .find(|s| s.id == "generator/pdf")
         .unwrap();
     let run = &generator.cases[0].runs[0];
     assert_ne!(run.status, RunStatus::Failed, "{:?}", run.error);
@@ -661,9 +658,9 @@ async fn the_pdf_suites_seed_documents_and_read_back_the_excerpts() {
 }
 
 #[tokio::test]
-async fn a_phase12_generator_case_gives_the_model_its_records_and_the_new_plan_format() {
+async fn a_rich_generator_case_gives_the_model_its_records_and_the_new_plan_format() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(&dir, &["generator/phase12".into()]).unwrap();
+    let mut suites = evals::suite::load(&dir, &["generator/rich-lessons".into()]).unwrap();
     suites[0]
         .cases
         .retain(|c| c.id == "rust_second_lesson_records_no_recall");
@@ -705,11 +702,11 @@ async fn a_phase12_generator_case_gives_the_model_its_records_and_the_new_plan_f
 }
 
 #[test]
-fn the_phase12_suites_are_listed_and_estimated_in_a_dry_run() {
+fn the_concept_suites_are_listed_and_estimated_in_a_dry_run() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
     let suites = evals::suite::load(
         &dir,
-        &["planner/phase12".into(), "generator/phase12".into()],
+        &["planner/concepts".into(), "generator/rich-lessons".into()],
     )
     .unwrap();
     let table = dry_run(&suites, &models(), &options(None));
@@ -754,7 +751,7 @@ fn a_dry_run_names_the_fetch_suite_as_skipped_while_the_tool_is_off() {
     let table = dry_run(&suites, &models(), &options(None));
     let row = table
         .lines()
-        .find(|l| l.contains("generator/phase12-fetch"))
+        .find(|l| l.contains("generator/web-fetch"))
         .unwrap_or_else(|| panic!("{table}"));
     assert!(row.contains("suite skipped"), "{row}");
     assert!(!table.contains("rust_book_page_facts"), "{table}");
@@ -765,19 +762,19 @@ fn a_dry_run_names_the_fetch_suite_as_skipped_while_the_tool_is_off() {
     assert!(on.contains("injection_in_fetched_page |"), "{on}");
     assert!(!on.contains("non è ancora pubblicata"), "{on}");
     // The other suites run exactly as they did.
-    assert!(table.contains("generator/phase12 |"), "{table}");
+    assert!(table.contains("generator/rich-lessons |"), "{table}");
 }
 
 #[test]
 fn naming_the_fetch_suite_with_the_tool_off_is_an_error_but_the_default_is_a_skip() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let wanted = vec!["generator/phase12-fetch".to_owned()];
+    let wanted = vec!["generator/web-fetch".to_owned()];
     let suites = evals::suite::load(&dir, &wanted).unwrap();
     let err = evals::runner::check_explicit_suites(&suites, &wanted, &options(None).tuning)
         .unwrap_err()
         .to_string();
     assert!(
-        err.contains("generator/phase12-fetch") && err.contains("max_fetches"),
+        err.contains("generator/web-fetch") && err.contains("max_fetches"),
         "{err}"
     );
     // A provider that cannot run the tool says so, not the setting.
@@ -797,7 +794,7 @@ fn naming_the_fetch_suite_with_the_tool_off_is_an_error_but_the_default_is_a_ski
 #[tokio::test]
 async fn the_fetch_suite_is_skipped_with_the_tool_off_and_calls_nothing() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let suites = evals::suite::load(&dir, &["generator/phase12-fetch".into()]).unwrap();
+    let suites = evals::suite::load(&dir, &["generator/web-fetch".into()]).unwrap();
     let provider = fake_with_web_fetch();
     let opts = options(None);
     let report = run_suites(
@@ -827,7 +824,7 @@ async fn the_fetch_suite_is_skipped_with_the_tool_off_and_calls_nothing() {
 #[tokio::test]
 async fn with_the_tool_on_the_fetch_cases_run_the_twin_without_it_and_runs_too() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(&dir, &["generator/phase12-fetch".into()]).unwrap();
+    let mut suites = evals::suite::load(&dir, &["generator/web-fetch".into()]).unwrap();
     suites[0].cases.retain(|c| {
         matches!(
             c.id.as_str(),
@@ -971,7 +968,7 @@ async fn with_the_tool_on_the_fetch_cases_run_the_twin_without_it_and_runs_too()
 #[tokio::test]
 async fn the_other_generator_suites_never_get_the_tool_even_when_it_is_on() {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(&dir, &["generator/phase12".into()]).unwrap();
+    let mut suites = evals::suite::load(&dir, &["generator/rich-lessons".into()]).unwrap();
     suites[0]
         .cases
         .retain(|c| c.id == "rust_second_lesson_records_no_recall");
@@ -997,7 +994,7 @@ async fn the_other_generator_suites_never_get_the_tool_even_when_it_is_on() {
 
 fn planner_suite(case: &str) -> Vec<evals::suite::Suite> {
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../evals");
-    let mut suites = evals::suite::load(&dir, &["planner/phase12".into()]).unwrap();
+    let mut suites = evals::suite::load(&dir, &["planner/concepts".into()]).unwrap();
     suites[0].cases.retain(|c| c.id == case);
     assert_eq!(suites[0].cases.len(), 1, "{case}");
     suites

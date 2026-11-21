@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-13
-- Issue Gitea #2 ("Evidenziatore"). Le sei domande aperte della issue le ha chiuse il proprietario il 2026-11-13 (punti 1-5); i punti 6-8 sono scelte del tech lead che ne derivano.
+- Richiesta "Evidenziatore". Le sei domande aperte della richiesta le ha chiuse il proprietario il 2026-11-13 (punti 1-5); i punti 6-8 sono scelte del tech lead che ne derivano.
 
 ## Problema
 

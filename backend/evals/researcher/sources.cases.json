@@ -1,8 +1,8 @@
 {
- "suite": "researcher-phase4",
+ "suite": "researcher/sources",
  "prompt_dir": "backend/prompts/researcher",
  "schema_file": "backend/prompts/researcher/output_schema.json",
- "description": "Researcher in Fase 4: ricerca web lato server e consegna di Resource[] + gaps in JSON. Un solo turno (con eventuali continuazioni pause_turn), nessuna conversazione. Misura fedeltà a RESOURCES-FORMAT.md della skill teach: solo fonti ad alta fiducia, annotazione e use_for, gruppi knowledge/community (community solo su richiesta), gaps, opt-out delle community.",
+ "description": "Researcher: ricerca web lato server e consegna di Resource[] + gaps in JSON. Un solo turno (con eventuali continuazioni pause_turn), nessuna conversazione. Misura fedeltà a RESOURCES-FORMAT.md della skill teach: solo fonti ad alta fiducia, annotazione e use_for, gruppi knowledge/community (community solo su richiesta), gaps, opt-out delle community.",
  "defaults": {
   "runs_per_case": 2,
   "search_budget": 6,

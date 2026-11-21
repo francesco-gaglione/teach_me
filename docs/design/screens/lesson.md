@@ -1,6 +1,6 @@
 # Schermata Lezione
 
-> Fase 5. Riferimento: **tablet orizzontale (expanded, 1280 × 800 dp)**, poi medium e compact (ADR 0003). Contratto: `docs/contracts/sdui.md`. Specifiche dei blocchi: `../components/` (README, `_exercises.md`, un file per tipo). Ogni scelta è motivata dal principio (P1-P12, `design-system.md` §1).
+> Riferimento: **tablet orizzontale (expanded, 1280 × 800 dp)**, poi medium e compact (ADR 0003). Contratto: `docs/contracts/sdui.md`. Specifiche dei blocchi: `../components/` (README, `_exercises.md`, un file per tipo). Ogni scelta è motivata dal principio (P1-P12, `design-system.md` §1).
 
 ## 1. Scopo didattico
 
@@ -48,7 +48,7 @@ Il testo non è mai più largo di `readingMaxWidth` 600 (45-75 caratteri per rig
 
 | Elemento | Specifica |
 |---|---|
-| **TopBar** | `TopBar` di `base-components` §6: ✕ «Chiudi lezione» (48 dp, a sinistra), titolo `title` (1 riga a font normale, `ui.title3`; a font ≥ 1,5 fino a 2 righe), sottotitolo «Sezione k di N» `ui.body` `inkSoft`. A destra: indicatore `cloud-off` 24 dp con `contentDescription` «Alcune risposte non sono ancora inviate» solo se la coda locale è non vuota; su compact/medium e expanded < 1100: pulsante **Indice** (`list`, 48 dp, «Indice, termini e fonti»). Nessun menu ⋮ in Fase 5 |
+| **TopBar** | `TopBar` di `base-components` §6: ✕ «Chiudi lezione» (48 dp, a sinistra), titolo `title` (1 riga a font normale, `ui.title3`; a font ≥ 1,5 fino a 2 righe), sottotitolo «Sezione k di N» `ui.body` `inkSoft`. A destra: indicatore `cloud-off` 24 dp con `contentDescription` «Alcune risposte non sono ancora inviate» solo se la coda locale è non vuota; su compact/medium e expanded < 1100: pulsante **Indice** (`list`, 48 dp, «Indice, termini e fonti»). Nessun menu ⋮ |
 | **Colonna di lettura** | larghezza `min(600, finestra − 2×margine)`; allineata al gruppo centrato; padding verticale: 24 dp sopra il primo blocco, 96 dp in fondo (spazio di respiro dopo `ContinueBar`) |
 | **Pannello di contesto** | `contextPaneWidth` 280 dp, a **destra** della colonna (la lettura resta il primo oggetto del flusso, l'indice è consultazione: P1); `position: sticky` sotto la TopBar a 24 dp; altezza = viewport − TopBar − 48; scorrimento interno proprio; fill trasparente (su `bg`), **nessun bordo**, separato dalla colonna da 32 dp di vuoto; titoli dei blocchi del pannello `ui.label` (maiuscole normali: «Indice», «Glossario», «Fonti») |
 | **Breakpoint** | pannello visibile se larghezza finestra ≥ `contextPaneBreakpoint` **1100 dp**; sotto, il pannello non esiste e il suo contenuto sta nello sheet del pulsante Indice (§3.3) |
@@ -80,7 +80,7 @@ Sezione 0 si chiama «Introduzione». I titoli di tutte le sezioni sono visibili
 | **Controlla / Invia** | dentro l'esercizio (`_exercises.md` §3) | contiguità |
 | **Chiudi lezione** (✕) | TopBar, a sinistra | salva e torna all'argomento senza dialog (nessuna perdita) |
 | **Progresso** | TopBar (sottotitolo + barra) | sempre visibile, non intrusivo; il pannello ripete lo stato per sezione |
-| **Ascolta** (blocco) / **Ascolta la lezione** | icona silenziosa sotto ogni blocco leggibile; `volume-2` nella TopBar con barra audio mentre legge | l'ascolto è opzionale e non compete con la lettura; spec in `lesson-audio.md` (issue #8) |
+| **Ascolta** (blocco) / **Ascolta la lezione** | icona silenziosa sotto ogni blocco leggibile; `volume-2` nella TopBar con barra audio mentre legge | l'ascolto è opzionale e non compete con la lettura; spec in `lesson-audio.md` |
 
 ### 3.3 Medium e compact (e expanded < 1100)
 
@@ -157,7 +157,7 @@ Prima sezione h2, solo se il piano ha prerequisiti `general`. Contenuto (`../com
 
 **Quando è "svolto".** Dopo che l'utente ha *dato una risposta*, giusta o sbagliata: quiz/fill/order dopo «Controlla»; flashcard dopo l'autovalutazione; `open_answer` dopo l'invio accettato **localmente** (la valutazione del Grader può arrivare dopo: se la rete manca, la risposta resta in coda, conta come svolta e il pannello dice «Risposta registrata»: un guasto non dell'utente non blocca). 
 
-**Si può proseguire dopo una risposta sbagliata. Sì.** Il valore sta nel tentativo di richiamo e nel feedback spiegato (P5, P6); bloccare finché è giusta produce prove a caso su 3-5 opzioni, contraddice P9 e falsa la misura (conta il primo tentativo). L'errore non si perde: è registrato, genera scheda di ripasso (Fase 7-8) e compare in «Da rivedere» nel riepilogo.
+**Si può proseguire dopo una risposta sbagliata. Sì.** Il valore sta nel tentativo di richiamo e nel feedback spiegato (P5, P6); bloccare finché è giusta produce prove a caso su 3-5 opzioni, contraddice P9 e falsa la misura (conta il primo tentativo). L'errore non si perde: è registrato, genera scheda di ripasso e compare in «Da rivedere» nel riepilogo.
 
 **Riprova facoltativa** su `quiz_multi`, `fill_blank`, `order_steps` dopo `incorrect`/`partial`: Button testuale «Riprova» sotto il feedback, non sostituisce «Continua»; il secondo tentativo non cambia l'esito registrato («Per il ripasso conta il primo»); una sola volta. Mai su `quiz_single`, `flashcard`, `open_answer`. Dettagli in `_exercises.md` §5.
 
@@ -207,7 +207,7 @@ Estende `../components/_exercises.md` §6. Obiettivo: poter percorrere una lezio
 
 L'anello di focus 3 dp (offset 2) appare solo con tastiera/D-pad. Suggerimenti visivi delle scorciatoie (`KeyHint`) solo con tastiera fisica collegata. Nessuna scorciatoia a lettera singola (si digita in campi di testo; si evitano conflitti con IME e TalkBack).
 
-## 7. Riepilogo (dopo «Completa lezione»; Fase 7)
+## 7. Riepilogo (dopo «Completa lezione»)
 
 Schermata a tutta finestra, **senza pannello**, colonna centrata 600 dp (compact: margine 16). Ha **due parti con tempi diversi**: la parte **locale**, istantanea (calcolata dagli esiti dei tentativi), e il blocco **«Cosa hai dimostrato»**, che arriva dal backend a job `lesson_completion` finito (di solito pochi secondi, può essere di più). La prima non aspetta la seconda (P1, P5: niente attesa davanti all'unica vittoria che conta), e la seconda cresce **in fondo**, così non sposta ciò che si sta leggendo.
 
@@ -221,7 +221,7 @@ Si raggiunge in due modi: (a) **dopo «Completa lezione»**; (b) toccando una le
 │ Saper prevedere se una variabile è   │  reading.body: `objective`
 │ ancora utilizzabile dopo l'assegnamento.
 │                                      │
-│ Cosa hai fatto                       │  ui.title3   (parte locale, invariata dalla Fase 5)
+│ Cosa hai fatto                       │  ui.title3   (parte locale, non dipende dal backend)
 │  ✓ Quando `a` smette di essere       │
 │    valida · Corretto al primo tentativo
 │  ◦ Copia e clone · Da rivedere       │
@@ -242,7 +242,7 @@ Linguaggio di competenza («Hai dimostrato…», «Corretto al primo tentativo»
 
 ### 7.1 Parte locale: «Cosa hai fatto» e «Da rivedere»
 
-Invariate rispetto alla Fase 5 (icona + parole: `check-circle` «Corretto al primo tentativo» / «Corretto al secondo tentativo»; `minus-circle` «Da rivedere»), con l'aggiunta dei casi di `open_answer` (§8):
+Icona + parole: `check-circle` «Corretto al primo tentativo» / «Corretto al secondo tentativo»; `minus-circle` «Da rivedere»; con l'aggiunta dei casi di `open_answer` (§8):
 
 | Esito di `open_answer` | Riga in «Cosa hai fatto» |
 |---|---|
@@ -286,7 +286,7 @@ Il pannello si sostituisce (crossfade `fast`; con «riduci animazioni» istantan
 
 1. **«Hai dimostrato»** (`ui.label` `inkSoft`, solo se `records`): una `RecordCard` per record (stessa di `progress.md` §3.2: eyebrow «Hai dimostrato» / «Idea chiarita», titolo, corpo, «Come l'hai dimostrato» chiusa; senza il Button «Lezione N», qui ridondante), fino a 5. Le card sono **dentro** il pannello senza una seconda cornice (si usa la separazione con hairline `line`, non card annidate).
 2. **«Parole nuove nel glossario»** (solo se `terms`): riga a capo libero di `TermPill` (Button 48 dp, fill `surface`, bordo `border` 1,5, raggio `full`, testo `ui.label` `ink`, icona `book-open` 16 `knowledge`; gap 8): tocco → `GlossarySheet` con `origin` (`progress.md` §4.2). Un termine «rivisto» è identico a uno nuovo (non si fa la differenza in v1).
-3. **Schede di ripasso** (solo se `review_card_count` > 0): riga `ui.body` `inkSoft` con icona `layers` 20 `inkSoft`: «Ho preparato 4 schede per il ripasso.» (1: «Ho preparato 1 scheda per il ripasso.»). Sotto, `ui.bodyS` `inkSoft`: «Le ritroverai nel ripasso tra circa 1 giorno.» (1 scheda: «La ritroverai nel ripasso tra circa 1 giorno.»). Il «circa 1 giorno» è fisso: una scheda nuova è in scadenza 24 h dopo la creazione (`reviews.md` §1). **Nessun Button «Vai al ripasso»** (decisione Fase 8): appena chiusa la lezione le sue schede non sono in scadenza, e il pulsante porterebbe a schede di altre lezioni o a «Nessun ripasso per ora», interrompendo il momento di chiusura (P1). Il ripasso si trova in Home. Testo identico in compact, medium ed expanded.
+3. **Schede di ripasso** (solo se `review_card_count` > 0): riga `ui.body` `inkSoft` con icona `layers` 20 `inkSoft`: «Ho preparato 4 schede per il ripasso.» (1: «Ho preparato 1 scheda per il ripasso.»). Sotto, `ui.bodyS` `inkSoft`: «Le ritroverai nel ripasso tra circa 1 giorno.» (1 scheda: «La ritroverai nel ripasso tra circa 1 giorno.»). Il «circa 1 giorno» è fisso: una scheda nuova è in scadenza 24 h dopo la creazione (`reviews.md` §1). **Nessun Button «Vai al ripasso»** (decisione di progetto): appena chiusa la lezione le sue schede non sono in scadenza, e il pulsante porterebbe a schede di altre lezioni o a «Nessun ripasso per ora», interrompendo il momento di chiusura (P1). Il ripasso si trova in Home. Testo identico in compact, medium ed expanded.
 4. Button testuale «Vedi tutto nel registro» (48 dp) → argomento, tab «Cosa sai» › Registro.
 
 Annuncio Polite una sola volta: «Registro aggiornato: 2 cose registrate, 3 parole nuove.» (testi con plurali).
@@ -311,7 +311,7 @@ Perché questo testo: dice *cosa fa il registro* (regola oggettiva) e *perché �
 | `timeout` | Il registro ha richiesto troppo tempo | Non sono riuscito a finire in tempo. Puoi riprovare: spesso basta. |
 | `interrupted` | Registro non aggiornato | Il server si è riavviato più volte. Riprova. |
 | `internal` / sconosciuto | Registro non aggiornato | Qualcosa è andato storto sul server. Riprova. |
-| `llm_key_missing` / `llm_key_rejected` (Fase 11) | non è questa tabella: `LlmKeyNotice` (`../llm-key.md` §6) | «Riprova» solo dopo il salvataggio di una chiave. `llm_credit_exhausted`: pannello `credit` con «Riprova» subito (`../llm-key.md` §9.3) |
+| `llm_key_missing` / `llm_key_rejected` | non è questa tabella: `LlmKeyNotice` (`../llm-key.md` §6) | «Riprova» solo dopo il salvataggio di una chiave. `llm_credit_exhausted`: pannello `credit` con «Riprova» subito (`../llm-key.md` §9.3) |
 
 Mentre il job è `failed`, **tutto il resto del riepilogo resta valido** (la parte locale non dipende dal registro). Il Toast in uscita e la riga nella lista lezioni lo segnalano (`topic.md` F4). Errore di rete su «Riprova»: stesso pannello, corpo «Non sono riuscito a raggiungere il backend. Controlla la connessione.».
 
@@ -345,7 +345,7 @@ Su expanded: i tre bottoni in colonna a larghezza piena colonna (primario sopra)
 | Tutti i blocchi di una sezione non renderizzabili | riga neutra unica; la sezione si sblocca da sola |
 | Lezione `completed` riaperta | §7.3 «Rileggi la lezione» |
 
-### 8.1 Invio dei tentativi (Fase 7)
+### 8.1 Invio dei tentativi
 
 Principio: **registrare non è mai un passo che l'utente aspetta né un motivo per bloccarlo** (un guasto non è colpa sua). Ogni esercizio che arriva a `checked` genera un tentativo che entra subito nella **coda locale** (persistita su disco, sopravvive a riavvio); l'app lo invia in background. «Continua» **non dipende mai** dall'invio.
 
@@ -372,7 +372,7 @@ Evidenziatore con la penna (tavolozza flottante solo dopo il primo uso della pen
 - `ContinueBar` e esercizi: `stateDescription`, live region, ordini di focus descritti nei file dei blocchi. Il motivo del blocco è sempre accanto al bottone nell'albero.
 - Feedback degli esercizi: live region polite «Corretto. <spiegazione>».
 - Font fino a 200 %: la colonna riflette, le opzioni crescono in altezza, il sottotitolo e il titolo vanno a capo, i gruppi a più colonne passano a una colonna oltre fontScale 1,3, `fill_blank` passa alla modalità a elenco oltre 1,5.
-- Contrasto: tutte le coppie sono già in `design-system.md` §2.4 / `tools/contrast_check.py` (nessun colore nuovo in Fase 5).
+- Contrasto: tutte le coppie sono già in `design-system.md` §2.4 / `tools/contrast_check.py` (nessun colore nuovo).
 - Target ≥ 48 dp; gap ≥ 8 dp. Eccezione motivata: span inline di termini/citazioni nel testo (WCAG 2.5.8).
 - Codice: un nodo con testo integrale, azioni «Copia codice» e scorrimento; selezionabile.
 - Il testo informativo non scende sotto 12 sp e mai in `labelSmall` salvo etichette brevi (`ui.labelS` per chip e numeri di citazione).
@@ -384,7 +384,7 @@ Evidenziatore con la penna (tavolozza flottante solo dopo il primo uso della pen
 Vedi il report. In sintesi: `code.highlight_lines`, avvisi non bloccanti del Validator (`warnings`) per la qualità didattica (gap esercizio, markup nelle opzioni, risposte lunghe nei vuoti), precisazioni di §5 (mescolamento, feedback della corretta, `incorrect` del multi), glossario senza `[[ ]]` nelle definizioni, `catalog_version` superiore, esercizi in `fallback`.
 
 
-### 3.3 Fonti «Dal tuo PDF» (Fase 10)
+### 3.3 Fonti «Dal tuo PDF»
 
 Una voce di `sources[]` con **`url: null`** è un PDF caricato dall'utente (`documents.md` §6; il Validator garantisce `url` null ⇔ documento). L'app non guarda `resource_id` né interpreta il `title`: le pagine sono già nel testo del titolo («Rust in Action, cap. 4 (pp. 101-118)»). Per l'utente è la fonte più concreta: è **il suo** materiale, e può verificare la lezione aprendo il file alle pagine indicate (contiguità e controllo, non fede).
 

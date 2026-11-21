@@ -1,8 +1,8 @@
 package com.teachme.core.model
 
 /**
- * Where lesson documents come from. In phase 5 a build-specific source serves the contract fixtures; from
- * phase 6 the backend does (`GET /lessons/{id}`). A lesson is addressed by an opaque [key].
+ * Where lesson documents come from. Debug builds can serve the contract fixtures; the backend serves
+ * the rest (`GET /lessons/{id}`). A lesson is addressed by an opaque [key].
  */
 interface LessonDocumentSource {
     /** The raw JSON of the lesson, or null when it cannot be loaded. Never throws. */

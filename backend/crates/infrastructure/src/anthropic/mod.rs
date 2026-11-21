@@ -98,7 +98,7 @@ pub fn default_role_models() -> HashMap<LlmRole, RoleModel> {
         // Five concepts with example and steps are ~2k-3k tokens of JSON plus
         // reasoning; 8k leaves room for both and for a repair.
         (LlmRole::Planner, role("claude-opus-5-5", "medium", 8_000)),
-        // `low` (Phase 12 evals, `backend/evals/README.md`): at `medium` the
+        // `low` (rich-lesson evals, `backend/evals/README.md`): at `medium` the
         // reasoning took 60-80% of the output and plans of 4-5 concepts
         // exhausted the cap before the lesson was written. 32k leaves room for
         // the ~8k tokens a lesson takes at `low`, and for a repair.

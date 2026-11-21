@@ -251,7 +251,7 @@ class ReviewSyncerTest {
             assertEquals(ReviewFlushResult.Empty.status, syncer.flush().status)
         }
 
-    // region Phase 11: data of a user never leaves with the session of another
+    // region data of a user never leaves with the session of another
 
     private class ScopedQueue(
         private val scopes: ManualUserScopes,

@@ -1,4 +1,4 @@
-//! End-to-end tests of the background jobs (proposal in the phase 4 report) over
+//! End-to-end tests of the background jobs over
 //! the real router and SQLite, in process (no sockets), with a scripted model
 //! and fake job handlers.
 

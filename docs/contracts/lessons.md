@@ -1,15 +1,15 @@
 # Contratto: Lezioni, tentativi, learning record e glossario
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.9** (2026-11-21), Fasi 6 e 7.
-> **Issue #30 (v1.9, ADR 0019):** campo di sola lettura `language` in `LessonView` (§3.1): la lingua dell'argomento della lezione (`"it"` o `"en"`), per la lingua di default dei blocchi SDUI senza `lang` (`sdui.md` §3). Modifica additiva.
-> **Issue #13 e #18 (v1.8):** `document_sources` in `Lesson` (§2), con pagina minima e massima per documento usato dal piano; `GET /lessons?status=in_progress` per la card «Riprendi la lezione» (§3.2); step `reading` «Leggo le fonti» nel job (§4). Modifica additiva.
-> **Issue #14 (v1.7):** `quality_warnings` in `Lesson` (§2) e `LessonView` (§3.1): avvisi non bloccanti del Validator, regole e soglie in `design/quality-warnings.md`. Il Validator (§4) distingue errori e avvisi. Modifica additiva.
-> **Issue #29 (v1.6):** una scheda del Recorder può indicare l'esercizio mai superato da cui nasce (`unpassed_block`, §6.1): il backend lo controlla (§6.3) e la scheda è «da consolidare» nel ripasso (`reviews.md` v1.4). Modifica additiva.
-> **Issue #17 (v1.5):** `GlossaryTerm.first_lesson_id` (la lezione in cui il termine è nato); lezione richiesta dalla chat col tool `request_lesson` del Tutor e parte di messaggio `lesson_request` (§12). Modifiche additive.
-> **Issue #27 (v1.4):** note a mano dell'utente sopra la lezione: `LessonView.strokes` e `PUT /lessons/{id}/strokes` (§11, ADR 0015). Modifica additiva.
-> **Issue #8 (v1.3):** `GET /lessons/{id}` mette in coda l'audio dei blocchi leggibili che mancano per la voce dell'utente, e il salvataggio di una lezione nuova fa lo stesso (`audio.md` §1). Il manifest è `GET /lessons/{id}/audio`. Modifica additiva.
-> **Issue #2 (v1.2):** evidenziazioni dell'utente sul testo della lezione: `LessonView.highlights` e `PUT /lessons/{id}/highlights` (§10, ADR 0011). Modifica additiva.
-> **Fase 11 (v1.1):** generazione e chiusura di una lezione senza chiave LLM rispondono `409 llm_key_missing`; l'invio dei tentativi non fallisce mai per la chiave, le risposte aperte restano in attesa di valutazione (`users.md` §3).
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.9** (2026-11-21).
+> **v1.9 (ADR 0019):** campo di sola lettura `language` in `LessonView` (§3.1): la lingua dell'argomento della lezione (`"it"` o `"en"`), per la lingua di default dei blocchi SDUI senza `lang` (`sdui.md` §3). Modifica additiva.
+> **v1.8:** `document_sources` in `Lesson` (§2), con pagina minima e massima per documento usato dal piano; `GET /lessons?status=in_progress` per la card «Riprendi la lezione» (§3.2); step `reading` «Leggo le fonti» nel job (§4). Modifica additiva.
+> **v1.7:** `quality_warnings` in `Lesson` (§2) e `LessonView` (§3.1): avvisi non bloccanti del Validator, regole e soglie in `design/quality-warnings.md`. Il Validator (§4) distingue errori e avvisi. Modifica additiva.
+> **v1.6:** una scheda del Recorder può indicare l'esercizio mai superato da cui nasce (`unpassed_block`, §6.1): il backend lo controlla (§6.3) e la scheda è «da consolidare» nel ripasso (`reviews.md` v1.4). Modifica additiva.
+> **v1.5:** `GlossaryTerm.first_lesson_id` (la lezione in cui il termine è nato); lezione richiesta dalla chat col tool `request_lesson` del Tutor e parte di messaggio `lesson_request` (§12). Modifiche additive.
+> **v1.4:** note a mano dell'utente sopra la lezione: `LessonView.strokes` e `PUT /lessons/{id}/strokes` (§11, ADR 0015). Modifica additiva.
+> **v1.3:** `GET /lessons/{id}` mette in coda l'audio dei blocchi leggibili che mancano per la voce dell'utente, e il salvataggio di una lezione nuova fa lo stesso (`audio.md` §1). Il manifest è `GET /lessons/{id}/audio`. Modifica additiva.
+> **v1.2:** evidenziazioni dell'utente sul testo della lezione: `LessonView.highlights` e `PUT /lessons/{id}/highlights` (§10, ADR 0011). Modifica additiva.
+> **v1.1:** generazione e chiusura di una lezione senza chiave LLM rispondono `409 llm_key_missing`; l'invio dei tentativi non fallisce mai per la chiave, le risposte aperte restano in attesa di valutazione (`users.md` §3).
 > Valgono `api-conventions.md`, `jobs.md`, `sdui.md` (documento di lezione, catalogo v1), `resources.md`, `mission.md`. Formati di riferimento della skill `teach` (Matt Pocock): `LEARNING-RECORD-FORMAT.md`, `GLOSSARY-FORMAT.md`. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti
@@ -19,7 +19,7 @@
 - **Tentativo** (`Attempt`): la risposta a un esercizio. Conta il **primo** tentativo; il secondo esiste solo per la "Riprova" facoltativa (`lesson.md` §5) di `quiz_multi`, `fill_blank`, `order_steps`. Gli esercizi chiusi li corregge l'app (`sdui.md` §5) e il backend registra l'esito ricevuto; `open_answer` lo valuta il **Grader** sul backend.
 - **Chiusura**: "Completa lezione" segna la lezione `completed` e avvia un job `lesson_completion`: il **Recorder** legge tentativi e valutazioni e produce **learning record**, **termini del glossario** e **schede di ripasso**.
 - **Coverage ≠ learning** (regola della skill, garantita dal backend, non dal prompt): un record o un termine nasce solo da esercizi **superati** in questa lezione (§6.3). Una misconcezione corretta deve generare un record: è un'istruzione al Recorder (misurata dagli eval), mentre il backend garantisce solo che ogni record abbia prove valide.
-- Le schede di ripasso (fronte/retro, ADR 0005 D2) nascono in Fase 7; scheduling e API: `reviews.md` (Fase 8).
+- Le schede di ripasso (fronte/retro, ADR 0005 D2) scheduling e API: `reviews.md`.
 
 ## 2. Risorse
 
@@ -56,8 +56,8 @@ Lezione che segue due documenti caricati (esempio v1.8):
 
 | Campo | Regole |
 |---|---|
-| `document_sources` | (v1.8, issue #18) array, sempre presente, `[]` se la lezione non segue documenti caricati. Elemento: `{ "document_id": uuid, "title": string, "page_start": int, "page_end": int }`, uno per documento usato dal piano del Planner, nell'ordine del piano. `page_start` e `page_end` sono la pagina minima e la massima delle sezioni scelte dal piano per quel documento (1-based, inclusive). Calcolato in lettura: un documento eliminato sparisce dall'array. Presente ovunque compaia `Lesson` (liste e `LessonView`). Un'app precedente alla v1.8 ignora il campo |
-| `quality_warnings` | (v1.7, issue #14) array, sempre presente, `[]` se nessun avviso. Elemento: `{ "code": string, "block_id": string \| null, "message": string }`. `code` è uno di: `explanation_run_too_long`, `too_many_callouts`, `fill_blank_answer_too_long`, `consecutive_code_blocks`; l'app tratta un codice sconosciuto come avviso generico (mostra `message`). `message` è nella lingua dell'argomento (ADR 0019), scritto per la persona che studia. `block_id` è l'id del blocco interessato (il primo, se più blocchi), `null` se l'avviso riguarda la lezione intera. Regole e soglie: `design/quality-warnings.md`. Lezioni precedenti alla v1.7: `[]`. Un'app precedente alla v1.7 ignora il campo |
+| `document_sources` | (v1.8) array, sempre presente, `[]` se la lezione non segue documenti caricati. Elemento: `{ "document_id": uuid, "title": string, "page_start": int, "page_end": int }`, uno per documento usato dal piano del Planner, nell'ordine del piano. `page_start` e `page_end` sono la pagina minima e la massima delle sezioni scelte dal piano per quel documento (1-based, inclusive). Calcolato in lettura: un documento eliminato sparisce dall'array. Presente ovunque compaia `Lesson` (liste e `LessonView`). Un'app precedente alla v1.8 ignora il campo |
+| `quality_warnings` | (v1.7) array, sempre presente, `[]` se nessun avviso. Elemento: `{ "code": string, "block_id": string \| null, "message": string }`. `code` è uno di: `explanation_run_too_long`, `too_many_callouts`, `fill_blank_answer_too_long`, `consecutive_code_blocks`; l'app tratta un codice sconosciuto come avviso generico (mostra `message`). `message` è nella lingua dell'argomento (ADR 0019), scritto per la persona che studia. `block_id` è l'id del blocco interessato (il primo, se più blocchi), `null` se l'avviso riguarda la lezione intera. Regole e soglie: `design/quality-warnings.md`. Lezioni precedenti alla v1.7: `[]`. Un'app precedente alla v1.7 ignora il campo |
 | `number` | 1, 2, 3… nel Topic, senza buchi, assegnato al salvataggio |
 | `title`, `objective`, `estimated_minutes` | copiati dal documento (`estimated_minutes` è quello calcolato dal backend, `sdui.md` §2) |
 | `status` | `not_started` → `in_progress` (primo tentativo registrato) → `completed` (`POST …/complete`). L'app tratta valori sconosciuti come `not_started` |
@@ -202,7 +202,7 @@ Un termine esistente si **rivede sul posto** (stessa `key`, `updated_at` aggiorn
 
 - `quality_warnings`: copia di `Lesson.quality_warnings` (v1.7, §2), `[]` se nessun avviso. Un'app precedente alla v1.7 ignora il campo.
 - `document_sources`: copia di `Lesson.document_sources` (v1.8, §2), `[]` se la lezione non segue documenti. Un'app precedente alla v1.8 ignora il campo.
-- `language` (v1.9, issue #30, ADR 0019): lingua dell'argomento della lezione, `"it"` o `"en"`, sempre presente. Di sola lettura: l'app non la invia mai. Un blocco SDUI senza `lang` è nella lingua indicata qui (`sdui.md` §3). Un'app precedente alla v1.9 ignora il campo.
+- `language` (v1.9, ADR 0019): lingua dell'argomento della lezione, `"it"` o `"en"`, sempre presente. Di sola lettura: l'app non la invia mai. Un blocco SDUI senza `lang` è nella lingua indicata qui (`sdui.md` §3). Un'app precedente alla v1.9 ignora il campo.
 - `attempts`: tutti i tentativi della lezione, ordinati per `created_at`. Riflettono sempre lo stato attuale: un `open_answer` valutato dopo (reinvio o job `lesson_completion`) arriva con `outcome` e `grade` aggiornati. L'app li usa per ripristinare gli esiti e le valutazioni di `open_answer` (per esempio su un altro dispositivo o dopo aver svuotato i dati).
 - `highlights`: le evidenziazioni dell'utente (§10), `[]` se non ce ne sono. Un'app precedente alla v1.2 ignora il campo.
 - `strokes`: le note a mano dell'utente (§11), `[]` se non ce ne sono, nell'ordine di disegno. Un'app precedente alla v1.4 ignora il campo.
@@ -219,7 +219,7 @@ Un termine esistente si **rivede sul posto** (stessa `key`, `updated_at` aggiorn
 
 `records`, `terms` e `review_card_count` sono vuoti/0 finché il job non è `succeeded`.
 
-### 3.2 `LessonInProgress` (v1.8, issue #13)
+### 3.2 `LessonInProgress` (v1.8)
 
 `GET /lessons?status=in_progress` → `200` lista paginata (cursore, `api-conventions.md` §8) di `LessonInProgress`: tutti i campi di `Lesson` (§2, compreso `document_sources`), più:
 
@@ -230,14 +230,14 @@ Solo le lezioni `in_progress` dei Topic dell'utente, ordinate per `last_activity
 
 ## 4. Job `lesson_generation`
 
-- `progress.step`: `planning` ("Scelgo cosa insegnare") · [`reading` ("Leggo le fonti"), v1.8, issue #18: solo quando il piano segue documenti caricati o la lettura web delle fonti è attiva; senza `done`/`total`] · `writing` ("Scrivo la lezione") · `checking` ("Controllo la lezione") · `saving`. Durante una riparazione lo step torna `writing` con `done`/`total` = numero del documento / 3 e `message` "Correggo la lezione". Regola per l'app: `step == writing` con `done` > 1 = riparazione in corso. L'app mostra testi fissi per step e solo lo spinner per uno step sconosciuto.
+- `progress.step`: `planning` ("Scelgo cosa insegnare") · [`reading` ("Leggo le fonti"), v1.8: solo quando il piano segue documenti caricati o la lettura web delle fonti è attiva; senza `done`/`total`] · `writing` ("Scrivo la lezione") · `checking` ("Controllo la lezione") · `saving`. Durante una riparazione lo step torna `writing` con `done`/`total` = numero del documento / 3 e `message` "Correggo la lezione". Regola per l'app: `step == writing` con `done` > 1 = riparazione in corso. L'app mostra testi fissi per step e solo lo spinner per uno step sconosciuto.
 - `result` (quando `succeeded`): `{ "lesson_id": "…", "lesson_number": 3 }`.
 - `error.code`: quelli di `jobs.md` §2; `invalid_output` = il Planner non ha prodotto un piano valido dopo una riparazione, oppure nessuno dei 3 documenti ha superato il Validator.
-- Al salvataggio, in una transazione: lezione (documento completo con `rubric`, `catalog_version`, piano del Planner, `mission_version`) e una `ComponentRequest` per ogni blocco `missing_component` (`wanted`, `purpose`, `fallback`; l'API arriva in Fase 9).
+- Al salvataggio, in una transazione: lezione (documento completo con `rubric`, `catalog_version`, piano del Planner, `mission_version`) e una `ComponentRequest` per ogni blocco `missing_component` (`wanted`, `purpose`, `fallback`; l'API è in `component-requests.md`).
 - Contesto del Validator in produzione (`sdui.md` §6): `sources[].resource_id` deve essere una `Resource` del Topic (`null` vietato); `lesson_link.lesson_id` una lezione esistente del Topic. Al salvataggio il backend sovrascrive `sources[].url` con quello della `Resource` indicata (il modello non inventa URL).
-- (v1.7, issue #14) Il Validator distingue **errori** (bloccanti: il documento non si salva e va riparato, `sdui.md` §6) e **avvisi** (non bloccanti: il documento si salva con `quality_warnings`, §2). Due nuovi errori bloccanti: una risposta di `fill_blank` visibile nel testo vicino al suo segnaposto, e markup solo in alcune opzioni di un quiz.
+- (v1.7) Il Validator distingue **errori** (bloccanti: il documento non si salva e va riparato, `sdui.md` §6) e **avvisi** (non bloccanti: il documento si salva con `quality_warnings`, §2). Due nuovi errori bloccanti: una risposta di `fill_blank` visibile nel testo vicino al suo segnaposto, e markup solo in alcune opzioni di un quiz.
 - (v1.7) Se il documento è valido ma ha avvisi, il backend tenta una riparazione, dentro il limite di riparazioni esistente. Tiene il documento riparato solo se è valido e ha meno avvisi; altrimenti tiene quello di partenza. Gli avvisi del documento salvato finiscono in `quality_warnings` (§2).
-- (v1.7, decisioni del tech lead, issue #14) Tenuta della riparazione per punteggio: `explanation_run_too_long` vale 2, gli altri avvisi 1. Si tiene il documento riparato solo se è valido e con punteggio strettamente minore; altrimenti si tiene quello di partenza.
+- (v1.7, decisioni del tech lead) Tenuta della riparazione per punteggio: `explanation_run_too_long` vale 2, gli altri avvisi 1. Si tiene il documento riparato solo se è valido e con punteggio strettamente minore; altrimenti si tiene quello di partenza.
 - (v1.7) Limite riparazioni: la riparazione per soli avvisi parte solo da un documento già valido, quindi non sottrae tentativi a un errore. Se il riparato ha errori si tiene il precedente valido, senza altre riparazioni. Massimo una riparazione per avvisi per lezione, sempre dentro `max_document_repairs`.
 - Il documento è autosufficiente: ogni `[[key]]` e `glossary_term.key` deve stare nel `glossary` del documento. Per i termini già nel glossario del Topic il Generator ne riusa `key` e `definition`. (Questo restringe `sdui.md` §6 `unknown_glossary_key`: il glossario del Topic non basta più.)
 
@@ -318,9 +318,9 @@ Nessun evento nuovo: `job_updated` (`jobs.md` §4) per generazione e chiusura. Q
 ## 9. Fuori da questa versione
 
 - Lezione su un argomento indicato dall'utente: anche dalla chat (§12) sceglie il Planner.
-- (v1.8, decisione del tech lead, issue #18) Le «pagine strutturate in `sources`», proposte dal designer (F10), non si fanno: le copre `document_sources` (§2); le pagine restano nel `title` della fonte (`sdui.md` §2).
+- (v1.8, decisione del tech lead) Le «pagine strutturate in `sources`», proposte dal designer (F10), non si fanno: le copre `document_sources` (§2); le pagine restano nel `title` della fonte (`sdui.md` §2).
 - Record di conoscenze pregresse dichiarate in chat e di cambi di mission (casi 2 e 4 della skill): li scriverà il Tutor in una versione successiva.
-- API delle schede di ripasso e scheduling: Fase 8. API delle `ComponentRequest`: Fase 9.
+- API delle schede di ripasso e scheduling: `reviews.md`. API delle `ComponentRequest`: `component-requests.md`.
 
 ## 10. Evidenziazioni (v1.2)
 
@@ -411,7 +411,7 @@ PUT /lessons/{id}/strokes
 - **Sincronizzazione** come le evidenziazioni (§10): l'insieme locale è la verità finché ha modifiche non inviate; senza modifiche in sospeso, all'apertura vale `LessonView.strokes`; con due dispositivi vince l'ultimo invio.
 - **`422`**: se `details` indica `strokes[i]`, l'app scarta quel tratto e reinvia, al massimo 3 scarti per invio. Senza indice o oltre i 3 scarti, e con `413`, l'insieme resta locale e visibile ma non si ritenta da solo (riparte con una nuova modifica, alla riapertura o con «Riprova ora»).
 
-## 12. Lezione richiesta dalla chat (v1.5, issue #17)
+## 12. Lezione richiesta dalla chat (v1.5)
 
 La persona può chiedere la prossima lezione al Tutor in chat. Il Tutor chiama il tool interno `request_lesson` (`mission.md` §6), che ha lo **stesso effetto** di `POST /topics/{id}/lessons`: mette in coda un job `lesson_generation` (§4) e il Planner sceglie che cosa insegnare. Il tool non ha argomenti.
 

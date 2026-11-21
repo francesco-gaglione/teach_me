@@ -1,7 +1,7 @@
 # Utenti, accesso e chiave LLM
 
 > Contratto condiviso tra backend e app. Proprietario: tech lead.
-> Versione: **v1.2** (2026-11-13, issue #8: campo `tts_voice` e `PUT /me/tts-voice`, `audio.md` §4.2; v1.1 2026-11-11, Fase 12: nuovo errore `llm_credit_exhausted`, §3; v1 2026-11-10, Fase 11). Design: ADR 0008. Regole generali: `api-conventions.md` (v1.2).
+> Versione: **v1.2** (2026-11-13: campo `tts_voice` e `PUT /me/tts-voice`, `audio.md` §4.2; v1.1 2026-11-11: nuovo errore `llm_credit_exhausted`, §3; v1 2026-11-10). Design: ADR 0008. Regole generali: `api-conventions.md` (v1.2).
 
 ## 1. Risorsa `User`
 
@@ -131,7 +131,7 @@ Sottocomandi del binario del backend, eseguiti sul server (`docker compose exec`
 - `TEACH_ME_API_TOKEN` non è più usato: se presente viene ignorato con un avviso nei log.
 - Nuova variabile obbligatoria **`TEACH_ME_SECRET_KEY`** (32 byte in base64): cifra le chiavi LLM nel database. Senza, il backend non parte.
 
-### Credito esaurito (v1.1, Fase 12)
+### Credito esaurito (v1.1)
 
 - `llm_credit_exhausted` **non** riguarda la validità della chiave: la chiave resta quella, `has_llm_key` resta `true` e l'app non la segna come rifiutata né invita a sostituirla. Il `message` segue `Accept-Language` come gli altri errori API (`api-conventions.md` §7); testo italiano: «Il credito del servizio LLM è esaurito: ricaricalo presso il provider e riprova.»
 - A differenza di `llm_key_rejected`, **«Riprova» resta disponibile**: la ricarica avviene fuori dall'app e non c'è nulla da salvare prima di riprovare.

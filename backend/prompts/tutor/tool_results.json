@@ -1,5 +1,5 @@
 {
-  "version": "tutor-tool-results-phase17-v3",
+  "version": "tutor-tool-results-v3",
   "note": "Testi dei tool_result restituiti al modello. Segnaposto {{nome}} sostituiti dal backend. 'is_error' indica il flag del Part::ToolResult. Italiano, imperativi brevi: sono istruzioni per il modello, mai mostrate alla persona.",
   "results": {
     "save_mission_draft": {

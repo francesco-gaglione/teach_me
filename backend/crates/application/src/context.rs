@@ -1,4 +1,4 @@
-//! Context Assembler for the Tutor (phase 2): a pure function from prompts,
+//! Context Assembler for the Tutor: a pure function from prompts,
 //! topic and stored messages to an [`LlmRequest`]. Design: `llm-port.md` §10.
 
 use domain::llm::{LlmMessage, LlmRequest, LlmRole, MessageRole as LlmMessageRole, SystemBlock};

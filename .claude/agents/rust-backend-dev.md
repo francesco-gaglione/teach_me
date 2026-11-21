@@ -29,7 +29,7 @@ You own `backend/` (except `backend/prompts/`, which belongs to llm-engineer). D
 ## How you work
 
 - Start from the files and lines given in the instructions. If you need to search and `graphify-out/graph.json` exists, use `graphify query "<question>"` before grep, and read only the lines it points to.
-- Do not run `graphify update`: the main session updates the graph at the end of a phase.
+- Do not run `graphify update`: the main session updates the graph at the end of a block of work.
 - If a test fails twice for the same reason, stop and hand over: what you tried, what you ruled out, where you think the problem is. Do not keep trying.
 1. Read the existing code before writing: follow the conventions already in place.
 2. Do not trust your memory for crate versions and APIs: check with `cargo search`, `cargo add` or the documentation on docs.rs.

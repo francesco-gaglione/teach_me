@@ -1,4 +1,4 @@
-//! Migration `0025` (issue 17) on a database at schema `0024` with glossary
+//! Migration `0025` on a database at schema `0024` with glossary
 //! terms: the origin of a never-revised term is backfilled, the origin of a
 //! revised one is unknown and stays NULL.
 

@@ -20,7 +20,7 @@ Apri il file alla sezione che serve (`grep -n '^#' <file>` per i numeri di riga)
 - [`lessons.md`](lessons.md) · 36.8 KB — Lezioni (v1.9: `language` in `LessonView`; v1.8: `document_sources`, `GET /lessons?status=in_progress`, fase `reading`): risorse, generazione, tentativi, completamento, evidenziazioni, note a mano, lezioni dalla chat.
   - Titoli: §1 Concetti · §2 Risorse · §3 Endpoint · §4 Job lesson_generation · §5 Tentativi · §6 Chiusura e job lesson_completion · §7 Chat dal bottone ask_agent · §8 Eventi · §9 Fuori da questa versione · §10 Evidenziazioni (v1.2) · §11 Note a mano (v1.4) · §12 Lezione richiesta dalla chat (v1.5,…
 - [`mission.md`](mission.md) · 14.8 KB — Mission dell'argomento: risorse, proposta, endpoint, stati del Topic, tool del Tutor.
-  - Titoli: §1 Concetti · §2 Risorse · §3 Parte di messaggio mission_proposal · §4 Endpoint · §5 Stati del Topic e nuovi eventi · §6 Tool del Tutor (informativo) · §7 Precisazioni (dopo l'implementazione… · §8 Punto di partenza (v1.2, Fase 12)
+  - Titoli: §1 Concetti · §2 Risorse · §3 Parte di messaggio mission_proposal · §4 Endpoint · §5 Stati del Topic e nuovi eventi · §6 Tool del Tutor (informativo) · §7 Precisazioni (dopo l'implementazione… · §8 Punto di partenza (v1.2)
 - [`resources.md`](resources.md) · 7.0 KB — Fonti web: risorse, endpoint, job research ed eventi.
   - Titoli: §1 Concetti · §2 Risorse · §3 Endpoint · §4 Il job research · §5 Eventi
 - [`reviews.md`](reviews.md) · 14.0 KB — Ripasso FSRS: concetti, ReviewCard, endpoint, voto, annulla, eventi.

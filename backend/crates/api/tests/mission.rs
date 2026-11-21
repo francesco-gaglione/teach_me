@@ -527,7 +527,7 @@ async fn versions_saved_before_the_starting_point_are_served_with_null() {
     let app = App::new(vec![]).await;
     let topic = app.topic().await;
     let at = "2026-11-08T10:00:00.000Z";
-    // A row as the Phase 11 backend wrote it: no `starting_point` column value.
+    // A row as an older backend wrote it: no `starting_point` column value.
     sqlx::query(
         "INSERT INTO missions (topic_id, version, status, why, success_criteria, \
          mission_constraints, out_of_scope, created_at, confirmed_at) \

@@ -40,7 +40,7 @@ Gli esercizi si distinguono dalla spiegazione (segnalazione, Mayer: l'utente dev
 | **non renderizzabile** | campi mancanti | riga neutra ([missing_component.md](missing_component.md)); non obbligatorio |
 | **in invio / valutazione** | solo `open_answer` | vedi [open_answer.md](open_answer.md) |
 
-Transizioni: `idle → answering → checked → (retrying → checked)`. Il tentativo è **registrato al primo `checked`**: id del blocco, esito, scelte, timestamp, numero di tentativi (contratto §5; invio al backend in Fase 7, coda locale). "Svolto" = ha raggiunto `checked` almeno una volta (per `flashcard`: autovalutazione data; per `open_answer`: invio accettato localmente). Lo stato (`answers`, `checked`, bozza) è salvato per `block.id` e ripristinato.
+Transizioni: `idle → answering → checked → (retrying → checked)`. Il tentativo è **registrato al primo `checked`**: id del blocco, esito, scelte, timestamp, numero di tentativi (contratto §5; invio al backend con coda locale). "Svolto" = ha raggiunto `checked` almeno una volta (per `flashcard`: autovalutazione data; per `open_answer`: invio accettato localmente). Lo stato (`answers`, `checked`, bozza) è salvato per `block.id` e ripristinato.
 
 ## 3. Azione di controllo
 
@@ -132,7 +132,7 @@ Un solo modello per tutti gli esercizi; i dettagli per tipo nei file. Rilevament
 - Più di due esercizi consecutivi senza spiegazione in mezzo, a meno che la sezione sia di sola pratica.
 - Usare un tipo di esercizio per forma e non per capacità da dimostrare (vedi README §1.6).
 
-## 10. Codice di un esercizio (`code`, contratto `sdui.md` §4.1, issue #22)
+## 10. Codice di un esercizio (`code`, contratto `sdui.md` §4.1)
 
 Vale per `quiz_single`, `quiz_multi`, `open_answer` e per il **fronte** di `flashcard`. Principio: contiguità spaziale e coerenza (Mayer): il codice è un oggetto da leggere, non una frase; sta separato dalla prosa serif e **sopra** la domanda, così l'ordine di lettura è «guarda questo» → «rispondi a questo».
 

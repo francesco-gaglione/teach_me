@@ -152,7 +152,7 @@ data class LessonView(
     val highlights: List<HighlightRecord> = emptyList(),
     /** The user's handwritten notes in drawing order (lessons.md section 11); empty from a backend without them. */
     val strokes: List<StrokeRecord> = emptyList(),
-    /** Validator notes (lessons.md v1.7, issue #14); empty from an older backend. */
+    /** Validator notes (lessons.md v1.7); empty from an older backend. */
     val qualityWarnings: List<QualityWarning> = emptyList(),
     /** Content language of the lesson's Topic (lessons.md v1.9); Italian from an older backend. */
     val language: TopicLanguage = TopicLanguage.It,

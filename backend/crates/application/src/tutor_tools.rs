@@ -1,4 +1,4 @@
-//! The Tutor's tools (phase 3): definitions, input validation and execution.
+//! The Tutor's tools: definitions, input validation and execution.
 //!
 //! Definitions and result texts are not written here: they come from
 //! `backend/prompts/tutor/tools.json` and `tool_results.json` (owned by

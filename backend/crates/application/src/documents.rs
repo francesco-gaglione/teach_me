@@ -1,4 +1,4 @@
-//! Uploaded documents (phase 10): the use cases behind `/topics/{id}/documents`
+//! Uploaded documents: the use cases behind `/topics/{id}/documents`
 //! and the `document_import` job handler. Contract: `docs/contracts/documents.md`.
 
 use std::path::PathBuf;

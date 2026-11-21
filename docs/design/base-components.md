@@ -57,7 +57,7 @@ URL del backend                          ← label  ui.label, inkSoft, gap 4 dp 
 Es. https://…                            ← supporting text  ui.bodyS, inkSoft, gap 4 dp
 ```
 
-Variante **mascherata** (password, chiave LLM; in Fase 0 era il token):
+Variante **mascherata** (password, chiave LLM; non è il token):
 ```
 Password
 ┌──────────────────────────────┬───┐
@@ -212,7 +212,7 @@ Stati: pressed fill `surfacePressed`; focus anello 3 dp; disabled testo `disable
 
 Comportamento: il **focus iniziale va su "Annulla"** (azione sicura); tocco sullo scrim, tasto Indietro e gesto equivalgono ad Annulla. Il corpo spiega la conseguenza, non ripete il titolo. Etichette verbali ("Elimina", "Esci senza salvare"), mai "Sì/No/OK". Focus intrappolato nel dialog; `paneTitle` = titolo; alla chiusura il focus torna all'elemento che l'ha aperto. Dialog informativi (un solo bottone) usano un bottone primario "Ho capito".
 
-**Slot errore (Fase 1)**: se l'azione confermata fallisce (rete, 5xx), il dialog **resta aperto** e sopra le azioni appare un `StatusPanel` `danger` (live region Polite) con il motivo; il bottone di conferma torna attivo con la stessa etichetta (ritentare = ripremere). Durante l'invio: conferma in stato *loading* ("Elimino…"), "Annulla" disabilitato, scrim e Indietro ignorati (il motivo è visibile nell'etichetta del bottone).
+**Slot errore**: se l'azione confermata fallisce (rete, 5xx), il dialog **resta aperto** e sopra le azioni appare un `StatusPanel` `danger` (live region Polite) con il motivo; il bottone di conferma torna attivo con la stessa etichetta (ritentare = ripremere). Durante l'invio: conferma in stato *loading* ("Elimino…"), "Annulla" disabilitato, scrim e Indietro ignorati (il motivo è visibile nell'etichetta del bottone).
 
 ---
 
@@ -235,7 +235,7 @@ Tutte le opzioni di una domanda hanno **identico** stile, altezza minima e paddi
 
 **Sheet (`BottomSheet`)**: fill `surfaceRaised`, angoli superiori `lg`, ombra `raised`, scrim 0.4, padding 24 dp, altezza max 90%; maniglia 32 × 4 dp (`line`, decorativa). Si chiude con trascinamento, tocco sullo scrim, Indietro **e** con un bottone "Chiudi" nel contenuto (alternativa al gesto). Focus iniziale sul titolo.
 
-## 10. Componenti aggiunti in Fase 1
+## 10. Dialog di input, menu, chip, skeleton ed errore
 
 ### 10.1 Dialog di input (`InputDialog`)
 
@@ -322,7 +322,7 @@ Vale per `ConfirmDialog` (§8) e `InputDialog` (§10.1).
 - **Tastiera fisica**: se attaccata la tastiera virtuale non compare e il dialog resta centrato. Tab/Maiusc+Tab percorrono campo → Annulla → primario (focus ring `focus` visibile); Invio nel campo = invia (`imeAction Done`), Esc = Annulla (nel `ConfirmDialog` e nell'`InputDialog`; il tocco sullo scrim continua a non chiudere l'`InputDialog`). Nel `ConfirmDialog` l'Invio sul focus iniziale (Annulla) annulla: la conferma distruttiva richiede di spostarsi sul bottone.
 - Il campo ha focus e tastiera aperti all'apertura; alla chiusura la tastiera si nasconde prima del ritorno del focus.
 
-## 12. Componenti aggiunti in Fase 2 (Chat)
+## 12. Componenti della Chat
 
 Specifica d'uso, misure e comportamento in `screens/chat.md`; qui solo l'elenco per android-dev (da costruire in `core/designsystem` se riusabili, altrimenti in `feature/chat`).
 
@@ -343,7 +343,7 @@ Specifica d'uso, misure e comportamento in `screens/chat.md`; qui solo l'elenco 
 Icone Lucide nuove da importare: `send`, `copy`, `check`, `arrow-down`, `wifi-off`, `clock`, `rotate-ccw` (verificare quali già presenti in `TeachIcons`).
 
 
-## 13. Componenti aggiunti in Fase 3 (Mission)
+## 13. Componenti della Mission
 
 Specifica d'uso e misure in `screens/mission.md`. Costruire in `feature/mission` (o `feature/topic`) se non riusabili; `Disclosure` e `SectionHeader` in `core/designsystem`.
 
@@ -358,7 +358,7 @@ Specifica d'uso e misure in `screens/mission.md`. Costruire in `feature/mission`
 | `MissionTabs` | `TabRow` Chat · Mission dell'argomento, con stato di tab per sessione | mission §4.1 |
 | `ContextPane` (estensione) | Contenuto per stato (vuoto / solo bozza / confermata / confermata + modifica), scroll proprio | mission §4.5 |
 
-`StatusChip`: la variante `info` per `mission_proposed` esiste già (§10.3); il testo del chip di `researching` dipende da `ResearchAvailable`.
+`StatusChip`: la variante `info` per `mission_proposed` esiste già (§10.3); il chip di `researching` dice «Cerco le fonti…».
 
 Icone Lucide nuove da importare (verificare in `TeachIcons`): `flag`, `history`, `minus`, `trash-2`, `chevron-down`, `chevron-right`, `check-circle`, `message-circle`, `search`.
 
@@ -366,7 +366,7 @@ Costanti: `MissionCardPadding = 20.dp (16.dp compact)` · `MissionPrefTextMax = 
 
 ---
 
-## 14. Componenti aggiunti in Fase 5 (Lezione e blocchi SDUI)
+## 14. Componenti della Lezione e dei blocchi SDUI
 
 Specifiche complete nei file indicati; qui l'elenco per android-dev (tutti su `foundation`, token in `tokens.json`).
 
@@ -386,7 +386,7 @@ Specifiche complete nei file indicati; qui l'elenco per android-dev (tutti su `f
 
 Layout token nuovi (`tokens.json` → `layout`): `contextPaneBreakpoint` 1100, `contextPaneGap` 32, `choiceMinHeight` 56, `blankFieldWidth` 120, `blankFieldHeight` 40, `codeCollapsedLines` 16.
 
-## 15. Componenti aggiunti in Fase 6-7 (Lezioni, Registro, Glossario)
+## 15. Componenti di Lezioni, Registro e Glossario
 
 Specifiche nei file indicati; nessun colore o token nuovo in `tokens.json` (solo combinazioni già verificate in `design-system.md` §2.4).
 
@@ -406,7 +406,7 @@ Specifiche nei file indicati; nessun colore o token nuovo in `tokens.json` (solo
 Icone Lucide nuove da importare (verificare in `TeachIcons`): `sparkles`, `circle`, `circle-dot`, `history`, `lightbulb`, `book-open`, `layers`, `clock`, `cloud-off`, `x`.
 
 
-## 16. Aggiunte della Fase 11 (multiutenza): nessun componente nuovo
+## 16. Multiutenza: nessun componente nuovo
 
 Solo composizioni di componenti esistenti e due varianti d'uso. Nessun token nuovo.
 

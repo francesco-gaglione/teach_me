@@ -1,4 +1,4 @@
-//! SQLite adapter of the review queue (`docs/contracts/reviews.md`, phase 8).
+//! SQLite adapter of the review queue (`docs/contracts/reviews.md`).
 
 use async_trait::async_trait;
 use domain::{

@@ -131,7 +131,7 @@
     "validator_pass_within_3": "100%",
     "rubric_mean": ">= 0.8"
   },
-  "notes": "Il caso `code_compare_i_already_know_go` è copiato da `generator/phase6` (`go_to_rust_compare_and_code_options`).",
+  "notes": "Il caso `code_compare_i_already_know_go` è copiato da `generator/lessons` (`go_to_rust_compare_and_code_options`).",
   "cases": [
     {
       "id": "growth_curves_need_chart",

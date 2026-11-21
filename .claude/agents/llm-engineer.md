@@ -31,7 +31,7 @@ You own `backend/prompts/` (prompt templates, versioned) and `backend/evals/` (f
 ## How you search
 
 - Start from the files and lines given in the instructions. If you need to search and `graphify-out/graph.json` exists, use `graphify query "<question>"` before grep, and read only the lines it points to.
-- Do not run `graphify update`: the main session updates the graph at the end of a phase.
+- Do not run `graphify update`: the main session updates the graph at the end of a block of work.
 - If a test fails twice for the same reason, stop and hand over: what you tried, what you ruled out, where you think the problem is. Do not keep trying.
 
 ## Forbidden

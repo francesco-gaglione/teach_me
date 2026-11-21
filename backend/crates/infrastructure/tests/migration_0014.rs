@@ -1,4 +1,4 @@
-//! Migration `0014` (phase 11) on a database at schema `0013` with real data:
+//! Migration `0014` on a database at schema `0013` with real data:
 //! nothing is lost, everything becomes the initial `owner`'s, and the
 //! cascades and the new per-user rules work afterwards.
 
@@ -46,7 +46,7 @@ async fn exec(pool: &Pool, sql: &'static str, binds: &[&str]) {
     q.execute(pool).await.unwrap();
 }
 
-/// A database as the Phase 10 backend left it, with data in every table.
+/// A database as the previous backend left it, with data in every table.
 #[allow(clippy::too_many_lines)] // a list of inserts, one per table
 async fn database_at_0013(path: &std::path::Path) -> Pool {
     let pool = sqlite::connect(&format!("sqlite://{}", path.display()))

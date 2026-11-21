@@ -702,7 +702,7 @@ internal class LlmKeyAndRefreshTest : DataStoreTest() {
             assertEquals(0, api.meCalls)
         }
 
-    // region issue 19: the server's date, the session, the credit
+    // region the server's date, the session, the credit
 
     /** The device is far ahead of the server: a proof dated by the `Date` of the response still lets a new failure in. */
     @Test

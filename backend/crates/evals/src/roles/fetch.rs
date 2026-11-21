@@ -24,7 +24,7 @@ const SOURCES_LIST_MARKER: &str = "Fonti da leggere";
 /// Longest text of one page shown to the judge: all the Generator can have
 /// seen (`FETCH_MAX_CONTENT_TOKENS`, 8000 tokens, ~4 characters each) with a
 /// margin. At 12000 the judge missed the end of the Rust book pages and called
-/// claims taken from there unsupported (issue #26, 2026-11-19).
+/// claims taken from there unsupported.
 pub const JUDGE_PAGE_CHARS: usize = 40_000;
 /// Longest text of all the pages shown to the judge together: three full
 /// pages would cost ~30k tokens a judgement.

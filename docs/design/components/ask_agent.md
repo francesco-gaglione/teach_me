@@ -1,6 +1,6 @@
 # `ask_agent`
 
-> Fase 7: il tocco apre davvero la Chat del Topic (contratto `lessons.md` §7: `lesson_id`). Vale anche per «Chiedi al Tutor» del Riepilogo (`../screens/lesson.md` §7) e «Ne parlo col Tutor» di `open_answer.md`.
+> Il tocco apre davvero la Chat del Topic (contratto `lessons.md` §7: `lesson_id`). Vale anche per «Chiedi al Tutor» del Riepilogo (`../screens/lesson.md` §7) e «Ne parlo col Tutor» di `open_answer.md`.
 
 ## Scopo didattico
 Dare **un'uscita verso il dialogo** quando la lezione non basta (metacognizione: «non ho capito» è un segnale da sostenere, non da nascondere). Riduce la frizione: il composer della chat si apre già con una domanda sensata sul punto giusto, e il Tutor sa di quale lezione si parla (contiguità: la domanda non perde il suo contesto).

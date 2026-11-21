@@ -1,5 +1,5 @@
 {
-  "version": "planner-phase12-v2",
+  "version": "planner-v2",
   "name": "lesson_plan",
   "schema": {
     "type": "object",

@@ -1,6 +1,6 @@
 # Contratto: Documenti caricati (PDF)
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1** (2026-11-09), Fase 10.
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1** (2026-11-09).
 > Valgono `api-conventions.md`, `jobs.md`, `resources.md`, `lessons.md`, `sdui.md`. Decisioni del proprietario: il PDF **si aggiunge** alla ricerca web (non la sostituisce); i PDF **scansionati** (senza testo selezionabile) sono rifiutati. Libreria di estrazione: ADR 0007. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti

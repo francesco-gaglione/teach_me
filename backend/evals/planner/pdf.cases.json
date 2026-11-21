@@ -1,7 +1,7 @@
 {
-  "suite": "planner-phase10",
+  "suite": "planner/pdf",
   "prompt_dir": "backend/prompts/planner",
-  "description": "Fase 10 (PDF da studiare). Il Planner riceve l'indice di un documento caricato (titoli delle sezioni con le pagine, mai il testo) e deve scegliere le sezioni giuste: poche, nell'ordine del libro se la mission lo chiede, senza ripetere quelle già coperte, entro circa 10 pagine, senza forzare il documento quando non copre l'obiettivo. Il runner esegue il job reale di generazione fino al piano (il Generator è rifiutato: costo zero) e controlla i riferimenti come il backend.",
+  "description": "PDF da studiare. Il Planner riceve l'indice di un documento caricato (titoli delle sezioni con le pagine, mai il testo) e deve scegliere le sezioni giuste: poche, nell'ordine del libro se la mission lo chiede, senza ripetere quelle già coperte, entro circa 10 pagine, senza forzare il documento quando non copre l'obiettivo. Il runner esegue il job reale di generazione fino al piano (il Generator è rifiutato: costo zero) e controlla i riferimenti come il backend.",
   "defaults": {
     "runs_per_case": 3,
     "deterministic": {
@@ -11,7 +11,7 @@
         5
       ]
     },
-    "notes": "I documenti sono finti, scritti a mano (libro di fantasia «Systems Programming with Rust», id `0193d100-…` e `0193e100-…`); gli URL delle fonti web sono plausibili ma non verificati. `plan_valid_first_try` è un avviso (una riparazione costa una chiamata); `plan_valid` controlla i riferimenti come `validate_plan` del backend (che è privato al crate `application`). Il giudice vede l'indice, le lezioni precedenti e il piano. Fase 12: `planner_calls_max` sale da 1 a 2 (il piano ha più campi e regole, `validate_plan` rifiuta di più: una riparazione è ammessa; `plan_valid_first_try` resta l'avviso che misura il primo tentativo). Dal 2026-11-11 ogni piano ha 4-5 concetti (4 con un `general`): `plan_valid` lo impone e `concepts_count` [4,5] lo misura. `estimated_minutes` lo calcola il backend."
+    "notes": "I documenti sono finti, scritti a mano (libro di fantasia «Systems Programming with Rust», id `0193d100-…` e `0193e100-…`); gli URL delle fonti web sono plausibili ma non verificati. `plan_valid_first_try` è un avviso (una riparazione costa una chiamata); `plan_valid` controlla i riferimenti come `validate_plan` del backend (che è privato al crate `application`). Il giudice vede l'indice, le lezioni precedenti e il piano. `planner_calls_max` è 2 (il piano ha più campi e regole, `validate_plan` rifiuta di più: una riparazione è ammessa; `plan_valid_first_try` resta l'avviso che misura il primo tentativo). Dal 2026-11-11 ogni piano ha 4-5 concetti (4 con un `general`): `plan_valid` lo impone e `concepts_count` [4,5] lo misura. `estimated_minutes` lo calcola il backend."
   },
   "pass_criteria": {
     "deterministic": "tutti i controlli duri in 3/3 run per `book_does_not_cover_the_goal` e `whole_chapter_is_too_big` (regole di sobrietà); in almeno 2/3 per gli altri",

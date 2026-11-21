@@ -273,7 +273,7 @@ class LessonInkUiTest {
         gesture(scribble(dy = 120f), buttons = MotionEvent.BUTTON_STYLUS_PRIMARY)
         assertTrue(strokes.isEmpty())
         assertNotEquals(first, second)
-        // Undo (the palette is stage 4: the view model has it) puts the last pass back.
+        // Undo (the view model has it) puts the last pass back.
         vm.undoInk()
         assertEquals(listOf(second), strokes.map { it.id })
     }

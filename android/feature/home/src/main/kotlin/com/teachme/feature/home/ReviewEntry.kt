@@ -40,7 +40,7 @@ import java.time.Instant
 import java.time.ZoneId
 
 /**
- * "Ripasso di oggi" at the top of Home (home.md, Fase 8): a card when cards are due, one quiet line when nothing is due
+ * "Ripasso di oggi" at the top of Home (home.md): a card when cards are due, one quiet line when nothing is due
  * but a card is coming, a retry line when the check failed, nothing otherwise. It slides in without moving the folders'
  * focus; nothing here is red, numbered as a badge or animated for attention.
  */

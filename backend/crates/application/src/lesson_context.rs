@@ -1,7 +1,7 @@
 //! Text sections of the lesson prompts (Planner, Generator, Grader, Recorder).
 //! Pure functions from stored data to the strings that fill the placeholders
 //! of `backend/prompts/<role>/context.md`; formats and limits are fixed by
-//! `backend/prompts/README.md` ("Fasi 6-7"). Everything the person or the web
+//! `backend/prompts/README.md`. Everything the person or the web
 //! wrote is flattened to one line: it is data, never layout.
 
 use std::collections::HashMap;
@@ -323,7 +323,7 @@ fn concept_block(index: usize, c: &Value) -> String {
     block
 }
 
-/// The plan as the Generator reads it (`README.md`, "Fase 12").
+/// The plan as the Generator reads it (`README.md`).
 #[must_use]
 pub fn generator_plan_section(plan: &Value) -> String {
     let concepts = list_of(plan, "concepts")

@@ -1,8 +1,8 @@
 {
-  "suite": "researcher/issue30-en",
+  "suite": "researcher/english",
   "prompt_dir": "backend/prompts/researcher",
   "schema_file": "backend/prompts/researcher/output_schema.json",
-  "description": "Issue #30 (ADR 0019): English versions of two phase4 cases. annotation_language follows the case language.",
+  "description": "English versions of two cases of `researcher/sources`. annotation_language follows the case language.",
   "defaults": {
     "runs_per_case": 1,
     "search_budget": 6,

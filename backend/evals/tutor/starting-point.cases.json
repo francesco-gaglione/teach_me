@@ -1,8 +1,8 @@
 {
-  "suite": "tutor-phase12",
+  "suite": "tutor/starting-point",
   "prompt_dir": "backend/prompts/tutor",
   "tools_file": "backend/prompts/tutor/tools.json",
-  "description": "Tutor, Fase 12 blocco B: punto di partenza (`starting_point`). Lo chiede sempre prima di proporre; approfondisce una risposta vaga; lo scrive in `starting_point` e non in `constraints`; «parto da zero» scritto esplicitamente; mission confermata senza punto di partenza (propone il cambio una volta, senza insistere; se il cambio è richiesto, chiede prima). Stesso formato di `phase3`.",
+  "description": "Tutor: punto di partenza (`starting_point`). Lo chiede sempre prima di proporre; approfondisce una risposta vaga; lo scrive in `starting_point` e non in `constraints`; «parto da zero» scritto esplicitamente; mission confermata senza punto di partenza (propone il cambio una volta, senza insistere; se il cambio è richiesto, chiede prima). Stesso formato di `tutor/tools`.",
   "defaults": {
     "runs_per_case": 3,
     "deterministic": {
@@ -300,7 +300,7 @@
     },
     {
       "id": "confirmed_without_starting_point",
-      "description": "Mission confermata con `starting_point` null (salvata prima della Fase 12). Il Tutor non solleva il tema da solo e non insiste; quando la persona racconta che cosa sa, propone un cambio di mission che lo valorizza e lascia invariato il resto; dopo la proposta non la ripete.",
+      "description": "Mission confermata con `starting_point` null (salvata prima che il campo esistesse). Il Tutor non solleva il tema da solo e non insiste; quando la persona racconta che cosa sa, propone un cambio di mission che lo valorizza e lascia invariato il resto; dopo la proposta non la ripete.",
       "topic": {
         "title": "Rust",
         "state": "ready",

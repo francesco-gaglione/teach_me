@@ -239,7 +239,7 @@ private fun OpenAnswerResult(
             }
         }
         else -> {
-            // Fase 11: with the key known missing or refused, the panel says why and offers the key (llm-key.md 5.1).
+            // With the key known missing or refused, the panel says why and offers the key (llm-key.md 5.1).
             val keyProblem = env.keyProblem.takeIf { !closed && !state.notEvaluable }
             val body =
                 when {

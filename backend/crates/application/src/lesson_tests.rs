@@ -2151,7 +2151,7 @@ async fn the_ceiling_is_the_smaller_of_the_setting_and_the_web_sources() {
     env.generate().await;
     let calls = env.f.llm.requests.lock().unwrap();
     // Only the primary source is listed and allowed: a second listed page
-    // would fail with `max_uses_exceeded` (issue #26).
+    // would fail with `max_uses_exceeded`.
     assert_eq!(calls[1].tools, [fetch_tool(1, &["a.example"])]);
 }
 

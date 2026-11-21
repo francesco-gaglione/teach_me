@@ -25,7 +25,7 @@ enum Step {
     Event(String),
 }
 
-/// Phase 3 cases have `steps`; phase 2 cases have `messages`, whose last
+/// Multi-step cases have `steps`; conversation cases have `messages`, whose last
 /// entry is the user turn under test and the rest the history.
 fn plan(case: &Case) -> (Vec<Value>, Vec<Step>) {
     if let Some(steps) = case.get("steps").and_then(Value::as_array) {
@@ -56,7 +56,7 @@ fn plan(case: &Case) -> (Vec<Value>, Vec<Step>) {
         messages,
         vec![Step::User {
             text,
-            // Phase 2 cases keep the rubric at case level.
+            // Conversation cases keep the rubric at case level.
             expect: json!({"rubric": case.get("rubric").cloned().unwrap_or(Value::Null)}),
         }],
     )

@@ -1,7 +1,7 @@
 {
-  "suite": "planner/issue30-en",
+  "suite": "planner/english",
   "prompt_dir": "planner",
-  "description": "Issue #30 (ADR 0019): English versions of two phase12 cases.",
+  "description": "English versions of two cases of `planner/concepts`.",
   "defaults": {
     "runs_per_case": 1,
     "deterministic": {
@@ -49,7 +49,7 @@
       },
       "title_not_a_chapter_number": true
     },
-    "notes": "Il runner del Planner (roles/planner.rs) legge `records` come per phase10; `documents: []` significa nessun PDF (`{{documents_section}}` = `Nessuno.`). I controlli duri sono quelli di `deterministic`; le regole di giudizio sono nelle rubriche. `plan_valid` usa `validate_plan` del backend, che dopo il passo di rust-backend-dev accetta 4-5 concetti (esattamente 4 con un prerequisito `general`), steps 2-6 e fino a 8 termini. Dal blocco B ogni mission ha `starting_point` (stringa o `null`); `declared_prerequisite_is_mission` e `unnamed_prerequisite_is_general` sono una coppia che differisce solo per quel campo: stessa lezione e stesse fonti, e lo stesso prerequisito sul terminale è `mission` nel primo e `general` nel secondo. Decisione del 2026-11-11: ogni lezione ha 4-5 concetti; `estimated_minutes` lo calcola il backend (il valore del modello viene sostituito), quindi non c'è più un controllo sulla formula. Le rubriche del giudice sono indicative: Haiku come giudice è inaffidabile, usare Sonnet (vedi README). `general_count` di `beginner_zero_records_general_prereqs` e `obvious_looking_prerequisite_is_general` parte da 0 perché un prerequisito promosso a concetto di supporto è ammesso e non conta come `general`."
+    "notes": "Il runner del Planner (roles/planner.rs) legge `records` come per `planner/pdf`; `documents: []` significa nessun PDF (`{{documents_section}}` = `Nessuno.`). I controlli duri sono quelli di `deterministic`; le regole di giudizio sono nelle rubriche. `plan_valid` usa `validate_plan` del backend, che accetta 4-5 concetti (esattamente 4 con un prerequisito `general`), steps 2-6 e fino a 8 termini. Ogni mission ha `starting_point` (stringa o `null`); `declared_prerequisite_is_mission` e `unnamed_prerequisite_is_general` sono una coppia che differisce solo per quel campo: stessa lezione e stesse fonti, e lo stesso prerequisito sul terminale è `mission` nel primo e `general` nel secondo. Decisione del 2026-11-11: ogni lezione ha 4-5 concetti; `estimated_minutes` lo calcola il backend (il valore del modello viene sostituito), quindi non c'è più un controllo sulla formula. Le rubriche del giudice sono indicative: Haiku come giudice è inaffidabile, usare Sonnet (vedi README). `general_count` di `beginner_zero_records_general_prereqs` e `obvious_looking_prerequisite_is_general` parte da 0 perché un prerequisito promosso a concetto di supporto è ammesso e non conta come `general`."
   },
   "cases": [
     {
@@ -239,7 +239,7 @@
     "general_share": "`beginner_zero_records_general_prereqs` e `obvious_looking_prerequisite_is_general`: `general_count` nell'intervallo in >= 2/3 run (misura la proporzione di prerequisiti `general` per profilo; riportare per caso la quota media di `general` sul totale dei prerequisiti); `records_cover_prerequisites`: `general_count` [0,1] in >= 2/3 run (dal 2026-11-11 l'intervallo parte da 0 nei due casi: la copertura mancante la misura la rubrica, non il conteggio).",
     "estimated_minutes": "`estimated_minutes_range` solo avviso (misura la durata calcolata dal backend, non il modello)",
     "rubric_mean": ">= 0.8",
-    "regression": "nessun controllo della Fase 10 (`title_not_a_chapter_number`) regredisce",
+    "regression": "nessun controllo di `planner/pdf` (`title_not_a_chapter_number`) regredisce",
     "starting_point_pair": "coppia `declared_prerequisite_is_mission` / `unnamed_prerequisite_is_general`: i controlli `prerequisite_basis_min`/`general_count`/`prerequisite_basis_max` in >= 2/3 run per caso; è il test che il campo cambia la `basis` e non è solo rumore nel contesto",
     "admission": "`narrow_topic_reaches_four_without_filler`: `concepts_count` [4,5] in 3/3 run e rubrica `admission_rule`/`no_repeated_example` >= 0.8 con giudice Sonnet; lettura manuale dei piani prima di accettare (il giudice da solo non decide)"
   }

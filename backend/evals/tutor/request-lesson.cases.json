@@ -1,8 +1,8 @@
 {
-  "suite": "tutor-phase17",
+  "suite": "tutor/request-lesson",
   "prompt_dir": "backend/prompts/tutor",
   "tools_file": "backend/prompts/tutor/tools.json",
-  "description": "Tutor, issue 17: request_lesson. Chiamato su richiesta esplicita con topic ready; non chiamato per un argomento scelto dalla persona né con ricerca in corso. Stesso formato di `phase12`. ",
+  "description": "Tutor: request_lesson. Chiamato su richiesta esplicita con topic ready; non chiamato per un argomento scelto dalla persona né con ricerca in corso. Stesso formato di `tutor/starting-point`.",
   "defaults": {
     "runs_per_case": 3,
     "deterministic": {

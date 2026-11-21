@@ -1,6 +1,6 @@
-# Mission: card di proposta, vista Mission e preferenze (Fase 3)
+# Mission: card di proposta, vista Mission e preferenze
 
-> Contratto dati: `../../contracts/mission.md`. Componenti base: `../base-components.md` (§13 nuovi). Tablet orizzontale per primo (ADR 0003), poi compact. Terminologia: «mission», «Tutor», «argomento» (mai «Topic», mai `mission_proposed` grezzo). Dal contratto v1.2 (Fase 12) la mission ha la sezione «Punto di partenza»: specifica in §2.5, §4.3 e §4.6.
+> Contratto dati: `../../contracts/mission.md`. Componenti base: `../base-components.md` (§13 nuovi). Tablet orizzontale per primo (ADR 0003), poi compact. Terminologia: «mission», «Tutor», «argomento» (mai «Topic», mai `mission_proposed` grezzo). Dal contratto v1.2 la mission ha la sezione «Punto di partenza»: specifica in §2.5, §4.3 e §4.6.
 
 ## 1. Scopo didattico
 
@@ -83,7 +83,7 @@ Nessuna differenza rilevata (testo identico): niente pill.
 | **aperta** | `mission.version == draft.version` e nessun turno in corso | come §2.1, bottoni attivi |
 | **in arrivo** | il messaggio ha `status = streaming` (la parte compare già intera, §2.4) o c'è un turno in corso | stessa card, **entrambi i bottoni disabilitati** con motivo visibile sopra le azioni (`ui.bodyS`, `inkSoft`, sostituisce la domanda): «Il Tutor sta ancora scrivendo. Potrai confermare tra un attimo.» Motivo: evitare una conferma mentre sta per arrivare una bozza nuova (→ 409) |
 | **in conferma** | tocco su Conferma, POST in corso | «Conferma la mission» diventa loading («Confermo…», spinner 20 dp, `busy`); «Modifica» disabilitato; il composer resta usabile ma l'invio è sospeso fino all'esito (motivo nel composer: «Sto confermando la mission…») |
-| **confermata** | `mission.version == current.version` | banda `correctSoft`, icona `check-circle`, «Mission confermata» (`correct`); sotto: «Confermata il 8 novembre.» (`ui.bodyS` `inkSoft`), *Perché* in `ui.body` (max 3 righe, ellissi), le altre sezioni **ripiegate**; testo `ui.label` accent «Vedi la mission» (Button testuale 48 dp: apre la tab Mission). Se il Topic è `researching` e la ricerca non c'è ancora, vedi frase onesta in §5 |
+| **confermata** | `mission.version == current.version` | banda `correctSoft`, icona `check-circle`, «Mission confermata» (`correct`); sotto: «Confermata il 8 novembre.» (`ui.bodyS` `inkSoft`), *Perché* in `ui.body` (max 3 righe, ellissi), le altre sezioni **ripiegate**; testo `ui.label` accent «Vedi la mission» (Button testuale 48 dp: apre la tab Mission). Se il Topic è `researching`, vedi la riga sulla ricerca in §5 |
 | **sostituita** | versione ≠ `current` e ≠ `draft` (nuova bozza o nuova versione confermata) | banda `surfaceSunken`, icona `history`, «Sostituita da una proposta più recente» (`inkSoft`, 8,15 / 11,30); contenuto ripiegato dietro il Button testuale «Mostra questa versione» (`aria-expanded`); espansa, mostra le sezioni in sola lettura come §2.1 senza criteri evidenziati (blocco `surfaceSunken`) e senza azioni |
 | **errore di conferma** (rete/5xx) | POST fallito | la card torna *aperta*; sopra le azioni `StatusPanel danger` (liveRegion): titolo «Non sono riuscito a confermare», corpo «La mission non è stata salvata. Controlla la connessione e riprova.»; il primario si chiama «Riprova». Nessun toast |
 | **chiave LLM mancante o rifiutata** (`409 llm_key_missing`, `502 llm_key_rejected` alla conferma, che avvia la ricerca) | la mission non è confermata | la card resta *aperta*; al posto del pannello `danger`, `LlmKeyNotice` (`../llm-key.md` §5; `502 llm_credit_exhausted`: pannello `credit` con «Riprova», §9.2). Se il backend conferma comunque e la ricerca fallisce con quei codici, vale `resources.md` §4.4 (`../llm-key.md` §6) |
@@ -107,7 +107,7 @@ Lo stato si ricalcola a ogni `mission_proposed`, `mission_confirmed`, `topic_upd
 4. Bottoni disabilitati («in arrivo») finché il messaggio non è `complete` (di norma frazioni di secondo).
 5. Il Tutor prima della card riassume in 2-3 righe (chat.md §12.10): la card non deve ripetere quel riassunto a parole; è la versione *strutturata* da valutare.
 
-### 2.5 Punto di partenza (v1.2, Fase 12)
+### 2.5 Punto di partenza (v1.2)
 
 **Ordine delle sezioni** (card e vista): Perché → **Punto di partenza** → Come capirai di esserci riuscito (criteri) → Vincoli → Fuori dal percorso, per ora.
 
@@ -139,14 +139,14 @@ La pill «Nuovo» e la sua resa accessibile sono quelle già specificate (`ui.la
 1. Tocco su «Conferma la mission» → stato *in conferma* → `200`: la card passa a **confermata** (crossfade `fast` 120 ms); il focus accessibile si sposta sulla banda della card (altrimenti sparisce insieme al bottone).
 2. Il chip diventa quello di `researching` (§5); il `ContextPane` mostra la mission (§4.5); il Toast non serve (l'esito è visibile nella card).
 3. **Nessun messaggio nuovo in chat** (contratto). Nessuna transizione automatica di tab o di schermata: l'utente decide se guardare la tab Mission («Vedi la mission» nella card).
-4. Frase onesta (§5) nella card e nella tab Mission.
+4. Finché la ricerca è in corso: riga sulla ricerca nella card e nella tab Mission (§5).
 5. Il composer resta attivo: se il Tutor vede dalla chat qualcosa da cambiare, proporrà un cambio (`propose_mission_change`) e comparirà una nuova card «Proposta di modifica».
 
 ## 4. Vista Mission dell'argomento
 
 ### 4.1 Dove vive: decisione
 
-Dalla Fase 3 l'argomento ha due contenuti: **Chat** e **Mission**. Quindi, per la regola «`TabRow` solo con ≥ 2 tab» (topic.md), compare la `TabRow` con le tab **Chat · Mission** su **tutte** le classi, subito sotto il chip di stato. Mission è sempre disponibile: anche vuota ha contenuto vero (stato vuoto che spiega il termine, preferenze), quindi non è mai una tab disabilitata.
+La `TabRow` dell'argomento (`topic.md`) sta su **tutte** le classi, subito sotto il chip di stato. Mission è sempre disponibile: anche vuota ha contenuto vero (stato vuoto che spiega il termine, preferenze), quindi non è mai una tab disabilitata.
 
 Il `ContextPane` laterale (≥ 1100 dp) **resta** nella tab Chat, ma come **sintesi** (perché + criteri) con il link «Apri la mission» che cambia tab. Non diventa la vista completa: la chat va usata con un contesto *breve* accanto (carico cognitivo), mentre la vista completa (storico, preferenze, eliminazioni) è un luogo di gestione, che non deve competere con la conversazione. Sotto 1100 dp non c'è il pannello, e **il BottomSheet «Mission» ipotizzato in chat.md §2 decade**: la tab Mission lo sostituisce (un solo percorso per la stessa cosa).
 
@@ -181,7 +181,7 @@ Il `ContextPane` laterale (≥ 1100 dp) **resta** nella tab Chat, ma come **sint
 ```
 
 - La pagina scorre per intero (colonna Mission + colonna Preferenze), a differenza della chat: qui non c'è composer ancorato. Le due colonne sono allineate in alto; la colonna Preferenze è `contextPaneWidth` 280, senza riquadro. Gap 32.
-- Larghezza < 1100 (expanded stretto, medium, compact): **una colonna** di `min(600, w − 2·margine)`, ordine: bozza → mission attuale → «Cosa succede ora» (se Fase 3 + researching) → versioni precedenti → preferenze. Margini 24 (medium) / 16 (compact). I titoli di sezione sono `ui.title3` con 32 dp sopra (24 compact).
+- Larghezza < 1100 (expanded stretto, medium, compact): **una colonna** di `min(600, w − 2·margine)`, ordine: bozza → mission attuale → «Cosa succede ora» (se `researching`) → versioni precedenti → preferenze. Margini 24 (medium) / 16 (compact). I titoli di sezione sono `ui.title3` con 32 dp sopra (24 compact).
 - Medium/compact: come sopra; la `TabRow` a 2 etichette entra anche a font 200% (la tab si allarga e la riga scorre, base-components §7).
 
 ### 4.3 Contenuto, dall'alto
@@ -191,7 +191,7 @@ Il `ContextPane` laterale (≥ 1100 dp) **resta** nella tab Chat, ma come **sint
 3. **Stato vuoto** (`current == null`):
    - senza bozza: titolo «La tua mission» e testo `ui.bodyL` `inkSoft`: «Ancora da definire. La mission è lo scopo per cui impari «Rust»: guida cosa ti insegno e in che ordine. La definiamo insieme in chat.» + Button secondario «Definiscila con il Tutor» (→ Chat, focus composer). Nessuna illustrazione, nessuna card finta.
    - con bozza: sotto la card, `ui.bodyL` `inkSoft`: «Non c'è ancora una mission confermata. Conferma la proposta qui sopra o scrivi al Tutor cosa cambiare.»
-4. **Cosa succede ora** (solo Fase 3, Topic `researching`): `StatusPanel info`, vedi §5.
+4. **Cosa succede ora** (solo Topic `researching`): `StatusPanel info`, vedi §5.
 5. **Versioni precedenti**: `Disclosure` (riga 48 dp, chevron `chevron-right`/`chevron-down`, titolo `ui.label` + conteggio «Versioni precedenti (2)»), **chiusa di default**; compare solo se esistono versioni oltre la corrente/bozza (altrimenti non compare, niente «Nessuna»). Si carica al primo apertura (`GET …/mission/versions`, spinner 20 dp + «Carico le versioni…», errore: riga `ui.bodyS` + Button testuale «Riprova»). Righe 56 dp: «Versione 1» (`ui.body` 600) + meta `ui.bodyS` `inkSoft`: «confermata il 3 novembre» o «proposta non confermata, 3 novembre». Tocco → espande inline il `MissionSummary` in sola lettura (blocco criteri `surfaceSunken`, non evidenziato; il punto di partenza compare se presente, senza invito se `null`). Una sola riga espansa alla volta; più di 10 → «Mostra altre» (Button testuale). Nessun «Ripristina»: tornare a una versione si chiede al Tutor.
 6. **Preferenze** (§4.4).
 
@@ -223,7 +223,7 @@ Fisso a destra, senza riquadro, `contextPaneWidth` 280, **con scroll proprio** s
 
 | Situazione | Contenuto |
 |---|---|
-| Nessuna mission né bozza (Fase 2, invariato) | «Ancora da definire. La mission è lo scopo per cui impari «Rust»: guida cosa ti insegno e in che ordine.» |
+| Nessuna mission né bozza | «Ancora da definire. La mission è lo scopo per cui impari «Rust»: guida cosa ti insegno e in che ordine.» |
 | Solo bozza | `ui.body` `inkSoft`: «C'è una proposta in attesa (versione 2). Leggila nella chat e decidi se confermarla.» + Button testuale «Vai alla proposta» (scorre la chat alla card e le dà il focus). Il pannello **non ripete** il contenuto della bozza (è già nella card: coerenza di Mayer) |
 | Mission confermata | `ui.bodyS` `inkSoft` «Versione 2»; *Perché* (`ui.body`, max 4 righe) ; *Come capirai di esserci riuscito* (voci numerate `ui.body`, intere); Button testuale «Apri la mission» (→ tab Mission). Vincoli e fuori ambito **non** compaiono qui |
 | Confermata + bozza di modifica | quanto sopra, più in cima `StatusPanel info` compatto (`ui.bodyS`): «Proposta di modifica in attesa.» + «Vai alla proposta» |
@@ -250,25 +250,18 @@ ripetono ciò che conosci.
 - Non è dismissibile e non ha stato persistente: è una riga di testo quieta, non un banner; sparisce da sola alla prima conferma di una versione con il campo.
 - Senza mission attuale (stato vuoto §4.3.3) l'invito non compare: la mission non c'è, e il Tutor lo chiede sempre nell'intervista.
 
-## 5. Chip di stato e frase onesta per `researching`
+## 5. Chip di stato e ricerca delle fonti per `researching`
 
-Il chip è non interattivo. Testi in vigore dalla Fase 3 (sostituiscono le righe corrispondenti di `topic.md` e `folder.md`):
+Il chip è non interattivo. Testi (sostituiscono le righe corrispondenti di `topic.md` e `folder.md`):
 
 | `state` | Testo | Icona | Variante | Annuncio TalkBack (solo al cambio) |
 |---|---|---|---|---|
-| `new`, `interviewing` | Definiamo la mission | `message-circle` | neutral | nessuno (invariato) |
+| `new`, `interviewing` | Definiamo la mission | `message-circle` | neutral | nessuno |
 | `mission_proposed` | Conferma la mission | `flag` | info | «Stato: conferma la mission» (Polite) |
-| `researching` **in Fase 3** | **Mission confermata** | `check-circle` | neutral | «Mission confermata.» (già annunciata dalla card; qui non si ripete) |
-| `researching` dalla Fase 4 | Cerco le fonti… | `search` | neutral | — |
+| `researching` | Cerco le fonti… | `search` | neutral | — |
 | `ready` | Pronto per le lezioni | `check-circle` | accent | invariato |
 
-**Decisione**: finché la ricerca non esiste, il chip *non* dice «Cerco le fonti…» (sarebbe una promessa falsa e un'attesa infinita). Dice un fatto: la mission è confermata. Il testo dipende da un flag di funzionalità in app (`ResearchAvailable`, falso in Fase 3, da accendere in Fase 4), non da un controllo di versione sparso. La stessa regola vale nelle righe della lista (cartella): stesso testo.
-
-**Frase onesta** (card confermata *più recente* e `StatusPanel info` nella tab Mission, mentre `state = researching` e `!ResearchAvailable`):
-- titolo (solo nel pannello): «La mission è salvata»
-- corpo: «Per ora non posso ancora cercare le fonti né creare lezioni: arriveranno nei prossimi aggiornamenti dell'app. Intanto puoi continuare a rifinire la mission con il Tutor.»
-- nella card, stessa frase senza titolo, `ui.body` `inkSoft`, sotto «Confermata il …».
-Nessuna data promessa, nessun avanzamento, nessuna barra indeterminata. Quando arriverà la Fase 4 il pannello si sostituisce con l'avanzamento reale (`progress`) e il flag cambia il chip.
+**Ricerca in corso** (card confermata *più recente* e pannello «Cosa succede ora» nella tab Mission, mentre `state = researching`): la card mostra, sotto «Confermata il …», `ui.body` `inkSoft` «Sto cercando le fonti per la tua mission.» + Button testuale «Vedi l'avanzamento» (cambia tab su Fonti); il pannello `StatusPanel info` ha titolo «Cerco le fonti…», corpo «Le scelgo in base alla tua mission. Di solito ci vogliono pochi minuti.» + «Vedi l'avanzamento». A ricerca finita la card dice «Ho trovato 8 fonti.» + «Vedi le fonti» e il pannello sparisce (le fonti hanno la loro tab; resta solo la riga «Le fonti sono della versione N» se serve, `resources.md` §6.1). Nessuna data promessa, nessuna barra indeterminata: l'avanzamento reale è nella tab Fonti (`resources.md` §4.2, §7).
 
 ## 6. Accessibilità
 
@@ -299,7 +292,7 @@ Nessuna data promessa, nessun avanzamento, nessuna barra indeterminata. Quando a
 | Sostituita | Sostituita da una proposta più recente |
 | Errore | Non sono riuscito a confermare / La mission non è stata salvata. Controlla la connessione e riprova. |
 | 409 | La mission era cambiata: ho aggiornato la proposta. |
-| Onesto | La mission è salvata / Per ora non posso ancora cercare le fonti né creare lezioni: arriveranno nei prossimi aggiornamenti dell'app. Intanto puoi continuare a rifinire la mission con il Tutor. |
+| Ricerca | Cerco le fonti… / Le scelgo in base alla tua mission. Di solito ci vogliono pochi minuti. / Sto cercando le fonti per la tua mission. |
 | Pref. | Preferenze · Per questo argomento · Per tutti gli argomenti · Eliminare questa preferenza? · Preferenza eliminata. · Ho salvato una preferenza. |
 
 Date: «8 novembre» (anno solo se diverso dall'attuale), mai formati numerici.
@@ -310,6 +303,5 @@ Date: «8 novembre» (anno solo se diverso dall'attuale), mai formati numerici.
 - Nascondere i criteri dietro «Mostra altro» nella bozza aperta; mostrare «0 vincoli» / «Nessuno».
 - Badge o contatori sulle tab, percentuali, «mission completata al 40%».
 - Animazioni celebrative (coriandoli, check che rimbalza) alla conferma: la motivazione è intrinseca; la conferma è un fatto, non un premio.
-- Dire «Cerco le fonti…» in Fase 3.
 - Pulsante «Annulla»/«Scarta» sulla bozza: non c'è endpoint; l'utente dice al Tutor cosa cambiare.
 - Punto di partenza: spezzarlo in punti o ricomporlo in frasi, troncarlo con ellissi nella bozza, metterlo nei vincoli o dopo i criteri, mostrare «Nessuno» o un invito nella card in chat, pre-compilare il composer, badge o avvisi di «mission incompleta», ripetere l'invito nel `ContextPane` o nel chip.

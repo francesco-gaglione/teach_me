@@ -1,11 +1,11 @@
 # Contratto: Ripasso FSRS
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.5** (2026-11-20, filtro per argomento del ripasso). v1.4 (2026-11-18, issue #29: schede da consolidare). v1.3 (2026-11-16, issue #12: motivo della sospensione, riattivazione, lista delle sospese, `409` distinti). v1.2 (2026-11-14, issue #11: FSRS-7, passi brevi, pesi personali; ADR 0014). v1.1 (2026-11-10), Fase 8.
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.5** (2026-11-20, filtro per argomento del ripasso). v1.4 (2026-11-18: schede da consolidare). v1.3 (2026-11-16: motivo della sospensione, riattivazione, lista delle sospese, `409` distinti). v1.2 (2026-11-14: FSRS-7, passi brevi, pesi personali; ADR 0014). v1.1 (2026-11-10).
 > **v1.5:** `GET /reviews/due` accetta `topic_id` (§3.1) e la risposta ha il campo nuovo `topics`. Modifica additiva.
 > **v1.4:** `ReviewCard` ha un campo nuovo, `to_consolidate` (§1.3, §2). Modifica additiva.
 > **v1.3:** `ReviewCard` ha due campi nuovi (`suspension`, `suspended_at`); nuovi `POST /reviews/{card_id}/unsuspend` (§3.2) e `GET /reviews/suspended` (§3.3); i `409` di voto e annullamento hanno `code` distinti al posto di `conflict` (§4, §5).
 > **v1.2:** cambiano solo le regole di scheduling (§1, §1.1, §1.2) e un caso di `409` dell'annullamento (§5). La forma di richieste e risposte non cambia.
-> **Fase 11 (v1.1):** `GET /reviews/due`, i conteggi e ogni operazione sulle schede riguardano solo le schede dell'utente della sessione; una scheda altrui risponde `404`.
+> **v1.1:** `GET /reviews/due`, i conteggi e ogni operazione sulle schede riguardano solo le schede dell'utente della sessione; una scheda altrui risponde `404`.
 > Valgono `api-conventions.md` e `lessons.md` (le schede nascono dal Recorder, §6.1-6.2). Decisione D4 (ADR 0005): FSRS da un crate esistente dietro il port `ReviewScheduler` (ADR 0006, sostituita da ADR 0014 per FSRS-7). Spec visiva: `docs/design/screens/review.md`. I path omettono il prefisso `/api/v1`.
 
 ## 1. Concetti
@@ -112,7 +112,7 @@ Stato dopo il voto: se l'intervallo è minore di `G` (o il voto è "Non la ricor
 ```
 
 - `topic_id` (v1.5, facoltativo, UUID): limita `items`, `due_count`, `estimated_minutes` e `next_due_at` alle schede di quel Topic. Senza `topic_id` tutto come prima.
-- `topic_id` malformato → `400 bad_request`. Topic inesistente o di un altro utente → `404 not_found` (stesso isolamento della Fase 11).
+- `topic_id` malformato → `400 bad_request`. Topic inesistente o di un altro utente → `404 not_found` (stesso isolamento per utente).
 - Un `cursor` vale solo con lo stesso `topic_id` con cui è stato prodotto. Usarlo con un altro filtro è un errore del client: il backend può rispondere `400 bad_request`.
 - `topics` (v1.5): un elemento per ogni Topic dell'utente con almeno una scheda in scadenza adesso, con `due_count` = le sue schede in scadenza. Ordinato per `due_count` decrescente, poi `topic_title` crescente, poi `topic_id`. È calcolato **sempre su tutte le schede dell'utente, ignorando `topic_id`**, così l'app mostra i filtri stabili. Array vuoto se non c'è nulla in scadenza.
 - Per il conteggio di un solo argomento basta `GET /reviews/due?limit=1&topic_id=…`.

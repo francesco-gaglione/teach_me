@@ -1,6 +1,6 @@
-# Tab «Cosa sai»: Registro e Glossario (Fase 7)
+# Tab «Cosa sai»: Registro e Glossario
 
-> Contratto: `docs/contracts/lessons.md` (§2 `LearningRecord`, `GlossaryTerm`; §3 endpoint). Posizione nella schermata Argomento e tab iniziale: `topic.md` (sezione Fase 6-7). Componenti base: `../base-components.md`. Riferimento: tablet orizzontale (1280 × 800 dp), poi medium e compact. Terminologia: «registro», «glossario», «lezione», «Tutor» (mai «Learning record», «superseded», «job»).
+> Contratto: `docs/contracts/lessons.md` (§2 `LearningRecord`, `GlossaryTerm`; §3 endpoint). Posizione nella schermata Argomento e tab iniziale: `topic.md` (sezione «Struttura delle tab»). Componenti base: `../base-components.md`. Riferimento: tablet orizzontale (1280 × 800 dp), poi medium e compact. Terminologia: «registro», «glossario», «lezione», «Tutor» (mai «Learning record», «superseded», «job»).
 
 ## 1. Scopo didattico
 
@@ -97,7 +97,7 @@ Un record = **una card statica** (`Surface static`, `blockGap` 12 dp fra card): 
 | Dopo un job `completion` riuscito mentre la tab è aperta | la lista si aggiorna; i nuovi record **non** si animano né si segnano «Nuovo»; annuncio Polite «Registro aggiornato.» |
 | Offline con dati in cache | ultimo elenco noto, riga `ui.bodyS` `inkSoft` icona `cloud-off`: «Elenco dell'ultimo aggiornamento.» |
 
-**Nessuna azione** sui record (modifica, eliminazione, segnalazione) in v1: il registro è memoria del sistema. Se un record è sbagliato l'utente lo dice al Tutor (non esiste endpoint): vedi Aperto. Nessun «Ripassa» (le schede arrivano in Fase 8): quando arriveranno, in fondo alla card comparirà un Button testuale; ora non si promette.
+**Nessuna azione** sui record (modifica, eliminazione, segnalazione) in v1: il registro è memoria del sistema. Se un record è sbagliato l'utente lo dice al Tutor (non esiste endpoint): vedi Aperto. Nessun «Ripassa» sulla card: il ripasso si trova in Home.
 
 ### 3.5 Accessibilità (Registro)
 
@@ -195,4 +195,4 @@ Solo quelle comuni (dissolvenza `fast` fra viste, `feedbackAppear` 200 ms per pa
 ## 8. Aperto
 
 - **Correzione di un record sbagliato** da parte dell'utente (record impreciso, valutazione ingiusta): non c'è endpoint né azione in v1. Un record scorretto sul registro vale per il Tutor e per il Planner. Suggerisco una azione futura «Segnala al Tutor» (apre la chat con il record come contesto) più che «Elimina»; da decidere con il proprietario.
-- **Schede di ripasso** (Fase 8): quando esisteranno API e scheduling, ogni record/termine potrà avere «Ripassa»; la scheda è già legata a un record o termine.
+- **«Ripassa» da un record o termine**: ogni scheda è già legata a un record o termine; un Button testuale «Ripassa» sulla card è una possibile aggiunta, non promessa.

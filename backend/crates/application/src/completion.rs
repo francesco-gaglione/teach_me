@@ -1,4 +1,4 @@
-//! Closing a lesson (phase 7): the `lesson_completion` job. It grades what is
+//! Closing a lesson: the `lesson_completion` job. It grades what is
 //! still pending, asks the Recorder what the learner showed, checks the answer
 //! with the backend's own rules (`lessons.md` §6.3) and stores it atomically.
 

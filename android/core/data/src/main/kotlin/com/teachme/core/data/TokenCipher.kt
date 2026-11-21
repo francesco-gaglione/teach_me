@@ -63,7 +63,7 @@ class KeystoreTokenCipher : TokenCipher {
             }
         } catch (e: Exception) {
             // A device whose Keystore does not work must still be usable: the token then stays as plain as it was
-            // before Phase 11 (private app storage, backup off). Only the failure type is logged, never the value.
+            // before the session store (private app storage, backup off). Only the failure type is logged, never the value.
             Log.w(TAG, "keystore unavailable, token stored without wrapping (${e::class.simpleName})")
             "$PREFIX_PLAIN$plain"
         }

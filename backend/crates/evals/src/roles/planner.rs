@@ -1,7 +1,7 @@
 //! Planner: the real `LessonGeneration` job up to the plan. The Generator is
 //! refused, so a run costs one Planner call (two with a repair) and the
 //! judge. The plan is checked here against the case's world with the
-//! backend's own `validate_plan`, and the Phase 10 choices of sections on top.
+//! backend's own `validate_plan`, and the choices of sections on top.
 
 use domain::UserId;
 use std::collections::{HashMap, HashSet};
@@ -426,7 +426,7 @@ fn shared_gram(plan: &Value, n: usize) -> Option<String> {
 }
 
 /// `estimated_minutes` the formula gives for this plan
-/// (`evals/README.md` "Fase 12"): `P = 220 + 450 per concept + 200 with a
+/// (`evals/README.md`): `P = 220 + 450 per concept + 200 with a
 /// `general` prerequisite`, the recall adding one exercise.
 fn planned_minutes(plan: &Value) -> i64 {
     let general = usize::from(basis_count(plan, "general") > 0);
@@ -439,7 +439,7 @@ fn planned_minutes(plan: &Value) -> i64 {
     lesson_minutes(prose, exercises.len() + general, open)
 }
 
-/// Checks of the Phase 12 fields (`evals/README.md` "Fase 12").
+/// Checks of the concept fields (`evals/README.md`).
 #[allow(clippy::too_many_lines)] // one arm per key of the suite
 fn richness_check(key: &str, v: &Value, plan: &Value) -> Option<Check> {
     let concepts = list(plan, "concepts");
@@ -634,7 +634,7 @@ fn ids(v: &Value) -> Vec<String> {
         .collect()
 }
 
-/// Checks of the Phase 10 choices (keys of the suite's `deterministic`).
+/// Checks of the section choices (keys of the suite's `deterministic`).
 #[allow(clippy::too_many_lines)] // one arm per key of the suite
 pub fn plan_checks(spec: &Map<String, Value>, plan: &Value, world: &World) -> Vec<Check> {
     let chosen = world.chosen(plan);
@@ -938,7 +938,7 @@ mod tests {
         );
     }
 
-    // ----- Phase 12 -----
+    // ----- Concept fields -----
 
     fn good_plan() -> Value {
         let step = |t: &str| json!(t);
@@ -1097,7 +1097,7 @@ mod tests {
 
     #[test]
     fn every_check_of_the_planner_suites_is_computed() {
-        for suite in shipped(&["planner/phase10", "planner/phase12"]) {
+        for suite in shipped(&["planner/pdf", "planner/concepts"]) {
             for case in &suite.cases {
                 let mut spec = suite.deterministic(case);
                 for k in ["plan_valid", "plan_valid_first_try", "planner_calls_max"] {
@@ -1123,12 +1123,12 @@ mod tests {
     #[test]
     fn the_fixed_plans_of_every_generator_suite_pass_the_backend_validation() {
         let suites = shipped(&[
-            "generator/phase6",
-            "generator/phase10",
-            "generator/phase12",
-            "generator/phase12-fetch",
+            "generator/lessons",
+            "generator/pdf",
+            "generator/rich-lessons",
+            "generator/web-fetch",
         ]);
-        // Suites load sorted by id: phase10, phase12, phase12-fetch, phase6.
+        // Suites load sorted by id: lessons, pdf, rich-lessons, web-fetch.
         // Cases and fixed plans are counted so that a case added to a suite is
         // noticed here and its plan checked, not skipped by a stale loop.
         let counts: Vec<(usize, usize)> = suites
@@ -1140,7 +1140,7 @@ mod tests {
                 )
             })
             .collect();
-        assert_eq!(counts, [(2, 2), (5, 5), (5, 5), (7, 7)], "{counts:?}");
+        assert_eq!(counts, [(7, 7), (2, 2), (5, 5), (5, 5)], "{counts:?}");
         let mut failures = Vec::new();
         for suite in &suites {
             for case in &suite.cases {

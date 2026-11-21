@@ -23,7 +23,7 @@ Read `docs/mvp.md`, `docs/contracts/`, `docs/adr/` and, if relevant, `docs/desig
 ## How you work
 
 - Start from the files and lines given in the instructions. If you need to search and `graphify-out/graph.json` exists, use `graphify query "<question>"` before grep, and read only the lines it points to.
-- Do not run `graphify update`: the main session updates the graph at the end of a phase.
+- Do not run `graphify update`: the main session updates the graph at the end of a block of work.
 - Use Bash **read-only**: `git diff`, `git status`, `cat`, `grep`, `cargo check`, `cargo clippy`, `cargo test`, `./gradlew test`. Do not modify files, do not install anything outside builds, **never run `git commit`, `git push`, `git checkout`, `git reset`**.
 - Verify every problem before reporting it: give file and line, and a concrete scenario that triggers it. No hypothetical problems without a scenario.
 

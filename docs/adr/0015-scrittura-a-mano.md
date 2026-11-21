@@ -2,7 +2,7 @@
 
 - Stato: accettata
 - Data: 2026-11-15
-- Issue Gitea #27 ("Scrittura a mano"). Il proprietario ha deciso i punti 1-4 il 2026-11-15; i punti 5-11 sono scelte del tech lead che ne derivano. Contratto: `docs/contracts/lessons.md` §11. Design: `docs/design/components/handwriting.md`.
+- Richiesta "Scrittura a mano". Il proprietario ha deciso i punti 1-4 il 2026-11-15; i punti 5-11 sono scelte del tech lead che ne derivano. Contratto: `docs/contracts/lessons.md` §11. Design: `docs/design/components/handwriting.md`.
 
 ## Problema
 

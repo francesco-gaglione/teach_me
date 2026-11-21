@@ -24,7 +24,7 @@ import com.teachme.core.model.LessonInProgress
 import com.teachme.core.model.LessonStatus
 
 /**
- * "Riprendi la lezione" under the review card (home.md, Fase 8b). Absent when there is nothing to resume or the
+ * "Riprendi la lezione" under the review card (home.md). Absent when there is nothing to resume or the
  * request failed: never a placeholder, never a banner. Only the button is tappable.
  */
 @Composable

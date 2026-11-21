@@ -64,7 +64,7 @@ internal fun generationPhases(
         }.filter { (phase, _) -> phase != GenerationPhase.Reading || showReading }
 }
 
-/** One "Dal tuo PDF" line of a lesson row (topic.md Fase 10, Lista lezioni). [title] is null with a single document. */
+/** One "Dal tuo PDF" line of a lesson row (topic.md, Lista lezioni). [title] is null with a single document. */
 data class PdfLine(
     val title: String?,
     val pageStart: Int,
