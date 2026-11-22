@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       # Installs the toolchain (and rustfmt, clippy) pinned in backend/rust-toolchain.toml
       - run: rustup toolchain install
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
