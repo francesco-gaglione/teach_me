@@ -18,7 +18,8 @@ host="${1:?usage: push-deploy.sh [--allow-dirty] <ssh-host> [remote-dir]}"
 remote_dir="${2:-/srv/teach_me}"
 backend_dir="$(cd "$(dirname "$0")/.." && pwd)"
 
-# What git ignores (target/, local databases, eval results) stays here.
+# What git ignores (target/, local databases, eval results) stays here. The host's own
+# docker-compose.override.yml is excluded too, so --delete never removes it there.
 ignored=$(git -C "$backend_dir" ls-files --others --ignored --exclude-standard --directory | sed 's|^|/|')
 
 source_commit=$(git -C "$backend_dir" rev-parse --short HEAD)
@@ -34,6 +35,7 @@ fi
 echo "== copy backend/ to $host:$remote_dir/src/backend"
 rsync -az --delete \
   --exclude 'target/' --exclude 'deploy/backups/' --exclude 'deploy/.env' \
+  --exclude 'deploy/docker-compose.override.yml' \
   --exclude-from=<(printf '%s\n' "$ignored") \
   "$backend_dir/" "$host:$remote_dir/src/backend/"
 
