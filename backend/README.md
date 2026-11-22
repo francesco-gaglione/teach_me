@@ -219,4 +219,8 @@ cd ~/teach_me/backend/deploy
 TEACH_ME_DEPLOY_DIR=/srv/teach_me ./deploy.sh     # or .env and backups/ in another folder
 ```
 
+From a development machine, `deploy/push-deploy.sh <ssh-host> [remote-dir]` does both steps: it copies `backend/` (working tree, uncommitted changes included, git-ignored files left out) to `<remote-dir>/src/backend` with `rsync --delete`, then runs `deploy.sh` there with `TEACH_ME_DEPLOY_DIR=<remote-dir>` (default `/srv/teach_me`).
+
+Changes that belong to one host only (an extra network, a different Jaeger) go in `deploy/docker-compose.override.yml`: git-ignored, loaded automatically by `docker compose` and `deploy.sh`, and left in place by `push-deploy.sh`.
+
 With `TEACH_ME_DEPLOY_DIR` different from the code folder, pass the same file to manual compose commands too: `docker compose --env-file "$TEACH_ME_DEPLOY_DIR/.env" ...`. Backups are in `backups/` with mode 700, rotated by name. To go back after a deploy that succeeded but is wrong: check out the previous code, run `./deploy.sh` again and, if you need the previous DB, `./backup.sh restore backups/<file>.db.gz`.
