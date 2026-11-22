@@ -48,7 +48,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       # The runner image ships the Android SDK with its licences accepted; missing
       # platforms are downloaded by the Android Gradle plugin.
       - run: echo "sdk.dir=$ANDROID_HOME" > local.properties

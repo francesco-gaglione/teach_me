@@ -25,7 +25,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
       # The secrets are read only by the steps that need them, through env: never interpolated into a script,
