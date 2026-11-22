@@ -69,14 +69,20 @@ impl Harness {
     /// With the interval of the SSE ping (which is also when streams re-check
     /// their session).
     pub async fn with_ping(scripts: Vec<Vec<Step>>, ping: Duration) -> Self {
+        let mut options = AppOptions::default();
+        options.chat.flush_interval = Duration::ZERO;
+        options.sse_ping = ping;
+        Self::with_options(scripts, options).await
+    }
+
+    /// With explicit options (limits, settings); the caller sets the chat
+    /// flush interval and ping if it needs them.
+    pub async fn with_options(scripts: Vec<Vec<Step>>, options: AppOptions) -> Self {
         let pool = sqlite::connect("sqlite::memory:").await.unwrap();
         sqlite::migrate(&pool).await.unwrap();
         let llm = ScriptedLlm::with(scripts);
         let clock = Arc::new(TestClock(Mutex::new(T0)));
         let ids = Arc::new(SeqIds(AtomicU64::new(0)));
-        let mut options = AppOptions::default();
-        options.chat.flush_interval = Duration::ZERO;
-        options.sse_ping = ping;
         let state = AppState::new(
             clock.clone(),
             ids.clone(),

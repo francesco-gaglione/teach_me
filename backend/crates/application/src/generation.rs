@@ -200,7 +200,7 @@ impl GenerateLesson {
                     false,
                 )
                 .await
-                .map_err(|e| e.to_string())
+                .map_err(|e| e.log_kind())
         }
         .await;
         if let Err(reason) = result {
@@ -512,7 +512,7 @@ impl GenerateLesson {
         };
         let fixed = structured::repair_once(self.llm.as_ref(), &spec, message, spent).await?;
         check(&fixed).map_err(|problems| {
-            tracing::warn!(job = %job.id, ?problems, "the planner's repair did not help");
+            tracing::warn!(job = %job.id, problems = problems.len(), "the planner's repair did not help");
             JobErrorCode::InvalidOutput
         })
     }
@@ -1178,6 +1178,18 @@ fn result_of(lesson: &Lesson) -> JobResult {
     }
 }
 
+/// A URL as it may be logged: scheme, host and path. The query and fragment
+/// (tokens, signed links, search terms) and any user:password are dropped.
+fn loggable_url(raw: &str) -> String {
+    match url::Url::parse(raw) {
+        Ok(u) => match u.host_str() {
+            Some(host) => format!("{}://{host}{}", u.scheme(), u.path()),
+            None => format!("{}:(no host)", u.scheme()),
+        },
+        Err(_) => "(unparsable url)".to_owned(),
+    }
+}
+
 /// Logs what the provider read for the Generator: which pages and which
 /// reads failed. A failed read is not a failure of the job (ADR 0009): the
 /// model saw the error and wrote the lesson with what it had.
@@ -1191,7 +1203,7 @@ impl TurnObserver for FetchLog {
         for read in response.web_fetch_reads() {
             tracing::info!(
                 job = %self.job,
-                url = read.url.as_deref().unwrap_or("(url not derivable from the block)"),
+                url = read.url.as_deref().map_or_else(|| "(url not derivable from the block)".to_owned(), loggable_url),
                 "generator: web page read"
             );
         }
@@ -1230,5 +1242,19 @@ fn push_assistant(messages: &mut Vec<LlmMessage>, message: LlmMessage) {
     match messages.last_mut() {
         Some(last) if last.role == MessageRole::Assistant => last.parts.extend(message.parts),
         _ => messages.push(message),
+    }
+}
+
+#[cfg(test)]
+mod url_log_tests {
+    use super::loggable_url;
+
+    #[test]
+    fn a_logged_url_keeps_scheme_host_and_path_only() {
+        assert_eq!(
+            loggable_url("https://user:pw@example.com/a/b?token=SECRET&q=1#frag"),
+            "https://example.com/a/b"
+        );
+        assert_eq!(loggable_url("not a url"), "(unparsable url)");
     }
 }

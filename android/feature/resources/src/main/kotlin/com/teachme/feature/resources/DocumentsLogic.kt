@@ -22,6 +22,9 @@ enum class UploadError {
     /** The server says it is not a PDF (415). */
     NotPdf,
 
+    /** 409 `storage_quota_exceeded`: the space is finished. Only deleting documents helps, so there is no "Riprova". */
+    QuotaExceeded,
+
     /** Network, timeout, 5xx or an unreadable file: "Riprova" reuses the same file. */
     Network,
 }
@@ -44,6 +47,8 @@ internal sealed interface UploadFailureAction {
 
 internal fun uploadFailureAction(failure: ApiFailure): UploadFailureAction =
     when (failure) {
+        // Before Conflict is considered: the quota 409 has its own panel, not a silent reload.
+        ApiFailure.StorageQuotaExceeded -> UploadFailureAction.Show(UploadError.QuotaExceeded)
         ApiFailure.Conflict -> UploadFailureAction.Reload
         ApiFailure.NotFound, ApiFailure.InvalidId -> UploadFailureAction.TopicGone
         ApiFailure.Unauthorized -> UploadFailureAction.Silent

@@ -48,6 +48,9 @@ internal class FakeChatRepository : ChatRepository {
     val sentLessonIds = mutableListOf<String?>()
     var listCalls = 0
 
+    /** Streams currently collected: it drops when the collector is cancelled or the stream ends. */
+    var openStreams = 0
+
     override suspend fun listMessages(
         topicId: String,
         cursor: String?,
@@ -79,9 +82,14 @@ internal class FakeChatRepository : ChatRepository {
             openedWith += lastEventId
             val channel = Channel<ChatStreamSignal>(Channel.UNLIMITED)
             connections += channel
-            for (signal in channel) {
-                emit(signal)
-                if (signal is ChatStreamSignal.Ended) return@flow
+            openStreams++
+            try {
+                for (signal in channel) {
+                    emit(signal)
+                    if (signal is ChatStreamSignal.Ended) return@flow
+                }
+            } finally {
+                openStreams--
             }
         }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teachme.core.model.ApiFailure
 import com.teachme.core.model.ApiResult
+import com.teachme.core.model.AppClock
 import com.teachme.core.model.ChatEvent
 import com.teachme.core.model.JobStatus
 import com.teachme.core.model.KeyNotice
@@ -17,6 +18,7 @@ import com.teachme.core.model.NoLlmKeyMonitor
 import com.teachme.core.model.ResourceRepository
 import com.teachme.core.model.ResourcesView
 import com.teachme.core.model.TopicJob
+import com.teachme.core.model.budgetResetAt
 import com.teachme.core.model.toLoadError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 sealed interface ResourcesLoad {
     data object Loading : ResourcesLoad
@@ -59,6 +62,8 @@ data class ResourcesUiState(
     val actionError: LoadError? = null,
     /** The last start/retry was refused because of the LLM key (llm-key.md section 5): nothing was created. */
     val keyNotice: KeyNotice? = null,
+    /** The last start/retry was refused for the daily LLM budget: when it comes back (llm-key.md section 10.1). */
+    val budgetResetAt: Instant? = null,
     /** False while the list of a job that has just succeeded is being fetched again. */
     val settled: Boolean = true,
     /** URLs that are new compared with the previous research, marked "Nuova" until the tab is left. */
@@ -95,6 +100,7 @@ class ResourcesViewModel
         private val resources: ResourceRepository,
         /** Told when a request meets an exhausted credit (the key notice is born here, not in the panel). */
         private val llmKey: LlmKeyMonitor = NoLlmKeyMonitor,
+        private val wallClock: AppClock = AppClock { System.currentTimeMillis() },
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -363,29 +369,34 @@ class ResourcesViewModel
                         val job = result.value
                         eventCounter++
                         if (_state.value.view == null) {
-                            _state.update { it.copy(acting = false, keyNotice = null) }
+                            _state.update { it.copy(acting = false, keyNotice = null, budgetResetAt = null) }
                             load()
                         } else {
                             // The answer is the job we just created or requeued: show it right away.
                             lastApplied = Long.MIN_VALUE
                             applyJob(job)
-                            _state.update { it.copy(acting = false, keyNotice = null) }
+                            _state.update { it.copy(acting = false, keyNotice = null, budgetResetAt = null) }
                         }
                     }
                     is ApiResult.Failure ->
                         if (result.failure == ApiFailure.Conflict || result.failure == ApiFailure.NotFound) {
                             // Another client already started it (or the state moved): look at the truth, in silence.
-                            _state.update { it.copy(acting = false, keyNotice = null) }
+                            _state.update { it.copy(acting = false, keyNotice = null, budgetResetAt = null) }
                             load()
                         } else {
                             val keyNotice = notices.of(result)
+                            val budgetReset = result.failure.budgetResetAt(wallClock.nowMs())
                             _state.update {
                                 if (keyNotice != null) {
-                                    it.copy(acting = false, keyNotice = keyNotice)
+                                    it.copy(acting = false, keyNotice = keyNotice, budgetResetAt = null)
+                                } else if (budgetReset != null) {
+                                    // The budget panel says it (llm-key.md 10.1): no generic error.
+                                    it.copy(acting = false, keyNotice = null, budgetResetAt = budgetReset)
                                 } else {
                                     it.copy(
                                         acting = false,
                                         keyNotice = null,
+                                        budgetResetAt = null,
                                         actionError = result.failure.toLoadError(),
                                     )
                                 }

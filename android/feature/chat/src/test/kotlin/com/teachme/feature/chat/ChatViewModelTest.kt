@@ -1,8 +1,11 @@
 package com.teachme.feature.chat
 
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import com.teachme.core.model.ApiErrorDetail
 import com.teachme.core.model.ApiFailure
 import com.teachme.core.model.ApiResult
+import com.teachme.core.model.AppClock
 import com.teachme.core.model.ChatEvent
 import com.teachme.core.model.ChatMessageStatus
 import com.teachme.core.model.ChatRole
@@ -20,6 +23,7 @@ import com.teachme.core.model.UnreachableReason
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -30,6 +34,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -79,7 +84,11 @@ class ChatViewModelTest {
 
     private val keys = RecordingMonitor()
 
-    private fun vm() = ChatViewModel("t1", repo, keys)
+    /** The device clock the budget wait is counted from: 2026-11-22 18:00 UTC. */
+    private val nowMs = Instant.parse("2026-11-22T18:00:00Z").toEpochMilli()
+
+    private fun vm(handle: SavedStateHandle = SavedStateHandle()) =
+        ChatViewModel("t1", repo, keys, handle, AppClock { nowMs })
 
     private fun event(
         id: Long,
@@ -523,6 +532,56 @@ class ChatViewModelTest {
             assertEquals(ChatLoad.Ready, vm.state.value.load)
         }
 
+    // Logout ("Esci") pops the whole stack: the Topic screen is disposed and calls onStop (TopicPane), then the
+    // ViewModel is cleared. In both cases the open stream must be cancelled and nothing may reconnect.
+    @Test
+    fun `logout with the stream open cancels it and never reconnects`() =
+        runTest {
+            val vm = started(listOf(user1))
+            assertEquals(1, repo.openStreams)
+
+            vm.onStop()
+            advanceUntilIdle()
+            assertEquals(0, repo.openStreams)
+
+            // Not even a stray "Riprova ora" or a long wait reopens it.
+            vm.reconnectNow()
+            advanceTimeBy(300_000)
+            assertEquals(1, repo.connections.size)
+            assertEquals(0, repo.openStreams)
+            assertEquals(1, repo.listCalls)
+        }
+
+    @Test
+    fun `clearing the ViewModel while the stream is open cancels it and never reconnects`() =
+        runTest {
+            val vm = started(listOf(user1))
+            assertEquals(1, repo.openStreams)
+
+            vm.viewModelScope.cancel()
+            advanceUntilIdle()
+            assertEquals(0, repo.openStreams)
+
+            // A server close after the clear would normally trigger the backoff reconnect: nothing is left to do it.
+            advanceTimeBy(300_000)
+            assertEquals(1, repo.connections.size)
+        }
+
+    @Test
+    fun `logout after the stream stopped on a 401 leaves no connection and no reconnect`() =
+        runTest {
+            val vm = started(listOf(user1))
+            repo.push(ChatStreamSignal.Ended(ApiFailure.Unauthorized))
+            advanceUntilIdle()
+            assertEquals(0, repo.openStreams)
+
+            vm.onStop()
+            vm.reconnectNow()
+            advanceTimeBy(300_000)
+            assertEquals(1, repo.connections.size)
+            assertEquals(0, repo.openStreams)
+        }
+
     @Test
     fun `leaving the screen closes the stream and coming back reloads and reconnects without a stale id`() =
         runTest {
@@ -640,6 +699,53 @@ class ChatViewModelTest {
         }
 
     @Test
+    fun `a send refused for the daily budget carries the Retry-After into the error`() =
+        runTest {
+            val vm = started()
+            repo.send = { ApiResult.Failure(ApiFailure.LlmBudgetExceeded(5400)) }
+            vm.send("ciao")
+            advanceUntilIdle()
+            val error = vm.state.value.sendError
+            assertEquals(SendError.BudgetExceeded(Instant.parse("2026-11-22T19:30:00Z")), error)
+            // Nothing is a key problem, and the composer stays usable for typing.
+            assertNull(vm.state.value.keyNotice)
+            assertTrue(vm.state.value.canSend)
+        }
+
+    @Test
+    fun `a send refused for the budget without Retry-After waits for the next midnight UTC`() =
+        runTest {
+            val vm = started()
+            repo.send = { ApiResult.Failure(ApiFailure.LlmBudgetExceeded(null)) }
+            vm.send("ciao")
+            advanceUntilIdle()
+            assertEquals(
+                SendError.BudgetExceeded(Instant.parse("2026-11-23T00:00:00Z")),
+                vm.state.value.sendError,
+            )
+        }
+
+    @Test
+    fun `a retry refused again for the budget keeps the panel, stores the reset and shows no toast`() =
+        runTest {
+            val vm = started(listOf(failed, user1))
+            repo.retry = { ApiResult.Failure(ApiFailure.LlmBudgetExceeded(600)) }
+            vm.retry("a2")
+            advanceUntilIdle()
+            assertEquals(Instant.parse("2026-11-22T18:10:00Z"), vm.state.value.budgetRetryResetAt)
+            assertFalse(vm.state.value.retrying)
+            assertEquals("a2", vm.state.value.retryableMessageId)
+            // No generic "could not retry" toast: the budget panel is the answer.
+            val toast = withTimeoutOrNull(50) { vm.effects.first() }
+            assertNull(toast)
+            // A successful retry forgets the wait.
+            repo.retry = { ApiResult.Success(msg("a2", status = ChatMessageStatus.Streaming, text = null, second = 2)) }
+            vm.retry("a2")
+            advanceUntilIdle()
+            assertNull(vm.state.value.budgetRetryResetAt)
+        }
+
+    @Test
     fun `a refused key on send becomes a key notice, not a send error`() =
         runTest {
             val vm = started()
@@ -657,7 +763,7 @@ class ChatViewModelTest {
             val second = vm.state.value.keyNotice!!
             assertEquals(LlmKeyVariant.Rejected, second.notice.variant)
             // A new refusal is a new notice, so a panel born before it does not turn "fixed" by mistake.
-            assertTrue(second.notice.id > first.keyNotice!!.notice.id)
+            assertTrue(second.notice.id > first.keyNotice.notice.id)
         }
 
     @Test
@@ -696,7 +802,7 @@ class ChatViewModelTest {
                 vm.state.value.keyNotice!!
                     .notice
             assertTrue(second.repeated)
-            assertTrue(second.id > first.keyNotice!!.notice.id)
+            assertTrue(second.id > first.keyNotice.notice.id)
 
             // If the next answer is another refusal, the notice is replaced by that one.
             repo.send = { ApiResult.Failure(ApiFailure.LlmKeyRejected) }
@@ -1076,5 +1182,107 @@ class ChatViewModelTest {
             advanceUntilIdle()
             assertEquals(before + 1, received.count { it == ChatEvent.ResyncRequired })
             job.cancel()
+        }
+
+    @Test
+    fun `after process death the saved stream position resumes the stream when the snapshot gives none`() =
+        runTest {
+            val handle = SavedStateHandle()
+            val first = vm(handle)
+            repo.list = { ApiResult.Success(page(listOf(user1, a2))) }
+            first.onStart()
+            advanceUntilIdle()
+            repo.push(ChatStreamSignal.Opened)
+            repo.push(event(9, ChatEvent.MessageDelta("a2", 0, "ab")))
+            advanceUntilIdle()
+            assertEquals(9L, handle.get<Long>("last_event_id"))
+
+            // The process dies: a new ViewModel with the same handle, and no messages in memory.
+            first.viewModelScope.cancel()
+            repo.openedWith.clear()
+            val restored = vm(handle)
+            assertEquals(ChatLoad.Loading, restored.state.value.load)
+            assertTrue(
+                restored.state.value.messages
+                    .isEmpty(),
+            )
+            restored.onStart()
+            advanceUntilIdle()
+
+            assertEquals(listOf<Long?>(9), repo.openedWith)
+            assertEquals(ChatLoad.Ready, restored.state.value.load)
+            assertEquals(2, restored.state.value.messages.size)
+        }
+
+    @Test
+    fun `after process death the snapshot position wins over the saved one`() =
+        runTest {
+            val handle = SavedStateHandle(mapOf("last_event_id" to 9L))
+            repo.list = { ApiResult.Success(page(listOf(user1, a2), position = 12)) }
+            val restored = vm(handle)
+            restored.onStart()
+            advanceUntilIdle()
+
+            assertEquals(listOf<Long?>(12), repo.openedWith)
+            assertEquals(12L, handle.get<Long>("last_event_id"))
+        }
+
+    @Test
+    fun `a fresh screen without saved state opens the stream without a position`() =
+        runTest {
+            val vm = started(listOf(user1, a2))
+            assertEquals(listOf<Long?>(null), repo.openedWith)
+            assertEquals(2, vm.state.value.messages.size)
+        }
+
+    @Test
+    fun `a cleared ViewModel closes its stream without reconnecting, and the next one starts empty`() =
+        runTest {
+            val handleA = SavedStateHandle()
+            val a = vm(handleA)
+            repo.list =
+                {
+                    ApiResult.Success(
+                        page(listOf(msg("u1", ChatRole.User, text = "Segreto di A", second = 1)), position = 5),
+                    )
+                }
+            a.onStart()
+            advanceUntilIdle()
+            repo.push(ChatStreamSignal.Opened)
+            repo.push(
+                event(
+                    8,
+                    ChatEvent.TopicUpdated(
+                        Topic("t1", "f1", "Topic di A", TopicState.New, Instant.EPOCH, Instant.EPOCH),
+                    ),
+                ),
+            )
+            advanceUntilIdle()
+            assertEquals(1, a.state.value.messages.size)
+            assertEquals(8L, handleA.get<Long>("last_event_id"))
+
+            a.viewModelScope.cancel()
+            advanceUntilIdle()
+            assertEquals(0, repo.openStreams)
+            advanceTimeBy(60_000)
+            assertEquals(1, repo.connections.size)
+            repo.openedWith.clear()
+            repo.list = { ApiResult.Success(page(emptyList())) }
+            val b = vm(SavedStateHandle())
+            assertTrue(
+                b.state.value.messages
+                    .isEmpty(),
+            )
+            assertNull(b.state.value.topic)
+            b.onStart()
+            advanceUntilIdle()
+
+            assertTrue(
+                b.state.value.messages
+                    .isEmpty(),
+            )
+            assertNull(b.state.value.topic)
+            // B's stream does not resume from A's position.
+            assertEquals(listOf<Long?>(null), repo.openedWith)
         }
 }

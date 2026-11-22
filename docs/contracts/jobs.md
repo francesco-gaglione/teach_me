@@ -1,6 +1,7 @@
 # Contratto: Job (operazioni lunghe)
 
-> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.4** (2026-11-11).
+> Contratto condiviso tra backend e app. Proprietario: tech lead. Versione: **v1.5** (2026-11-22, audit C8).
+> **v1.5:** nuovo codice di errore `llm_budget_exceeded` (budget giornaliero di token LLM esaurito, `api-conventions.md` §12): un job in coda che parte a budget esaurito fallisce, non si ritenta da solo, e l'utente lo riprova dopo le 00:00 UTC (aggiornamento 2026-11-22, audit C8).
 > **v1.4:** nuovo codice di errore `llm_credit_exhausted` (credito del provider LLM esaurito, `users.md` §3): il retry è ammesso senza cambiare la chiave.
 > **v1.3:** ogni job appartiene al proprietario dell'argomento e usa la sua chiave LLM; nuovi codici di errore `llm_key_missing` e `llm_key_rejected` (`users.md` §3). Il job di ricerca nato dalla conferma di una mission senza chiave fallisce con `llm_key_missing` e riparte con il retry. Il retry di un job LLM senza chiave risponde `409 llm_key_missing`.
 > Valgono `api-conventions.md` (che per i job rimanda qui: questo documento sostituisce l'esempio del suo §9) e `chat.md` §4 per lo stream SSE. I path omettono il prefisso `/api/v1`.
@@ -39,10 +40,14 @@
 | `document_id` | `null`, tranne `document_import`: il `Document` che si importa (`documents.md`), presente da quando il job è creato (v1.2) |
 | `status` | `queued` \| `running` \| `succeeded` \| `failed` |
 | `progress` | `null` oppure `{step, message, done, total}`. `step`: etichetta stabile scelta dal job (valori per `research` in `resources.md` §4); `message`: frase facoltativa nella lingua dell'argomento del job (ADR 0019) (`null` o ≤ 80 caratteri) che descrive un fatto già avvenuto, mai una stima di tempo; `done`/`total`: interi o `null`. **Nessuna percentuale** |
-| `error` | `null` oppure `{code, message}`; `message` è un testo fisso per codice, nella lingua dell'argomento del job (ADR 0019). Codici: `timeout`, `interrupted`, `upstream_failed`, `rate_limited`, `invalid_output`, `internal`, `llm_key_missing`, `llm_key_rejected`, `llm_credit_exhausted` (dalla v1.4); per `document_import` anche quelli di `documents.md` §4. L'app mostra il `message` per codici sconosciuti |
+| `error` | `null` oppure `{code, message}`; `message` è un testo fisso per codice, nella lingua dell'argomento del job (ADR 0019). Codici: `timeout`, `interrupted`, `upstream_failed`, `rate_limited`, `invalid_output`, `internal`, `llm_key_missing`, `llm_key_rejected`, `llm_credit_exhausted` (dalla v1.4), `llm_budget_exceeded` (dalla v1.5); per `document_import` anche quelli di `documents.md` §4. L'app mostra il `message` per codici sconosciuti |
 | `result` | `null` finché non è `succeeded`; poi un oggetto che dipende dal `kind` (per `research`: `resources.md` §4; per `document_import`: `documents.md` §4) |
 | `attempt` | numero di partenze del run corrente; 0 finché non parte; torna 0 con un retry |
 | `started_at`, `finished_at` | `null` finché l'evento non accade; tornano `null` quando il job viene rimesso in coda |
+
+**Budget LLM giornaliero esaurito (aggiornamento 2026-11-22, audit C8).** Un job in `queued` il cui proprietario ha esaurito il budget giornaliero di token LLM (`api-conventions.md` §12, `TEACH_ME_USER_DAILY_LLM_TOKENS`) quando il job inizia a essere eseguito termina `failed` con `error.code` `llm_budget_exceeded`. Non viene ritentato da solo; l'utente può ritentarlo dopo le 00:00 UTC (§3). Un job già `running` quando il budget si esaurisce termina normalmente.
+
+Da non confondere con il `429 llm_budget_exceeded` alla creazione (`api-conventions.md` §7 e §12): lì una richiesta o un job nuovo viene rifiutato quando il budget è già esaurito, con header `Retry-After`; qui il job era già stato accettato e fallisce al momento dell'avvio, senza header HTTP.
 
 ## 3. Endpoint
 

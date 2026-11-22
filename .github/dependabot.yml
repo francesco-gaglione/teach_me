@@ -1,0 +1,20 @@
+# Weekly update PRs for dependencies (threat model, "Dipendenze"). Security advisories
+# open PRs at any time; version bumps are grouped to keep the noise low.
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /backend
+    schedule: { interval: weekly }
+    groups:
+      cargo: { patterns: ["*"] }
+  - package-ecosystem: gradle
+    directory: /android
+    schedule: { interval: weekly }
+    groups:
+      gradle: { patterns: ["*"] }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: docker
+    directories: [/backend, /backend/deploy/tts]
+    schedule: { interval: weekly }

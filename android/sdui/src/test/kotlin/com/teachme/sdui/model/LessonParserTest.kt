@@ -39,7 +39,7 @@ class LessonParserTest {
     }
 
     @Test
-    fun `the four valid lessons cover all seventeen catalog types`() {
+    fun `the valid lessons cover every catalog type`() {
         val types =
             Fixtures.validLessons
                 .flatMap { usable(it).document.blocks }
@@ -47,7 +47,6 @@ class LessonParserTest {
                 .toSet() +
                 Fixtures.validLessons.flatMap { usable(it).document.allBlocks() }.map { it.type }
         assertEquals(CATALOG_V1_TYPES, types)
-        assertEquals(17, CATALOG_V1_TYPES.size)
     }
 
     @Test

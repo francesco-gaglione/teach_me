@@ -18,6 +18,7 @@
 //! of the server's own configuration, then applies the suite's deterministic
 //! checks and an LLM judge on the rubric. See `backend/evals/README.md`.
 
+pub mod baseline;
 pub mod checks;
 pub mod judge;
 pub mod llm;

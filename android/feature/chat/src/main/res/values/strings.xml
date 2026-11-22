@@ -68,6 +68,7 @@
     <string name="chat_send_error_title">Messaggio non inviato</string>
     <string name="chat_send_error_network">Non sono riuscito a raggiungere il backend. Il tuo testo è ancora nel campo.</string>
     <string name="chat_send_error_server">Il server ha avuto un problema. Il tuo testo è ancora nel campo.</string>
+    <string name="chat_send_error_text_kept">Il tuo testo è ancora nel campo.</string>
     <string name="chat_send_error_retry">Riprova</string>
     <string name="chat_dismiss">Chiudi</string>
     <string name="chat_failed_title_interrupted">Risposta interrotta</string>

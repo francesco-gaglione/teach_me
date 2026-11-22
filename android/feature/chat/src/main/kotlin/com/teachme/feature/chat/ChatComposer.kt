@@ -58,9 +58,12 @@ import com.teachme.core.designsystem.components.TeachStatusPanel
 import com.teachme.core.designsystem.components.TeachText
 import com.teachme.core.model.CHAT_MAX_CHARS
 import com.teachme.core.model.LlmKeyVariant
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyHint
 import com.teachme.core.ui.LlmKeyNotice
+import com.teachme.core.ui.llmBudgetAvailability
+import com.teachme.core.ui.rememberBudgetRenewed
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
@@ -105,7 +108,11 @@ internal fun ChatComposer(
 ) {
     val colors = TeachTheme.colors
     val info = chatInputInfo(value.text)
-    val canSend = state.canSend && info.isValid && suspendedReason == null
+    // "Invia" waits for the budget like the panel's "Riprova" (llm-key.md 10.1); the field stays active.
+    val budgetResetAt = (state.sendError as? SendError.BudgetExceeded)?.resetAt
+    val budgetRenewed = rememberBudgetRenewed(budgetResetAt, announce = false)
+    val budgetWait = budgetResetAt != null && !budgetRenewed
+    val canSend = state.canSend && info.isValid && suspendedReason == null && !budgetWait
     val source = remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val currentOnFocusChange by rememberUpdatedState(onFocusChange)
@@ -127,8 +134,9 @@ internal fun ChatComposer(
     val tooLongText = stringResource(R.string.chat_counter_over, CHAT_MAX_CHARS.toString(), info.overBy.grouped())
 
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(TeachTheme.spacing.xs)) {
-        state.sendError?.let { SendErrorPanel(it, onSend, onDismissError) }
-        // The key: a refusal of this send (blocking), or the suggestion while it is known missing (llm-key.md 4.2).
+        state.sendError?.let {
+            SendErrorPanel(it, onSend, onDismissError)
+        } // The key: a refusal of this send (blocking), or the suggestion while it is known missing (llm-key.md 4.2).
         val keyNotice = state.keyNotice
         if (keyNotice != null) {
             LlmKeyNotice(
@@ -220,6 +228,7 @@ internal fun ChatComposer(
                 loading = state.sending,
                 disabledDescription =
                     suspendedReason
+                        ?: budgetResetAt?.takeIf { budgetWait }?.let { llmBudgetAvailability(it) }
                         ?: stringResource(
                             if (state.turnInProgress) {
                                 R.string.chat_send_disabled_busy
@@ -279,13 +288,22 @@ private fun SendErrorPanel(
     onRetry: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val body =
-        stringResource(
-            when (error) {
-                SendError.Network -> R.string.chat_send_error_network
-                else -> R.string.chat_send_error_server
-            },
+    if (error is SendError.BudgetExceeded) {
+        // Not dismissible (llm-key.md 10.1): it is not an error to clear, only a wait; "Invia" is disabled with it.
+        LlmBudgetPanel(
+            error.resetAt,
+            Modifier.fillMaxWidth(),
+            bodySuffix = stringResource(R.string.chat_send_error_text_kept),
+            retryText = stringResource(R.string.chat_send_error_retry),
+            onRetry = onRetry,
         )
+        return
+    }
+    val body =
+        when (error) {
+            SendError.Network -> stringResource(R.string.chat_send_error_network)
+            else -> stringResource(R.string.chat_send_error_server)
+        }
     Box {
         TeachStatusPanel(
             StatusVariant.Danger,
@@ -313,6 +331,23 @@ private fun ComposerPreviewContent(
         ChatComposer(TextFieldValue(text), {}, state, 240.dp, {}, {}, {})
     }
 }
+
+private val previewBudget get() =
+    SendError.BudgetExceeded(
+        java.time.Instant
+            .now()
+            .plusSeconds(2 * 3600L),
+    )
+
+@Preview(name = "Composer budget exceeded", showBackground = true, widthDp = 360)
+@Composable
+private fun ComposerBudgetPreview() =
+    TeachTheme(darkTheme = false) { ComposerPreviewContent("Ciao", ChatUiState(sendError = previewBudget)) }
+
+@Preview(name = "Composer budget exceeded dark", showBackground = true, widthDp = 360)
+@Composable
+private fun ComposerBudgetDarkPreview() =
+    TeachTheme(darkTheme = true) { ComposerPreviewContent("Ciao", ChatUiState(sendError = previewBudget)) }
 
 @Preview(name = "Composer idle", showBackground = true, widthDp = 360)
 @Composable

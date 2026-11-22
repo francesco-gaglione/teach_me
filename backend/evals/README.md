@@ -1,12 +1,46 @@
 # Eval
 
-Proprietario: `llm-engineer`. Nessuna chiamata reale nei test del backend: gli eval si lanciano a mano (o in una pipeline dedicata) con una chiave vera. Non è ancora presente un runner: qui ci sono formato e casi.
+Proprietario: `llm-engineer`. Politica: ADR `docs/adr/0021-politica-eval.md`. Il runner è `backend/crates/evals` (binario `run-evals`); qui ci sono casi, formato, baseline e le misure storiche.
+
+## Cosa gira in CI (costo zero)
+
+`cargo test --all` esegue anche `cargo test -p evals` (`crates/evals/tests/end_to_end.rs`, più i test unitari del crate). Usa un provider LLM **finto**: nessuna chiave, nessuna chiamata, nessuna spesa.
+
+- Controlla: che tutte le suite `*.cases.json` si carichino e siano valide; che il runner costruisca le richieste con il Context Assembler reale e faccia girare i casi d'uso reali di ogni ruolo; che i controlli deterministici, il giudice (finto, dà sempre «soddisfatto»), il tetto di spesa, i filtri `--case`/`--suite`, il `--dry-run` e il formato di `report.json` / `summary.md` funzionino.
+- **Non** controlla: la qualità delle risposte, la rispettabilità delle regole dei prompt da parte di un modello vero, i costi reali, la compatibilità con le API dei provider. Un `cargo test` verde non dice nulla sulla qualità di un prompt.
+
+## Eval reali (manuali, a pagamento)
+
+Da `backend/` (o dalla radice). Le chiavi si passano per ambiente, mai in file versionati: `TEACH_ME_ANTHROPIC_API_KEY` (Anthropic diretto) oppure `TEACH_ME_OPENROUTER_API_KEY` con `TEACH_ME_LLM_PROVIDER=openrouter`. I modelli per ruolo vengono dalla configurazione del server (`TEACH_ME_CONFIG`, per esempio `deploy/teach_me.toml`); non serve `TEACH_ME_API_TOKEN`, ma serve `TEACH_ME_SECRET_KEY` (anche per `--dry-run`: la configurazione del server lo richiede; per le eval basta un valore casuale, `openssl rand -base64 32`, non una chiave reale). Opzioni complete in «Come si lancia» più sotto.
+
+1. **Prima `--dry-run`**: nessuna chiamata, nessuna chiave richiesta; elenca i casi, i modelli e stima il costo.
+   `TEACH_ME_SECRET_KEY=$(openssl rand -base64 32) cargo run -p evals --bin run-evals -- --suite tutor/conversation --dry-run`
+2. Poi la run reale, **sempre con un tetto**: `--max-cost-usd 1` (il predefinito, se omesso, è 2 USD; `0` o `--no-budget` lo tolgono: da non usare senza motivo). Meglio poche suite o pochi casi (`--suite`, `--case`) e `--runs 1` per un primo giro, `--runs 3` per una misura di baseline.
+3. Il risultato è in `evals/results/<timestamp>/` (`report.json`, `summary.md`; git-ignored).
+
+### Regola: eval reali prima del merge di modifiche a `backend/prompts/` (ADR 0021)
+
+Ogni modifica sotto `backend/prompts/` (prompt, schemi, `context.md`, `tools.json`) richiede, **prima del merge**, una run reale delle suite del ruolo toccato, lanciata a mano dal proprietario o dal tech lead (non dalla CI, che non ha chiavi), con `prompt_version` incrementata, e il confronto con la baseline di quel ruolo in `evals/baselines/` (procedura e criterio di regressione in `baselines/README.md`). Esito e spesa vanno nella descrizione del merge; se la modifica migliora, si aggiorna la baseline nello stesso cambiamento. Il confronto lo fa il runner con `--baseline` (exit code 3 se regredisce); la decisione di accettare resta di chi legge (vedi sotto).
+
+### Quale modello
+
+Il più economico che sia capace del compito (ADR 0021 punto 4), per ruolo e non uno solo per tutti. Tariffe in `crates/evals/src/pricing.rs` (USD per milione di token, input/output): Haiku 5.5 0,10/0,50; Sonnet 5.5 2/10; Opus 5.5 4/20.
+
+- **Soggetto (il ruolo valutato)**: il modello che il ruolo usa in produzione secondo `deploy/teach_me.toml`: Haiku 5.5 per il Grader, Sonnet 5.5 per tutor, researcher, planner, generator, recorder. È già il più economico che le misure storiche qui sotto hanno mostrato capace; valutare con un modello diverso da quello di produzione misura un altro sistema. Per un giro esplorativo su un ruolo a Sonnet si può provare Haiku 5.5, ma una baseline si registra sul modello di produzione.
+- **Giudice**: `claude-sonnet-5-5` (predefinito di `--judge-model`): non più debole del soggetto, e 5 volte più economico di Opus. Haiku come giudice è stato usato nei primi giri ma oscilla di più sui criteri opinabili.
+- **Researcher**: il costo è dominato dalle ricerche (0,01 $ ciascuna, più i risultati riletti a ogni passo), non dal modello: primo giro con `--runs 1` e un caso solo.
+- **Generator**: la run più cara (output fino a 32.000 token): una o due casi alla volta.
+
+## Baseline
+
+Salvare e confrontare: `--save-baseline <FILE|CARTELLA>` scrive la baseline ridotta della run; `--baseline <FILE|CARTELLA>` confronta e termina con exit code 3 su regressione. Soglie e formato: `evals/baselines/README.md`. Le baseline sono committate in `evals/baselines/` (formato, procedura di confronto e definizione di regressione: `evals/baselines/README.md`). `evals/results/` resta git-ignored e non è una baseline.
 
 ## Layout
 
 ```
 evals/
   <ruolo>/<suite>.cases.json     casi di una suite
+  baselines/                     baseline committate (README.md: formato e confronto)
   results/                       (git-ignored) risultati delle esecuzioni
 ```
 
@@ -28,7 +62,7 @@ evals/
 1. Il runner costruisce la richiesta **con il Context Assembler reale** (non una copia) e la invia al provider del ruolo configurato; salva testo, usage, latenza, `prompt_version`, modello.
 2. Controlli deterministici sul testo.
 3. Giudice LLM, **modello diverso e non più debole di quello valutato** (proposta: `claude-opus-5-5`, effort `low`), con output strutturato `{criterion_id: {met: bool, reason: string}}`. Il giudice riceve la conversazione, la risposta e i criteri, non il prompt del Tutor. Prima di fidarsi del giudice si controllano a mano 10-15 verdetti.
-4. Per ogni modifica a un prompt: rieseguire la suite, confrontare con la baseline salvata in `results/`, accettare la modifica solo se i punteggi non peggiorano e nessun controllo deterministico regredisce.
+4. Per ogni modifica a un prompt: rieseguire la suite, confrontare con la baseline salvata in `baselines/` (non in `results/`, che è git-ignored), accettare la modifica solo se i punteggi non peggiorano e nessun controllo deterministico regredisce.
 
 ## Costo indicativo
 
@@ -36,7 +70,7 @@ evals/
 
 ## Risultati
 
-Suite non eseguita: non c'era una chiave disponibile. I casi sono validi come JSON ma non sono stati valutati contro un modello.
+Le prime esecuzioni reali di `tutor/conversation` non hanno lasciato una baseline committata; le misure reali delle altre suite sono nelle sezioni sotto (storiche, per data e versione di prompt). La prima baseline ufficiale in `baselines/` è ancora da registrare.
 
 ## Suite con tool e multi-turno (`tutor/tools.cases.json`)
 

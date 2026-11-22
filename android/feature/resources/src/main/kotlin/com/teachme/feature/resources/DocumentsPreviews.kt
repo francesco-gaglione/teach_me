@@ -111,6 +111,16 @@ private fun LimitPreview() =
 @Composable
 private fun TooLargePreview() = PreviewSection(ready(upload = UploadUi.Failed(UploadError.TooLarge)))
 
+@Preview(name = "Docs upload quota exceeded", showBackground = true, widthDp = 640, heightDp = 520)
+@Composable
+private fun QuotaPreview() =
+    PreviewSection(ready(PreviewData.document(), upload = UploadUi.Failed(UploadError.QuotaExceeded)))
+
+@Preview(name = "Docs upload quota exceeded dark", showBackground = true, widthDp = 640, heightDp = 520)
+@Composable
+private fun QuotaDarkPreview() =
+    PreviewSection(ready(PreviewData.document(), upload = UploadUi.Failed(UploadError.QuotaExceeded)), dark = true)
+
 @Preview(name = "Docs upload network error", showBackground = true, widthDp = 640, heightDp = 520)
 @Composable
 private fun NetworkErrorPreview() =

@@ -208,6 +208,18 @@ impl DocumentRepository for SqliteDocumentRepository {
             .collect()
     }
 
+    async fn total_bytes_for_user(&self, user: UserId) -> Result<u64, RepositoryError> {
+        let (total,): (i64,) = sqlx::query_as(
+            "SELECT COALESCE(SUM(d.size_bytes), 0) FROM documents d \
+             JOIN topics t ON t.id = d.topic_id WHERE t.user_id = ?",
+        )
+        .bind(user.to_string())
+        .fetch_one(&self.pool)
+        .await
+        .map_err(storage)?;
+        Ok(u64::try_from(total).unwrap_or(0))
+    }
+
     async fn list(&self, topic_id: TopicId) -> Result<Vec<DocumentView>, RepositoryError> {
         let rows = sqlx::query(concat!(
             document_select!(),
@@ -577,6 +589,32 @@ mod tests {
                 .await
                 .unwrap();
         n
+    }
+
+    #[tokio::test]
+    async fn the_total_bytes_of_a_user_sum_their_documents() {
+        let e = env().await;
+        assert_eq!(
+            e.docs
+                .total_bytes_for_user(domain::UserId::OWNER)
+                .await
+                .unwrap(),
+            0
+        );
+        for n in 1..=2 {
+            let (doc, job) = document(&e, n);
+            e.docs.insert_with_job(&doc, &job).await.unwrap();
+            finish_job(&e, &job, None).await;
+        }
+        assert_eq!(
+            e.docs
+                .total_bytes_for_user(domain::UserId::OWNER)
+                .await
+                .unwrap(),
+            2000
+        );
+        let stranger = domain::UserId::new(Uuid::from_u128(0x999));
+        assert_eq!(e.docs.total_bytes_for_user(stranger).await.unwrap(), 0);
     }
 
     #[tokio::test]

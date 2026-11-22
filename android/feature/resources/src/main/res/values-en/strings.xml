@@ -199,6 +199,8 @@
 
     <string name="doc_upload_too_large_title">The file is too large</string>
     <string name="doc_upload_too_large_body">The limit is 50 MB. Try compressing the PDF or splitting it into parts.</string>
+    <string name="documents_quota_title">Storage full</string>
+    <string name="documents_quota_body">There isn\'t enough space for this PDF. Delete some documents you no longer need, then try uploading it again.</string>
     <string name="doc_upload_not_pdf_title">This isn\'t a PDF</string>
     <string name="doc_upload_not_pdf_body">For now I only read PDF files.</string>
     <string name="doc_upload_network_title">I couldn\'t upload the file</string>

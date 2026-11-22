@@ -49,7 +49,7 @@ class BlockRegistry(
 private inline fun <reified T : Block> typed(crossinline draw: @Composable (T) -> Unit): BlockRenderer =
     { block -> if (block is T) draw(block) else UnavailableBlockView() }
 
-/** The catalog v1: seventeen types. `missing_component` draws its fallback blocks in sequence, boxless. */
+/** The catalog v1. `missing_component` draws its fallback blocks in sequence, boxless. */
 val DefaultBlockRegistry: BlockRegistry =
     BlockRegistry(
         mapOf(

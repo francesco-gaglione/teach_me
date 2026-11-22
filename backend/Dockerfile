@@ -22,26 +22,15 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 
 # PDFium, the engine that reads uploaded PDFs (docs: docs/adr/0007-pdf-extraction.md).
 # Prebuilt shared library from bblanchon/pdfium-binaries, pinned by release and
-# checked by hash; it needs nothing but glibc. To update: pick a release, copy
-# the sha256 of each tarball from its page, and run the PDF tests against it.
+# checked by hash in scripts/fetch-pdfium.sh (also used by CI); it needs nothing
+# but glibc.
 FROM debian:bookworm-slim AS pdfium
 ARG TARGETARCH
-ARG PDFIUM_RELEASE=8138
-ARG PDFIUM_SHA256_AMD64=d6b1e28950a0392590d79bbdbb7eb19686872b688f8a36f170acb19e41473113
-ARG PDFIUM_SHA256_ARM64=c70b1ce4d13257f741af19e0aeee575890875995eb81370a65be942e601a1862
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && case "$TARGETARCH" in \
-        amd64) arch=x64; sha="$PDFIUM_SHA256_AMD64" ;; \
-        arm64) arch=arm64; sha="$PDFIUM_SHA256_ARM64" ;; \
-        *) echo "no PDFium build for $TARGETARCH" >&2; exit 1 ;; \
-    esac \
-    && curl -fsSL -o /tmp/pdfium.tgz \
-        "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F${PDFIUM_RELEASE}/pdfium-linux-${arch}.tgz" \
-    && echo "${sha}  /tmp/pdfium.tgz" | sha256sum -c - \
-    && mkdir /pdfium \
-    && tar -xzf /tmp/pdfium.tgz -C /pdfium lib/libpdfium.so LICENSE licenses
+    && rm -rf /var/lib/apt/lists/*
+COPY scripts/fetch-pdfium.sh /usr/local/bin/fetch-pdfium.sh
+RUN fetch-pdfium.sh /pdfium "$TARGETARCH"
 
 FROM debian:bookworm-slim
 # curl: HEALTHCHECK. sqlite3: hot backups through `docker compose exec` (deploy/backup.sh).
@@ -71,5 +60,5 @@ ENV TEACH_ME_PDFIUM_DIR=/usr/local/lib/pdfium \
 VOLUME /data
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8080/health || exit 1
+    CMD curl -fsS http://127.0.0.1:8080/ready || exit 1
 ENTRYPOINT ["teach-me"]

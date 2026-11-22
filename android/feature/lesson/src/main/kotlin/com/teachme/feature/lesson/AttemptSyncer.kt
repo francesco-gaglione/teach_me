@@ -168,6 +168,8 @@ class AttemptSyncer
                         ApiFailure.LlmKeyMissing,
                         ApiFailure.LlmKeyRejected,
                         ApiFailure.LlmCreditExhausted,
+                        is ApiFailure.LlmBudgetExceeded,
+                        ApiFailure.StorageQuotaExceeded,
                         is ApiFailure.ReviewConflict,
                         -> status = FlushStatus.Offline
                     }

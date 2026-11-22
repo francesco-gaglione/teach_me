@@ -72,6 +72,23 @@ interface UploadSource {
     val sizeBytes: Long?
 
     fun open(): InputStream
+
+    /**
+     * A small stable reference (a `content://` URI) from which an [UploadSourceRestorer] can rebuild this source after
+     * the process died, or null when the source cannot be rebuilt. Never file bytes.
+     */
+    val reference: String? get() = null
+}
+
+/** Rebuilds an [UploadSource] from [UploadSource.reference] and its display name; null when it cannot be read. */
+fun interface UploadSourceRestorer {
+    fun restore(
+        reference: String,
+        displayName: String,
+    ): UploadSource?
+
+    /** The reference is forgotten for good: give back the persisted read permission, if there is one. */
+    fun release(reference: String) = Unit
 }
 
 /** Uploaded documents of a Topic (docs/contracts/documents.md). No cache: every call goes out. */

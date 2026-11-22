@@ -147,6 +147,26 @@ adb install -r app/build/outputs/apk/release/app-release.apk
 
 Check the signature with `apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk`.
 
+### Release signing in CI
+
+`.github/workflows/android-release.yml` (manual: *Actions > android-release > Run workflow*; it never runs on pull
+requests) builds `assembleRelease`, checks it with `apksigner verify --print-certs` and uploads `app-release.apk` as the
+artifact `teach_me-release-apk`. Without `keystore.properties`, Gradle reads the signing data from environment
+variables instead (`app/build.gradle.kts`): `TEACHME_KEYSTORE_FILE` (path), `TEACHME_KEYSTORE_PASSWORD`,
+`TEACHME_KEY_ALIAS`, `TEACHME_KEY_PASSWORD`. If `keystore.properties` exists it wins.
+
+Repository secrets to add (*Settings > Secrets and variables > Actions*), all four required:
+
+| Secret | Content |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | the release keystore, base64 on one line: `base64 -w0 teachme-release.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | the keystore password (`storePassword`) |
+| `ANDROID_KEY_ALIAS` | the key alias (`keyAlias`, e.g. `teachme`) |
+| `ANDROID_KEY_PASSWORD` | the key password (`keyPassword`) |
+
+The workflow decodes the keystore into the runner's temp directory, removes it at the end, passes the secrets only to the
+steps that need them and never prints them. A missing secret fails the run with a message naming it.
+
 The backend is reached over `http://<tailscale-ip>:8080`; cleartext is allowed by the network security config in
 release too (see below).
 

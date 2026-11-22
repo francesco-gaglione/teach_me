@@ -1,7 +1,7 @@
 # Convenzioni delle API
 
 > Contratto condiviso tra backend (`backend/`) e app (`android/`). Proprietario: tech lead.
-> Versione: **v1.3** (2026-11-11: `502 llm_credit_exhausted`; v1.2 2026-11-10: accesso con nome utente e password, isolamento per utente; v1.1: `415`, limite di upload). Ogni endpoint specifico (cartelle, topic, chat...) ha il suo file in `docs/contracts/` e rispetta queste regole.
+> Versione: **v1.7** (2026-11-22, §12: conteggio dei token del budget LLM `TEACH_ME_USER_DAILY_LLM_TOKENS` e tolleranza di concorrenza su budget e quota; v1.6 2026-11-22, audit C8: chiarimento di `429 llm_budget_exceeded` in §7 e §12, in rapporto a `jobs.md` §2; `429 rate_limited` con `Retry-After: 5` per l'apertura di uno stream SSE oltre `TEACH_ME_MAX_SSE_PER_USER`; audit M9: compatibilità e supporto, §1; v1.4 2026-11-22, audit C8/M1: `GET /ready`, `409 storage_quota_exceeded`, `429 llm_budget_exceeded`, limiti configurabili; v1.3 2026-11-11: `502 llm_credit_exhausted`; v1.2 2026-11-10: accesso con nome utente e password, isolamento per utente; v1.1: `415`, limite di upload). Ogni endpoint specifico (cartelle, topic, chat...) ha il suo file in `docs/contracts/` e rispetta queste regole.
 
 ## 1. Trasporto e versionamento
 
@@ -10,6 +10,13 @@
 - Corpo delle richieste e delle risposte: `application/json; charset=utf-8`, salvo SSE (`text/event-stream`).
 - Nomi dei campi JSON in **`snake_case`**. Valori di enum in `snake_case` (es. `"mission_proposed"`).
 - Un campo opzionale senza valore si serializza come `null` (non viene omesso) nelle risposte. Nelle richieste il client può ometterlo.
+
+### Compatibilità e supporto (aggiornamento 2026-11-22, audit M9)
+
+- Si supporta solo l'ultima versione su `main` (invariato).
+- Server e database si aggiornano insieme. Le migrazioni sono solo in avanti: non esiste una migrazione di downgrade. Tornare a una versione precedente del server significa ripristinare il backup preso da `deploy.sh` prima del deploy: è automatico se il deploy fallisce; a mano, `backup.sh restore <file>` (`backend/README.md`, «Updating with `deploy.sh`»). I dati scritti dopo il deploy vanno persi.
+- Le modifiche a `/api/v1` sono solo additive: nuovi campi, endpoint o codici. L'app ignora i campi sconosciuti; un blocco SDUI sconosciuto segue il fallback di `sdui.md` §1. Una modifica incompatibile richiede `/api/v2` e una nuova ADR.
+- L'app legge `api_version` da `GET /api/v1/health` (§3). Se la major di `api_version` del server è superiore a quella che l'app supporta, l'app mostra «aggiorna l'app». Il contratto non definisce altro comportamento in caso di mismatch.
 
 ## 2. Autenticazione
 
@@ -24,6 +31,7 @@
 | Metodo | Path | Auth | Risposta |
 |---|---|---|---|
 | GET | `/health` | no | `200 {"status": "ok"}` — liveness, per systemd/Docker |
+| GET | `/ready` | no | `200` o `503` — readiness, per orchestrazione (deploy, health check del container) (aggiornamento 2026-11-22, audit C8/M1) |
 | GET | `/api/v1/health` | sì | `200` con il corpo sotto |
 
 ```json
@@ -35,6 +43,22 @@
   "server_time": "2026-11-08T14:36:01.129Z"
 }
 ```
+
+`api_version` è la major della API: regole di compatibilità in §1.
+
+`GET /ready` (aggiornamento 2026-11-22, audit C8/M1): senza autenticazione, per l'orchestrazione (script di deploy, health check del container). `/health` resta invariato e misura solo la liveness.
+
+```json
+{
+  "status": "ready",
+  "checks": { "database": "ok", "jobs": "ok", "tts": "ok" }
+}
+```
+
+- `200` con `"status": "ready"` quando `checks.database` e `checks.jobs` sono `"ok"`.
+- `503` con lo stesso corpo e `"status": "not_ready"` quando `checks.database` o `checks.jobs` è `"down"`. Il `503` di questo endpoint usa questa forma e non quella d'errore del §7.
+- `checks.database` e `checks.jobs` valgono `"ok"` o `"down"`. `checks.tts` vale `"ok"`, `"down"` o `"disabled"`; TTS è opzionale, quindi `"down"` non rende il servizio `not_ready`.
+- Il corpo non contiene messaggi d'errore, versioni né percorsi.
 
 Prima dell'accesso l'app verifica l'indirizzo con `GET /health` (senza autenticazione): timeout, DNS, connessione rifiutata → "backend irraggiungibile"; altro → "errore imprevisto" con il codice.
 
@@ -96,6 +120,7 @@ Ogni risposta di errore (4xx, 5xx) ha questo corpo:
 | 405 | `method_not_allowed` | metodo non supportato sulla route (header `Allow` in risposta) |
 | 409 | `conflict` | stato incompatibile (es. lezione richiesta senza mission confermata) |
 | 409 | `llm_key_missing` | l'utente non ha salvato una chiave LLM (`users.md` §3) |
+| 409 | `storage_quota_exceeded` | il caricamento porterebbe i documenti dell'utente oltre la quota di archiviazione (`documents.md` §3, §12 `TEACH_ME_USER_STORAGE_QUOTA_BYTES`); `details`: `[{ "field": "quota", "issue": "exceeded" }]` (aggiornamento 2026-11-22, audit C8/M1) |
 | 409 | `already_reviewed` | voto su una scheda la cui versione è cambiata (`reviews.md` §4) |
 | 409 | `card_suspended` | voto su una scheda sospesa (`reviews.md` §4) |
 | 409 | `nothing_to_undo` | annullamento senza un voto da annullare (`reviews.md` §5) |
@@ -105,7 +130,8 @@ Ogni risposta di errore (4xx, 5xx) ha questo corpo:
 | 415 | `unsupported_media_type` | il file caricato non è del tipo atteso (es. non è un PDF, `documents.md`) |
 | 416 | `range_not_satisfiable` | `Range` oltre la fine di una clip audio (`audio.md` §5, header `Content-Range: bytes */<dimensione>`) |
 | 422 | `validation_failed` | JSON valido ma regole di dominio violate |
-| 429 | `rate_limited` | limiti del provider LLM o del backend; troppi accessi falliti (header `Retry-After`) |
+| 429 | `rate_limited` | limiti del provider LLM o del backend; troppi accessi falliti; apertura di uno stream SSE oltre il limite per utente (§12, `TEACH_ME_MAX_SSE_PER_USER`) (aggiornamento 2026-11-22, audit C8/M1) (header `Retry-After`; per l'apertura di uno stream SSE oltre il limite, `Retry-After: 5`) (aggiornamento 2026-11-22, audit C8) |
+| 429 | `llm_budget_exceeded` | il budget giornaliero di token LLM dell'utente è esaurito (§12, `TEACH_ME_USER_DAILY_LLM_TOKENS`); alla creazione di una richiesta o di un job, header `Retry-After` = secondi fino alle 00:00 UTC; un job creato prima che parte a budget esaurito termina `failed` con questo codice, senza header (`jobs.md` §2) (aggiornamento 2026-11-22, audit C8/M1; chiarimento audit C8) |
 | 500 | `internal` | errore inatteso (dettagli solo nei log) |
 | 502 | `upstream_failed` | errore di un servizio esterno (LLM, ricerca) |
 | 502 | `llm_key_rejected` | il provider LLM rifiuta la chiave dell'utente (`users.md` §3) |
@@ -164,6 +190,20 @@ data: {"type":"job_updated","topic_id":"...","at":"2026-11-08T14:36:09.502Z","pa
 
 ## 12. Limiti e timeout
 
-- Corpo massimo delle richieste: 1 MiB (configurabile).
-- Timeout delle richieste REST lato backend: 30 secondi. Le operazioni che possono superarlo sono job.
+- Corpo massimo delle richieste: 1 MiB (configurabile con `TEACH_ME_BODY_LIMIT_BYTES`, tabella sotto).
+- Timeout delle richieste REST lato backend: 30 secondi (configurabile con `TEACH_ME_REQUEST_TIMEOUT_SECS`, tabella sotto). Le operazioni che possono superarlo sono job.
 - Lato app: connect timeout 10 s, request timeout 30 s; nessun timeout di lettura sullo stream SSE (c'è l'heartbeat).
+
+### Limiti configurabili (aggiornamento 2026-11-22, audit C8/M1)
+
+Variabili d'ambiente del backend:
+
+| Variabile | Default | Significato |
+|---|---|---|
+| `TEACH_ME_USER_STORAGE_QUOTA_BYTES` | `1073741824` (1 GiB) | byte totali dei documenti caricati da un utente; `0` = illimitato (`documents.md` §3, `409 storage_quota_exceeded` in §7); due caricamenti in parallelo possono superare la quota di al più un file (aggiornamento 2026-11-22) |
+| `TEACH_ME_USER_DAILY_LLM_TOKENS` | `0` (disabilitato) | token LLM per utente per giorno UTC: si contano tutti i token riportati dal provider per la chiamata, cioè input + output + cache write + cache read; una chiamata che fallisce prima che il provider riporti l'uso non conta nulla; il controllo agisce solo sull'avvio di nuove richieste, quindi richieste concorrenti possono superare il budget di poco (aggiornamento 2026-11-22); a budget già esaurito, la creazione di una richiesta o di un job che usa l'LLM dell'utente risponde `429 llm_budget_exceeded` con header `Retry-After` (§7); un job creato prima, che parte a budget esaurito, termina `failed` con `error.code` `llm_budget_exceeded`, senza header HTTP (`jobs.md` §2); un job già in esecuzione può terminare normalmente |
+| `TEACH_ME_MAX_SSE_PER_USER` | `8` | stream SSE contemporanei per utente; oltre il limite `429 rate_limited` |
+| `TEACH_ME_BODY_LIMIT_BYTES` | `1048576` (1 MiB) | corpo massimo di una richiesta, in byte (§12, `413 payload_too_large` in §7) |
+| `TEACH_ME_REQUEST_TIMEOUT_SECS` | `30` | timeout delle richieste REST lato backend, in secondi (§12) |
+| `TEACH_ME_JOB_MAX_CONCURRENT` | `2` | job in esecuzione in contemporanea sull'intero server, somma di tutti gli utenti (`jobs.md`) |
+| `TEACH_ME_JOB_TIMEOUT_SECS` | `900` | durata massima di un job, in secondi (`jobs.md`, codice d'errore `timeout`) |

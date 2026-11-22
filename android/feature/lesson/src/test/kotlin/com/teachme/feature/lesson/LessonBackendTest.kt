@@ -35,6 +35,7 @@ import kotlinx.serialization.json.put
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -618,6 +619,61 @@ class LessonBackendTest {
             runCurrent()
             assertNull(ready(vm).keyNotice)
             assertTrue(ready(vm).completion is CompletionUi.Running)
+        }
+
+    @Test
+    fun `a closing refused for the daily budget keeps the lesson open with the reset, and trying again clears it`() =
+        vmTest {
+            val vm = opened()
+            finishLesson(vm)
+            backend.complete = ApiResult.Failure(ApiFailure.LlmBudgetExceeded(3600))
+            val before =
+                java.time.Instant
+                    .now()
+                    .truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+
+            vm.continueLesson()
+            runCurrent()
+
+            val refused = ready(vm)
+            assertFalse("no summary and no 'answers to send' panel", refused.showSummary)
+            assertEquals(CompletionUi.None, refused.completion)
+            assertNull(refused.keyNotice)
+            val resetAt = refused.budgetResetAt!!
+            assertFalse(resetAt.isBefore(before.plusSeconds(3600)))
+            assertFalse(
+                resetAt.isAfter(
+                    java.time.Instant
+                        .now()
+                        .plusSeconds(3600),
+                ),
+            )
+            // The answers are safe, and nothing is retried in the background.
+            assertEquals(0, queue.size)
+
+            backend.complete = ApiResult.Success(job("lesson_completion", JobStatus.Queued, id = "C1", lessonId = "L1"))
+            vm.continueLesson()
+            runCurrent()
+            assertNull(ready(vm).budgetResetAt)
+            assertTrue(ready(vm).completion is CompletionUi.Running)
+        }
+
+    @Test
+    fun `a retry of the closing refused for the budget keeps the failed panel and carries the reset`() =
+        vmTest {
+            backend.completed(
+                job("lesson_completion", JobStatus.Failed, id = "C1", lessonId = "L1", errorCode = "timeout"),
+            )
+            val vm = opened()
+            backend.retryResult = ApiResult.Failure(ApiFailure.LlmBudgetExceeded(120))
+
+            vm.retryCompletionJob()
+            runCurrent()
+
+            val failed = ready(vm).completion as CompletionUi.Failed
+            assertNotNull(failed.budgetResetAt)
+            assertFalse("not a network error", failed.networkError)
+            assertFalse(failed.retrying)
         }
 
     @Test

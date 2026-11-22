@@ -59,4 +59,20 @@ class FormFailureTest {
         clock = 1_500
         assertEquals(Flash(FlashKind.FolderGone), inbox.take(FlashKind.FolderGone))
     }
+
+    @Test
+    fun `clearing the user flashes keeps only the messages of the sign-in screen`() {
+        val inbox = InMemoryFlashInbox()
+        inbox.post(Flash(FlashKind.FolderDeleted, "Lavoro di A"))
+        inbox.clearUserFlashes()
+        assertEquals(null, inbox.take(FlashKind.FolderDeleted))
+
+        inbox.post(Flash(FlashKind.SignedOut))
+        inbox.clearUserFlashes()
+        assertEquals(Flash(FlashKind.SignedOut), inbox.take(FlashKind.SignedOut))
+
+        inbox.post(Flash(FlashKind.TopicGone, "Rust"))
+        inbox.clear()
+        assertEquals(null, inbox.take(FlashKind.TopicGone))
+    }
 }

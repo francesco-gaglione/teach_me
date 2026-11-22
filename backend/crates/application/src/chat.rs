@@ -486,6 +486,7 @@ impl Inner {
                 // The reply is the owner's: their key, scoped to this task.
                 let span = tracing::info_span!("reply", user_id = %topic.user_id, %topic_id);
                 tokio::spawn(with_key(
+                    topic.user_id,
                     key,
                     async move {
                         inner.generate(&topic, message, lesson, &effects).await;
@@ -978,7 +979,7 @@ impl Inner {
                 tracing::warn!("LLM credit exhausted: the provider account has no credit left");
             }
             other => tracing::warn!(
-                error = %other,
+                error = %other.log_summary(),
                 prompt_version = self.prompts.version.trim(),
                 "LLM call failed"
             ),

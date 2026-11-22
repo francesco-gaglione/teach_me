@@ -221,6 +221,8 @@ class HighlightSyncer
                         ApiFailure.LlmKeyMissing,
                         ApiFailure.LlmKeyRejected,
                         ApiFailure.LlmCreditExhausted,
+                        is ApiFailure.LlmBudgetExceeded,
+                        ApiFailure.StorageQuotaExceeded,
                         is ApiFailure.ReviewConflict,
                         -> status = HighlightFlushStatus.Offline
                     }

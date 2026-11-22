@@ -237,6 +237,52 @@ class KtorDocumentsApiTest {
         }
 
     @Test
+    fun `the connection lost while the body goes out is a network failure and the same source can be sent again`() =
+        runBlocking {
+            val source = BytesSource("%PDF-1.7 hello".toByteArray() + ByteArray(2_000))
+            var attempts = 0
+            val client =
+                api {
+                    attempts++
+                    // The body is read (the upload is under way), then the link drops before any answer.
+                    (it.body as OutgoingContent).toByteArray()
+                    if (attempts == 1) throw IOException("connection reset")
+                    respond(
+                        """{"document":${documentJson("importing")},"job":${jobJson()}}""",
+                        HttpStatusCode.Accepted,
+                        json,
+                    )
+                }
+
+            val lost = client.upload(topicId, source)
+            assertTrue(lost is ApiResult.Failure)
+            assertTrue((lost as ApiResult.Failure).failure is ApiFailure.Network)
+
+            // Retry: a fresh stream of the same file, now it goes through.
+            assertTrue(client.upload(topicId, source) is ApiResult.Success)
+            assertEquals(2, source.opened)
+        }
+
+    @Test
+    fun `the file stream failing halfway through is a failure, not a crash or a hang`() =
+        runBlocking {
+            val flaky =
+                object : UploadSource {
+                    override val displayName = "libro.pdf"
+                    override val sizeBytes: Long? = 4_000
+
+                    override fun open(): InputStream =
+                        object : InputStream() {
+                            private var n = 0
+
+                            override fun read(): Int = if (n++ < 100) 1 else throw IOException("read failed")
+                        }
+                }
+            val result = api { respond("""{}""", HttpStatusCode.Accepted, json) }.upload(topicId, flaky)
+            assertTrue(result is ApiResult.Failure)
+        }
+
+    @Test
     fun `delete sends DELETE and 409 is a conflict`() =
         runBlocking {
             var method: HttpMethod? = null

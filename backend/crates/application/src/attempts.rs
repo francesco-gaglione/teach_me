@@ -97,7 +97,12 @@ impl AttemptService {
         // A missing or unreadable key never fails the request: the open
         // answers stay `pending`, as for any other Grader failure
         // (`users.md` §3).
-        let llm_key = self.keys.for_user(user).await.ok();
+        // Over the daily token budget the grader is simply not called.
+        let llm_key = if self.keys.check_budget(user).await.is_ok() {
+            self.keys.for_user(user).await.ok()
+        } else {
+            None
+        };
         if lesson.is_completed() {
             return Err(AppError::Conflict(ConflictReason::LessonCompleted));
         }
@@ -145,6 +150,7 @@ impl AttemptService {
             if it.exercise.kind == ExerciseKind::OpenAnswer
                 && let Some(grade) = self
                     .grade(
+                        user,
                         llm_key.as_ref(),
                         &lesson,
                         &it.exercise,
@@ -192,6 +198,7 @@ impl AttemptService {
             if let (Some(exercise), Answer::Text(text)) = (exercise, &old.answer)
                 && let Some(grade) = self
                     .grade(
+                        user,
                         llm_key.as_ref(),
                         &lesson,
                         exercise,
@@ -220,8 +227,10 @@ impl AttemptService {
 
     /// Grades within what is left of the request's time; any failure leaves
     /// the attempt `pending`.
+    #[allow(clippy::too_many_arguments)] // one call site pair; a struct would only rename them
     async fn grade(
         &self,
+        user: UserId,
         key: Option<&Secret>,
         lesson: &Lesson,
         exercise: &Exercise,
@@ -236,13 +245,17 @@ impl AttemptService {
         let left = self.grader_timeout.saturating_sub(started.elapsed());
         match tokio::time::timeout(
             left,
-            with_key(key, self.grader.grade(lesson, exercise, text, language)),
+            with_key(
+                user,
+                key,
+                self.grader.grade(lesson, exercise, text, language),
+            ),
         )
         .await
         {
             Ok(Ok(grade)) => Some(grade),
             Ok(Err(e)) => {
-                tracing::warn!(lesson = %lesson.id, block = exercise.id, error = %e, "grading failed; the answer stays pending");
+                tracing::warn!(lesson = %lesson.id, block = exercise.id, error = %grade_error_kind(&e), "grading failed; the answer stays pending");
                 None
             }
             Err(_) => {
@@ -373,5 +386,17 @@ fn parse_items(
         Ok(items)
     } else {
         Err(AppError::InvalidFields(problems))
+    }
+}
+
+/// Which grading failure it was, without the text the model produced: that
+/// can quote the student's answer.
+fn grade_error_kind(error: &crate::grader::GradeError) -> &'static str {
+    use crate::grader::GradeError;
+    match error {
+        GradeError::CallFailed(code) => code,
+        GradeError::Unusable(_) => "unusable answer",
+        GradeError::NoRubric => "no rubric",
+        GradeError::Prompt(_) => "prompt template",
     }
 }

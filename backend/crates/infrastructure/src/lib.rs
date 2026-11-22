@@ -13,6 +13,7 @@ pub mod fsrs_optimizer;
 pub mod id;
 pub mod jobs;
 pub mod lessons;
+pub mod llm_usage;
 pub mod missions;
 pub mod pdf;
 pub mod preferences;
@@ -40,6 +41,7 @@ pub use lessons::{
     SqliteAttemptRepository, SqliteHighlightRepository, SqliteLearningRepository,
     SqliteLessonRepository, SqliteStrokeRepository,
 };
+pub use llm_usage::SqliteLlmUsageRepository;
 pub use missions::SqliteMissionRepository;
 pub use pdf::PdfiumTextExtractor;
 pub use preferences::SqlitePreferenceRepository;

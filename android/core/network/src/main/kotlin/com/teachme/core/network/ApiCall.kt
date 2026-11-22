@@ -58,6 +58,9 @@ internal fun HttpResponse.toFailure(error: ApiError?): ApiFailure {
             ApiFailure.RateLimited(
                 headers["Retry-After"]?.trim()?.toIntOrNull(),
             )
+        http == 429 && error?.code == "llm_budget_exceeded" ->
+            ApiFailure.LlmBudgetExceeded(headers["Retry-After"]?.trim()?.toIntOrNull())
+        http == 409 && error?.code == "storage_quota_exceeded" -> ApiFailure.StorageQuotaExceeded
         http == 409 && error?.code == "llm_key_missing" -> ApiFailure.LlmKeyMissing
         http == 502 && error?.code == "llm_key_rejected" -> ApiFailure.LlmKeyRejected
         http == 502 && error?.code == "llm_credit_exhausted" -> ApiFailure.LlmCreditExhausted

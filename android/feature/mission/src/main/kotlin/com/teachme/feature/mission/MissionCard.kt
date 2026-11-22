@@ -50,8 +50,11 @@ import com.teachme.core.model.Mission
 import com.teachme.core.model.ResearchPointer
 import com.teachme.core.model.ResearchStatus
 import com.teachme.core.model.TopicMission
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
+import com.teachme.core.ui.llmBudgetAvailability
+import com.teachme.core.ui.rememberBudgetRenewed
 import java.time.Instant
 import java.time.LocalDate
 
@@ -86,6 +89,8 @@ fun MissionCard(
     today: LocalDate = remember { LocalDate.now() },
     /** The confirmation was refused because of the LLM key: the error slot holds the notice (mission.md, llm-key.md). */
     keyNotice: KeyNotice? = null,
+    /** The confirmation was refused because the daily LLM budget is used up: when it comes back (llm-key.md 10.1). */
+    budgetResetAt: Instant? = null,
 ) {
     val colors = TeachTheme.colors
     val padding = if (currentWindowWidthClass() == WindowWidthClass.Compact) TeachTheme.spacing.md else 20.dp
@@ -144,6 +149,7 @@ fun MissionCard(
                             onConfirm,
                             onEdit,
                             keyNotice,
+                            budgetResetAt,
                         )
                 }
             }
@@ -207,6 +213,7 @@ private fun OpenBody(
     onConfirm: () -> Unit,
     onEdit: () -> Unit,
     keyNotice: KeyNotice? = null,
+    budgetResetAt: Instant? = null,
 ) {
     if (replacesVersion != null) {
         TeachText(
@@ -227,7 +234,10 @@ private fun OpenBody(
     when (state) {
         MissionCardState.Unknown -> Unit
         MissionCardState.ConfirmError ->
-            if (keyNotice != null) {
+            if (budgetResetAt != null) {
+                // Nothing to fix and nothing lost: the proposal stays, "Riprova" below waits for the reset.
+                LlmBudgetPanel(budgetResetAt)
+            } else if (keyNotice != null) {
                 // The proposal is still there: the key is what to fix, not the card (llm-key.md section 5).
                 // Credit: "Riprova" confirms again; the card shows its own progress meanwhile (llm-key.md section 9.2).
                 LlmKeyNotice(
@@ -257,7 +267,11 @@ private fun OpenBody(
                 color = TeachTheme.colors.inkSoft,
             )
     }
-    if (state != MissionCardState.Unknown) Actions(state, topicTitle, onConfirm, onEdit, retryLabel = keyNotice == null)
+    if (state !=
+        MissionCardState.Unknown
+    ) {
+        Actions(state, topicTitle, onConfirm, onEdit, retryLabel = keyNotice == null, budgetResetAt = budgetResetAt)
+    }
 }
 
 @Composable
@@ -267,7 +281,11 @@ private fun Actions(
     onConfirm: () -> Unit,
     onEdit: () -> Unit,
     retryLabel: Boolean = true,
+    budgetResetAt: Instant? = null,
 ) {
+    // "Riprova" is visible but disabled until the budget is back; the panel above does the announcing.
+    val budgetWait = budgetResetAt != null && !rememberBudgetRenewed(budgetResetAt, announce = false)
+    val budgetAvailability = budgetResetAt?.let { llmBudgetAvailability(it) }
     val confirming = state == MissionCardState.Confirming
     val arriving = state == MissionCardState.Arriving
     val retry = state == MissionCardState.ConfirmError && retryLabel
@@ -294,9 +312,10 @@ private fun Actions(
                 confirmLabel,
                 onConfirm,
                 m,
-                enabled = !arriving,
+                enabled = !arriving && !budgetWait,
                 loading = confirming,
                 contentDescription = confirmDescription,
+                disabledStateDescription = budgetAvailability,
             )
         }
         val editButton: @Composable (Modifier) -> Unit = { m ->
@@ -422,6 +441,7 @@ fun MissionProposalCard(
         onOpenResources = context.onOpenResources,
         modifier = modifier,
         keyNotice = (context.confirm as? ConfirmState.Failed)?.keyNotice,
+        budgetResetAt = (context.confirm as? ConfirmState.Failed)?.budgetResetAt,
     )
 }
 
@@ -440,6 +460,7 @@ private fun CardPreviewContent() {
             replaces: Int? = null,
             d: MissionDiff? = null,
             note: ResearchPointer = ResearchPointer.None,
+            budgetResetAt: Instant? = null,
         ): @Composable () -> Unit =
             {
                 MissionCard(
@@ -456,9 +477,11 @@ private fun CardPreviewContent() {
                     {},
                     {},
                     today = today,
+                    budgetResetAt = budgetResetAt,
                 )
             }
         card(PreviewData.first, MissionCardState.Open)()
+        card(PreviewData.first, MissionCardState.ConfirmError, budgetResetAt = Instant.now().plusSeconds(3 * 3600L))()
         card(PreviewData.draft2, MissionCardState.Open, 1, diff)()
         card(
             PreviewData.draftAddsStart,

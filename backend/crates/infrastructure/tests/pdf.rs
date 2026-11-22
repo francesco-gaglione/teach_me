@@ -9,6 +9,8 @@
 //! library found at run time: a machine without it (`TEACH_ME_PDFIUM_DIR`
 //! unset and no system copy) skips these tests with a message instead of
 //! failing, so `cargo test` works everywhere; the Docker image has the library.
+//! A skip looks green, so CI sets `TEACH_ME_REQUIRE_PDFIUM=1`: with it a missing
+//! library fails the tests instead.
 
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -25,6 +27,13 @@ fn engine() -> Option<&'static PdfiumTextExtractor> {
             match PdfiumTextExtractor::bind(dir.as_deref()) {
                 Ok(e) => Some(e),
                 Err(e) => {
+                    assert!(
+                        std::env::var_os("TEACH_ME_REQUIRE_PDFIUM")
+                            .is_none_or(|v| v.is_empty() || v == "0"),
+                        "TEACH_ME_REQUIRE_PDFIUM is set but PDFium is not available \
+                         (TEACH_ME_PDFIUM_DIR={:?}): {e}",
+                        std::env::var("TEACH_ME_PDFIUM_DIR").ok()
+                    );
                     eprintln!("skipping PDF tests, no PDFium: {e}");
                     None
                 }
@@ -279,6 +288,33 @@ fn bookmarks_come_with_their_level_and_destination_page() {
     assert_eq!((sections[4].page_start, sections[4].page_end), (8, 10));
 }
 
+/// A committed PDF made by another writer than `build_pdf` (regenerate it with
+/// `scripts/gen-fixture-pdf.py`): heading, body text, accents, bookmarks.
+#[test]
+fn a_real_structure_pdf_is_extracted_with_text_accents_and_bookmarks() {
+    let Some(engine) = engine() else { return };
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/sample.pdf");
+    let pdf = read(engine, &path).unwrap();
+    assert_eq!(pdf.pages.len(), 3);
+    assert!(pdf.pages[0].contains("Capitolo 1: Introduzione"));
+    assert!(pdf.pages[0].contains("Perché testare con un PDF vero?"));
+    assert!(pdf.pages[1].contains("La città è più grande del paese."));
+    assert!(pdf.pages[2].contains("Fine del libro di prova."));
+    let got: Vec<_> = pdf
+        .outline
+        .iter()
+        .map(|o| (o.title.as_str(), o.level, o.page))
+        .collect();
+    assert_eq!(
+        got,
+        [
+            ("Capitolo 1: Introduzione", 1, 1),
+            ("Capitolo 2: Ownership", 1, 2),
+            ("Capitolo 3: Conclusione", 1, 3),
+        ]
+    );
+}
+
 #[test]
 fn a_password_protected_pdf_is_reported_as_encrypted() {
     let Some(engine) = engine() else { return };
@@ -324,8 +360,10 @@ fn a_pdf_without_text_reads_as_empty_pages() {
     );
 }
 
-/// Manual check on a real book: `TEACH_ME_PDFIUM_DIR=… TEACH_ME_TEST_PDF=book.pdf
+/// Manual check on a real book, to run before a release (CI never has one):
+/// `TEACH_ME_REQUIRE_PDFIUM=1 TEACH_ME_PDFIUM_DIR=… TEACH_ME_TEST_PDF=book.pdf
 /// cargo test -p infrastructure --test pdf -- --ignored --nocapture`.
+/// Read the report: pages, text volume, sections and timing must look sane.
 #[test]
 #[ignore = "needs a real PDF in TEACH_ME_TEST_PDF"]
 fn real_pdf_report() {

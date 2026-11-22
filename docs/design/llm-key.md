@@ -232,3 +232,44 @@ Se `llmCreditExhaustedSeen` è falso e il tentativo è `pending` (altro errore d
 | `open_answer_pending_credit` | La tua risposta è salvata, ma non posso valutarla: il credito del servizio LLM è esaurito. Ricaricalo presso il provider: poi la valuto con «Valuta ora» o alla chiusura della lezione. |
 
 `%1$s` e `%2$s` sono gli stessi `{azione}` / `{azione fallita}` e `{rassicurazione}` delle tabelle di §5 e §6. Se il backend manda un `message` diverso da quello fisso del contratto, l'app usa comunque queste stringhe locali (il codice decide, non il testo).
+
+
+## 10. Budget giornaliero esaurito (`llm_budget_exceeded`) e altri stati di sistema (aggiunto 2026-11-22)
+
+Implementazione già fatta (`LlmBudgetText.kt`, `UpdateRequiredScreen.kt`) confermata con le correzioni sotto. Contratto: `api-conventions.md` §7/§12, `jobs.md` v1.5 §2, `documents.md` §3.
+
+### 10.1 «Budget di oggi esaurito»
+
+Non è la chiave e non è il credito del provider: è un limite di uso del server. Ricaricare o cambiare chiave non serve, serve **aspettare**. Per questo non si usa `LlmKeyNotice` e non ci sono rimandi alle Impostazioni.
+
+- **Componente**: `TeachStatusPanel` variante `Warning` (ambra: non è colpa dell'utente, si risolve da solo), icona orologio/`clock` (non `wallet`: il denaro non c'entra), `liveRegion = Polite`, nessun ✕.
+- **Titolo**: «Budget di oggi esaurito».
+- **Corpo**: «Hai usato tutto il budget giornaliero del modello. Si rinnova oggi alle HH:MM: riprova dopo.» oppure «… Si rinnova domani alle HH:MM: …». L'ora è 00:00 UTC in fuso del dispositivo, formato locale (`FormatStyle.SHORT`); con `Retry-After` si usa quello. «oggi» solo se l'ora cade nello stesso giorno locale, altrimenti «domani». Confermato.
+- **Posti**: gli stessi di §5/§6 (richiesta rifiutata `429`, job o messaggio `failed`). Il pannello sostituisce quello `danger` generico. Il testo dell'utente nel composer o nella richiesta non si perde (stessa rassicurazione di §6, in coda: «Il tuo messaggio è ancora nel campo.»).
+- **Effetti locali**: nessuno su chiave, `llmKeyRejectedAt`, bande di Home; nessun indicatore persistente.
+- **Decisione sul «Riprova» (chat e job)**: **resta visibile ma disabilitato fino all'ora di rinnovo**. Motivi: nascondere fa sembrare l'azione sparita e lascia l'utente senza il gesto che poi servirà (consistenza con §9, dove «Riprova» è l'unica azione); lasciarlo attivo invita a tentativi che falliscono per certo (qui non c'è difficoltà desiderabile, solo frustrazione, e ogni tentativo è un'altra richiesta al server). Dettagli:
+  - Vale anche per il bottone primario «Genera lezione» (avvio della lezione, non solo «Riprova» e «Invia»): disabilitato fino al rinnovo, con la stessa `stateDescription`.
+  - Disabilitato: `stateDescription` «Disponibile oggi alle HH:MM» (o «domani»), stile `disabled` di `base-components.md` §1; il testo del corpo già dice quando.
+  - Si abilita da solo quando l'orologio del dispositivo supera l'ora di rinnovo (un solo timer fino a quell'istante, ricalcolato al ritorno in primo piano). Nessun polling del server.
+  - Se l'orologio del dispositivo è indietro o il server non ha ancora rinnovato, il tentativo fallisce con lo stesso pannello e l'ora si ricalcola: nessun conteggio, nessun messaggio di colpa.
+  - Con il bottone che si abilita non si sposta il focus di TalkBack; annuncio Polite una sola volta: «Il budget è stato rinnovato. Puoi riprovare.» solo se il pannello è ancora a schermo.
+  - Il composer della chat **resta attivo** (l'utente può scrivere in anticipo; l'invio fallirebbe, quindi `Invia` segue la stessa regola: disabilitato fino al rinnovo con la stessa `stateDescription`). Il testo scritto si conserva.
+  - Messaggio `failed` non ultimo: solo corpo, senza bottone (come §9.3).
+- **Accessibilità**: titolo e corpo letti insieme; il significato non dipende dal colore (icona + testo); contrasto come §7; font 200%: pannello a tutta larghezza, bottone sotto il testo.
+- **Stringhe**: già in `core/ui` (`ui_budget_title`, `ui_budget_body_today`, `ui_budget_body_tomorrow`). Da aggiungere: `ui_budget_retry_available` «Disponibile %1$s alle %2$s» e `ui_budget_renewed` «Il budget è stato rinnovato. Puoi riprovare.».
+
+### 10.2 «Aggiorna l'app» (versione API del server più nuova)
+
+- **Schermata bloccante a tutto schermo** al posto di ogni altra (nessuna navigazione, nessun accesso ai dati: l'app non sa leggere in modo sicuro un'API più nuova). `TeachScreenFrame` + `TeachStatusPanel` `Warning`, colonna centrata, larghezza massima di lettura.
+- **Gerarchia**: titolo «Aggiorna l'app» → corpo «Il backend è più recente di questa versione di teach_me e l'app non sa ancora parlargli. Installa la versione aggiornata per continuare: i tuoi dati sono al sicuro.» → bottone secondario «Ricontrolla». Confermato. Un'azione sola: l'unica che l'utente può fare dentro l'app.
+- **«Ricontrolla»**: rilegge la versione del server; durante il controllo è disabilitato con spinner e «Controllo…»; se la versione è ancora più nuova, il pannello resta e si annuncia una volta (Polite) «L'app è ancora da aggiornare.»; se la rete manca, «Non riesco a raggiungere il server.» (annunciato e mostrato anche come testo) sotto il bottone «Aggiorna l'app», senza cambiare schermata. Niente link a store (il deploy è privato, l'app non conosce un indirizzo di aggiornamento).
+- **Accessibilità**: all'apertura il focus TalkBack va al titolo; il pannello non è `liveRegion` perché la schermata è già nuova. Tema chiaro e scuro, font 200% (scorrevole se serve), target ≥ 48 dp.
+- Da aggiungere: `update_required_checking` «Controllo…», `update_required_still` «L'app è ancora da aggiornare.».
+
+### 10.3 «Spazio esaurito» (`409 storage_quota_exceeded` al caricamento di un PDF)
+
+- **Dove**: nella sezione «I tuoi documenti» (`screens/resources.md` §13), nello stesso posto degli altri errori di caricamento, come `TeachStatusPanel` `Warning` (si risolve liberando spazio, l'utente ha il controllo).
+- **Titolo**: «Spazio esaurito». **Corpo**: «Non c'è abbastanza spazio per questo PDF. Elimina qualche documento che non ti serve più e riprova a caricarlo.»
+- **Azioni**: **nessun «Riprova»** (lo stesso file fallirebbe di nuovo finché non si libera spazio; il gesto giusto è un altro). Il pannello si chiude con ✕ e sparisce da solo quando un documento viene eliminato o si sceglie un nuovo file. L'azione «Carica un PDF» resta com'è. Le righe dei documenti, con la loro eliminazione, sono già sotto: spatial contiguity. Nessuna cifra di byte (il contratto non le manda e non aiutano a scegliere).
+- **Accessibilità**: `liveRegion = Polite`, icona + testo, contrasto come §7.
+- Stringhe: `documents_quota_title`, `documents_quota_body`.

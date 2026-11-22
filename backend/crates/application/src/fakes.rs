@@ -1837,6 +1837,15 @@ impl DocumentRepository for MemRepo {
             .collect())
     }
 
+    async fn total_bytes_for_user(&self, user: UserId) -> Result<u64, RepositoryError> {
+        let s = self.0.lock().unwrap();
+        Ok(s.documents
+            .iter()
+            .filter(|d| s.owns(user, d.document.topic_id))
+            .map(|d| d.document.size_bytes)
+            .sum())
+    }
+
     async fn delete(&self, user: UserId, id: DocumentId) -> Result<(), RepositoryError> {
         let mut s = self.0.lock().unwrap();
         if !s

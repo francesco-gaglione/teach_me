@@ -317,6 +317,7 @@ private fun MissionReady(
                     onOpenResources = {},
                     today = today,
                     keyNotice = (state.confirm as? ConfirmState.Failed)?.keyNotice,
+                    budgetResetAt = (state.confirm as? ConfirmState.Failed)?.budgetResetAt,
                 )
             }
         }

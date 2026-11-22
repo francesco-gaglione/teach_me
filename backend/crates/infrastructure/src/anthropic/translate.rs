@@ -437,7 +437,6 @@ fn map_stream_error(error: &Value) -> LlmError {
         Some(kind @ "billing_error") => {
             tracing::warn!(
                 error_type = kind,
-                provider_message = %error["message"].as_str().unwrap_or_default().chars().take(500).collect::<String>(),
                 "the LLM provider reports the credit exhausted mid-stream (reported as credit exhausted)"
             );
             LlmError::CreditExhausted
@@ -445,7 +444,6 @@ fn map_stream_error(error: &Value) -> LlmError {
         Some(kind @ ("authentication_error" | "permission_error")) => {
             tracing::warn!(
                 error_type = kind,
-                provider_message = %error["message"].as_str().unwrap_or_default().chars().take(500).collect::<String>(),
                 "the LLM provider refused the credentials or the account mid-stream (reported as key rejected)"
             );
             LlmError::Authentication

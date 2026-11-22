@@ -49,13 +49,18 @@
 
 | Metodo | Path | Successo | Errori |
 |---|---|---|---|
-| POST | `/topics/{id}/documents` | `202` `{ "document": Document, "job": Job }` (job `document_import` `queued`) | `400 invalid_id`, `404`, `409 conflict` (c'è già un job `document_import` attivo nel Topic, oppure il Topic ha già 5 documenti), `413 payload_too_large` (> 50 MiB, cioè 52.428.800 byte), `415 unsupported_media_type` (non è un PDF) |
+| POST | `/topics/{id}/documents` | `202` `{ "document": Document, "job": Job }` (job `document_import` `queued`) | `400 invalid_id`, `404`, `409 conflict` (c'è già un job `document_import` attivo nel Topic, oppure il Topic ha già 5 documenti), `409 storage_quota_exceeded` (aggiornamento 2026-11-22, audit C8/M1) (quota di archiviazione dell'utente superata, `api-conventions.md` §12), `413 payload_too_large` (> 50 MiB, cioè 52.428.800 byte), `415 unsupported_media_type` (non è un PDF) |
 | GET | `/topics/{id}/documents` | `200` `{ "documents": [Document] }`, dal più recente | `400 invalid_id`, `404` |
 | DELETE | `/documents/{id}` | `204` | `400 invalid_id`, `404`, `409 conflict` (import in corso) |
 
 - **Caricamento**: `multipart/form-data` con un solo campo `file`. Il backend verifica la firma `%PDF-` nel primo KB (non si fida del content type) e il limite di 50 MiB mentre riceve, senza tenere in memoria tutto il file.
 - Un documento `failed` conta nel limite di 5 finché non viene eliminato. Messaggi dei `409`: "L'argomento ha già 5 documenti: eliminane uno per caricarne un altro." e, per `DELETE`, "Il documento è in fase di importazione: riprova quando ha finito."
 - **Eliminazione** (risposta senza corpo): cancella documento, pagine, sezioni e la `Resource` `document`. Le lezioni già generate che la citano restano leggibili: la loro voce `sources` conserva il titolo (`url` era già `null`, §6).
+
+### Limiti (aggiornamento 2026-11-22, audit C8/M1)
+
+- **Dimensione**: 50 MiB per file e 5 documenti per Topic, come sopra.
+- **Quota per utente**: il totale dei byte dei documenti caricati da un utente non può superare `TEACH_ME_USER_STORAGE_QUOTA_BYTES` (default 1 GiB; `0` = illimitato, `api-conventions.md` §12). Un caricamento che la supererebbe è rifiutato con `409 storage_quota_exceeded` (corpo e `details` in `api-conventions.md` §7).
 
 ## 4. Il job `document_import`
 

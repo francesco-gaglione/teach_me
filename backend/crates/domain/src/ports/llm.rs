@@ -580,6 +580,35 @@ pub enum LlmError {
 }
 
 impl LlmError {
+    /// What may be logged about this error. Provider text and transport
+    /// errors can echo the prompt, the model output or a URL with a key in
+    /// its query, so only the `invalid request` text (needed to diagnose a
+    /// wrong configuration) survives, cut short; the rest keeps its length.
+    #[must_use]
+    pub fn log_summary(&self) -> String {
+        const MAX_PROVIDER_TEXT: usize = 200;
+        match self {
+            Self::InvalidRequest(text) => {
+                let cut: String = text.chars().take(MAX_PROVIDER_TEXT).collect();
+                let more = if cut.len() < text.len() { "..." } else { "" };
+                format!("invalid request: {cut}{more}")
+            }
+            Self::Network(text) => {
+                format!("network error ({} chars withheld)", text.chars().count())
+            }
+            Self::MalformedResponse(text) => {
+                format!(
+                    "malformed response ({} chars withheld)",
+                    text.chars().count()
+                )
+            }
+            Self::Unsupported(text) => {
+                format!("unsupported ({} chars withheld)", text.chars().count())
+            }
+            other => other.to_string(),
+        }
+    }
+
     #[must_use]
     pub fn is_retryable(&self) -> bool {
         matches!(
@@ -692,6 +721,21 @@ mod tests {
     use serde_json::json;
 
     use super::*;
+
+    #[test]
+    fn log_summary_withholds_provider_and_transport_text() {
+        let long = "x".repeat(500);
+        let invalid = LlmError::InvalidRequest(format!("{long}TAIL")).log_summary();
+        assert!(!invalid.contains("TAIL") && invalid.ends_with("..."));
+        for e in [
+            LlmError::Network("https://h/?key=SECRET".into()),
+            LlmError::MalformedResponse("SECRET".into()),
+            LlmError::Unsupported("SECRET".into()),
+        ] {
+            assert!(!e.log_summary().contains("SECRET"));
+        }
+        assert_eq!(LlmError::Timeout.log_summary(), "timeout");
+    }
 
     fn response_with(blocks: Vec<Value>, reported: u32) -> LlmResponse {
         LlmResponse {

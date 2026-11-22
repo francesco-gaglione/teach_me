@@ -9,7 +9,7 @@ use api::state::{AppOptions, AppState, AudioSetup, AuthSetup, DocumentSetup, NoP
 use api::telemetry;
 use api::users_cli::{self, AdminTools, StdConsole};
 use application::{
-    AudioCleaner, AudioSettings, ChatSettings, LessonSettings, MigrateReviewModel,
+    AudioCleaner, AudioSettings, ChatSettings, JobSettings, LessonSettings, MigrateReviewModel,
     OptimizeReviewParameters, ResearchSettings, RetryPolicy, RetryingLlm, SystemRetryEnv,
 };
 use domain::JobKind;
@@ -130,6 +130,14 @@ async fn main() -> anyhow::Result<()> {
                 max_web_fetches: config.llm.generator_max_fetches,
                 ..LessonSettings::default()
             },
+            jobs: JobSettings {
+                max_concurrent: config.job_max_concurrent,
+                job_timeout: Duration::from_secs(config.job_timeout_secs),
+                ..JobSettings::default()
+            },
+            storage_quota_bytes: config.user_storage_quota_bytes,
+            daily_llm_tokens: config.user_daily_llm_tokens,
+            max_sse_per_user: config.max_sse_per_user,
             ..AppOptions::default()
         },
         DocumentSetup { extractor, files },

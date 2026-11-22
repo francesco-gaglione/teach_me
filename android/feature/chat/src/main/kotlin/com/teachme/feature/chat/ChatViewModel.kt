@@ -1,9 +1,11 @@
 package com.teachme.feature.chat
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teachme.core.model.ApiFailure
 import com.teachme.core.model.ApiResult
+import com.teachme.core.model.AppClock
 import com.teachme.core.model.ChatEvent
 import com.teachme.core.model.ChatMessage
 import com.teachme.core.model.ChatMessageStatus
@@ -16,6 +18,7 @@ import com.teachme.core.model.LlmKeyMonitor
 import com.teachme.core.model.LlmKeyVariant
 import com.teachme.core.model.LoadError
 import com.teachme.core.model.Topic
+import com.teachme.core.model.budgetResetInstant
 import com.teachme.core.model.toLoadError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -35,6 +38,7 @@ import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import java.time.Instant
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
@@ -44,6 +48,7 @@ internal const val STREAM_APPLY_INTERVAL_MS = 100L
 internal const val RECONNECT_HINT_MS = 30_000L
 private const val MAX_IMMEDIATE_RESYNCS = 3
 private const val MISSION_EVENT_BUFFER = 64
+private const val SAVED_LAST_EVENT_ID = "last_event_id"
 private val HEALTHY_STREAM = 15.seconds
 
 /** Reconnection delays of the contract (chat.md section 4): 1, 2, 5, then every 10 seconds. */
@@ -63,7 +68,18 @@ sealed interface ChatLoad {
 enum class ChatConnection { Online, Reconnecting, Unreachable }
 
 /** Why the last send failed; the text stays in the composer. */
-enum class SendError { Network, Server, TooLong }
+sealed interface SendError {
+    data object Network : SendError
+
+    data object Server : SendError
+
+    data object TooLong : SendError
+
+    /** Daily LLM budget used up; [resetAt] is when it comes back (the server's Retry-After, else the next 00:00 UTC). */
+    data class BudgetExceeded(
+        val resetAt: Instant,
+    ) : SendError
+}
 
 /** A send or a retry refused because of the LLM key (llm-key.md section 5); [fromRetry] picks the wording. */
 data class ChatKeyNotice(
@@ -100,6 +116,11 @@ data class ChatUiState(
     val creditRepeats: Int = 0,
     val notice: ComposerNotice? = null,
     val retrying: Boolean = false,
+    /**
+     * When "Riprova" of a failed message was refused again for the daily budget: the reset instant of that answer (its
+     * Retry-After, else the next 00:00 UTC). The failed message's panel waits for the later of this and its own.
+     */
+    val budgetRetryResetAt: Instant? = null,
     /** Last Topic received on the stream; the Topic screen mirrors it into its title and chip. */
     val topic: Topic? = null,
     val announcement: Announcement? = null,
@@ -141,6 +162,8 @@ class ChatViewModel
         @Assisted private val topicId: String,
         private val chat: ChatRepository,
         private val llmKey: LlmKeyMonitor,
+        private val savedState: SavedStateHandle,
+        private val clock: AppClock = AppClock { System.currentTimeMillis() },
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -164,7 +187,15 @@ class ChatViewModel
         private var needsSnapshot = false
 
         // Stream bookkeeping. Everything runs on the main dispatcher, so no locking is needed.
-        private var lastEventId: Long? = null
+        // Kept in the SavedStateHandle so a process death does not lose the stream position. The messages are not saved, so
+        // the first start after a restore always reads the history again; the saved position is only the fallback for a
+        // snapshot that gives none (the server replays by id and messages merge by id, so nothing is shown twice).
+        private var lastEventId: Long? = savedState[SAVED_LAST_EVENT_ID]
+            set(value) {
+                field = value
+                savedState[SAVED_LAST_EVENT_ID] = value
+            }
+        private var restoredEventId: Long? = lastEventId
         private val pendingDeltas = ArrayList<Pair<Long?, ChatEvent.MessageDelta>>()
         private val kick = Channel<Unit>(Channel.CONFLATED)
         private var skipNextWait = false
@@ -431,7 +462,8 @@ class ChatViewModel
                             olderCursor = if (s.messages.isEmpty()) page.nextCursor else s.olderCursor,
                         )
                     }
-                    lastEventId = position
+                    lastEventId = position ?: restoredEventId
+                    restoredEventId = null
                     return true
                 }
                 is ApiResult.Failure -> {
@@ -541,6 +573,13 @@ class ChatViewModel
                             sendError =
                                 when {
                                     failure is ApiFailure.Network -> SendError.Network
+                                    failure is ApiFailure.LlmBudgetExceeded ->
+                                        SendError.BudgetExceeded(
+                                            budgetResetInstant(
+                                                Instant.ofEpochMilli(clock.nowMs()),
+                                                failure.retryAfterSecs,
+                                            ),
+                                        )
                                     failure is ApiFailure.Validation && failure.hasIssue("text", "too_long") ->
                                         SendError.TooLong
                                     else -> SendError.Server
@@ -568,12 +607,17 @@ class ChatViewModel
                                 keyNotice = null,
                                 creditRepeats = 0,
                                 messages = it.messages.upsert(result.value),
+                                budgetRetryResetAt = null,
                                 announcement = announce(AnnouncementKind.Writing),
                             )
                         }
                     is ApiResult.Failure -> {
                         val keyNotice = notices.of(result)
                         val credit = keyNotice?.variant == LlmKeyVariant.Credit
+                        // The panel of the failed message stays and waits for the new reset (llm-key.md 10.1): no toast.
+                        val budget = result.failure as? ApiFailure.LlmBudgetExceeded
+                        val budgetReset =
+                            budget?.let { budgetResetInstant(Instant.ofEpochMilli(clock.nowMs()), it.retryAfterSecs) }
                         _state.update {
                             it.copy(
                                 retrying = false,
@@ -584,6 +628,7 @@ class ChatViewModel
                                     },
                                 // Another kind of failure ends the run of "still exhausted" answers.
                                 creditRepeats = if (credit) it.creditRepeats + 1 else 0,
+                                budgetRetryResetAt = budgetReset ?: it.budgetRetryResetAt,
                             )
                         }
                         // With a key notice the panel is the answer; otherwise a toast says what happened.
@@ -591,7 +636,7 @@ class ChatViewModel
                         if (keyNotice == null && moved) {
                             refreshSilently()
                             effectChannel.send(ChatEffect.ChatUpdatedToast)
-                        } else if (keyNotice == null) {
+                        } else if (keyNotice == null && budget == null) {
                             effectChannel.send(ChatEffect.RetryFailedToast)
                         }
                     }

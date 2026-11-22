@@ -634,6 +634,9 @@ pub trait DocumentRepository: Send + Sync {
     /// Ids of every document the user has, to remove their files when the
     /// user is deleted.
     async fn ids_for_user(&self, user: UserId) -> Result<Vec<DocumentId>, RepositoryError>;
+    /// Sum of `size_bytes` of every document the user has, whatever its
+    /// status: what the storage quota counts.
+    async fn total_bytes_for_user(&self, user: UserId) -> Result<u64, RepositoryError>;
     /// The topic's documents, newest first, with sections for the ready ones.
     async fn list(&self, topic_id: TopicId) -> Result<Vec<DocumentView>, RepositoryError>;
     /// A run of the import starts (also after a retry): `importing`, no error.
@@ -732,4 +735,20 @@ pub trait SessionRepository: Send + Sync {
     ) -> Result<u64, RepositoryError>;
     /// Removes the sessions that expired before `now`; how many.
     async fn delete_expired(&self, now: OffsetDateTime) -> Result<u64, RepositoryError>;
+}
+
+/// Tokens the model providers billed to each user, per UTC day: the numbers
+/// behind the daily budget (`TEACH_ME_USER_DAILY_LLM_TOKENS`).
+#[async_trait]
+pub trait LlmUsageRepository: Send + Sync {
+    /// Input + output tokens counted for `user` on `day` (0 when none).
+    async fn tokens_on(&self, user: UserId, day: time::Date) -> Result<u64, RepositoryError>;
+    /// Adds `tokens` to the user's count of `day`. Atomic: concurrent calls
+    /// do not lose increments.
+    async fn add_tokens(
+        &self,
+        user: UserId,
+        day: time::Date,
+        tokens: u64,
+    ) -> Result<(), RepositoryError>;
 }

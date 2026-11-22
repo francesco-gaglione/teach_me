@@ -20,6 +20,13 @@ pub enum AppError {
     /// The key is fine but the provider account has no credit left.
     #[error("the LLM credit is exhausted")]
     LlmCreditExhausted,
+    /// The user spent the day's LLM tokens (`TEACH_ME_USER_DAILY_LLM_TOKENS`);
+    /// the budget renews at 00:00 UTC.
+    #[error("the daily LLM budget is exhausted")]
+    LlmBudgetExceeded { retry_after_secs: u64 },
+    /// The upload would take the user's documents over their storage quota.
+    #[error("the storage quota is exceeded")]
+    StorageQuotaExceeded,
     /// No valid session behind the request.
     #[error("unauthorized")]
     Unauthorized,

@@ -380,7 +380,7 @@ impl RunLessonCompletion {
         };
         let fixed = structured::repair_once(self.llm.as_ref(), &spec, message, spent).await?;
         check(&fixed).map_err(|problems| {
-            tracing::warn!(job = %job.id, ?problems, "the recorder's repair did not help");
+            tracing::warn!(job = %job.id, problems = problems.len(), "the recorder's repair did not help");
             JobErrorCode::InvalidOutput
         })
     }

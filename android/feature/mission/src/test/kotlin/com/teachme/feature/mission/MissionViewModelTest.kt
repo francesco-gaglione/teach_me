@@ -222,6 +222,38 @@ class MissionViewModelTest {
         }
 
     @Test
+    fun `a confirmation refused for the daily budget leaves the proposal open with the reset`() =
+        runTest {
+            val vm = started(TopicMission(null, mission(1)))
+            repo.confirmResult = ApiResult.Failure(ApiFailure.LlmBudgetExceeded(7200))
+            val before =
+                java.time.Instant
+                    .now()
+                    .truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+
+            vm.confirm(1)
+            advanceUntilIdle()
+
+            val failed = vm.state.value.confirm as ConfirmState.Failed
+            assertNull(failed.keyNotice)
+            val resetAt = failed.budgetResetAt!!
+            assertFalse(resetAt.isBefore(before.plusSeconds(7200)))
+            assertFalse(
+                resetAt.isAfter(
+                    java.time.Instant
+                        .now()
+                        .plusSeconds(7200),
+                ),
+            )
+            // The card is still the open proposal, in its error state: never "confirmed".
+            assertNull(vm.state.value.current)
+            assertEquals(
+                MissionCardState.ConfirmError,
+                missionCardState(mission(1), vm.state.value.mission, turnBusy = false, confirm = failed),
+            )
+        }
+
+    @Test
     fun `a confirmation refused for the credit is a credit notice, and a second refusal is a repeat`() =
         runTest {
             val vm = started(TopicMission(null, mission(1)))

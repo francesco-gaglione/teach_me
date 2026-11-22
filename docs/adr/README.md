@@ -4,7 +4,7 @@ Leggi solo le ADR che toccano il lavoro in corso.
 
 | N° | titolo | stato | decisione |
 |---|---|---|---|
-| 0001 | [Stack tecnologico](0001-stack.md) | accettata; aggiornata (LAN) | Rust (axum, tokio, SQLite via sqlx) per il backend; Kotlin e Jetpack Compose per l'app Android. Aggiornamento 2026-11-11: accesso dalla LAN di casa. |
+| 0001 | [Stack tecnologico](0001-stack.md) | accettata; aggiornata (LAN, 2026-11-22) | Rust (axum, tokio, SQLite via sqlx) per il backend; Kotlin e Jetpack Compose per l'app Android. Aggiornamento 2026-11-11: accesso dalla LAN di casa. Aggiornamento 2026-11-22: esposizione LAN in chiaro solo con `ALLOW_PLAIN_LAN=1`. |
 | 0002 | [Struttura dei crate del backend](0002-backend-crate-structure.md) | accettata | Workspace Cargo in `backend/` con un crate per livello (domain, application, infrastructure, api): il compilatore fa rispettare la regola delle dipendenze. |
 | 0003 | [App Android: prima il tablet in orizzontale](0003-tablet-landscape-first.md) | accettata | Layout di riferimento tablet in orizzontale (classe expanded), telefono supportato ma secondario; layout adattivi su window size class. |
 | 0004 | [Port `LlmProvider` e configurazione dei modelli](0004-llm-provider-port.md) | accettata | Port `LlmProvider` nel dominio, ruolo invece di modello; errori classificati; retry come decoratore in application, solo prima del primo contenuto. |
@@ -23,3 +23,5 @@ Leggi solo le ADR che toccano il lavoro in corso.
 | 0017 | [Tracing con OpenTelemetry e Jaeger](0017-tracing-opentelemetry-jaeger.md) | accettata | Export OTLP/HTTP opt-in verso Jaeger v2 in memoria nel compose; span per richieste, job, chiamate LLM e TTS, senza corpi, header, chiavi o testi utente. |
 | 0018 | [Campo `visual` nel piano](0018-visual-nel-piano.md) | accettata | `concepts[].visual` nel piano del Planner (none, flow, tree, cycle, code_compare, line_chart, comparison_table, timeline, sequence), massimo due figure; controllo `planned_visual` con un passaggio improve in più. |
 | 0019 | [Lingua dei contenuti](0019-lingua-dei-contenuti.md) | accettata | Lingua per argomento (`it` o `en`, scelta alla creazione e immutabile); agenti, lezioni e voce nella lingua dell'argomento; interfaccia Android dalla lingua del dispositivo; `message` degli errori da `Accept-Language`. |
+| 0020 | [Istanza singola](0020-istanza-singola.md) | accettata | Una sola istanza del backend per deployment (SQLite, job in-process, worker audio, SSE, volumi locali); due repliche sugli stessi dati non supportate; scalare in orizzontale fuori scopo, serve una nuova ADR. |
+| 0021 | [Politica delle eval](0021-politica-eval.md) | accettata | Smoke eval in CI a costo zero con provider finto; eval reali manuali e obbligatorie prima del merge di modifiche a `backend/prompts/`, con il modello più economico capace; confronto con baseline per `prompt_version`. |

@@ -48,6 +48,7 @@ import com.teachme.core.model.LoadError
 import com.teachme.core.model.ResourcesView
 import com.teachme.core.model.TopicState
 import com.teachme.core.model.dayMonthFormatter
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
 import com.teachme.core.ui.LoadErrorState
@@ -271,11 +272,15 @@ private fun ReadyContent(
                         acting = state.acting,
                         onRetry = actions.onRetry,
                         keyNotice = state.keyNotice,
+                        failedAt = screen.job.finishedAt ?: screen.job.createdAt,
+                        budgetRetryResetAt = state.budgetResetAt,
                     )
                     screen.previous?.let { Previous(it, state.newUrls, open, copy, intro = false) }
                 }
                 is ResourcesScreen.Results -> {
                     state.actionError?.let { ActionErrorPanel(it) }
+                    // A new search or an update refused for today's budget (llm-key.md 10.1): wait, do not retry blindly.
+                    state.budgetResetAt?.let { LlmBudgetPanel(it) }
                     // A new search or an update refused for the key: the sources already here stay as they are.
                     state.keyNotice?.let {
                         LlmKeyNotice(

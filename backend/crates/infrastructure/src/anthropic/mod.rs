@@ -440,12 +440,10 @@ fn http_error(status: u16, headers: &HeaderMap, body: &str) -> LlmError {
         408 => LlmError::Timeout,
         529 => LlmError::Overloaded,
         402 => {
-            // The key is valid, the account is out of credit. The provider's
-            // own words go in the log (never the key, which is not in the
-            // response).
+            // The key is valid, the account is out of credit. Status only:
+            // the provider's text is not logged (it can echo request data).
             tracing::warn!(
                 http_status = status,
-                provider_message = %message,
                 "the LLM provider reports the credit exhausted (reported as credit exhausted)"
             );
             LlmError::CreditExhausted
@@ -453,7 +451,6 @@ fn http_error(status: u16, headers: &HeaderMap, body: &str) -> LlmError {
         401 | 403 => {
             tracing::warn!(
                 http_status = status,
-                provider_message = %message,
                 "the LLM provider refused the credentials or the account (reported as key rejected)"
             );
             LlmError::Authentication

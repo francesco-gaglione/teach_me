@@ -60,6 +60,46 @@ pub struct Recovery {
     pub failed: u64,
 }
 
+/// How often the runner proves it is alive, even when idle or saturated.
+pub const RUNNER_HEARTBEAT: Duration = Duration::from_secs(10);
+
+/// The runner's proof of life: the time of its last pass through the loop.
+/// Read by the readiness check (`GET /ready`); a runner that died or hangs
+/// stops beating and its age grows.
+#[derive(Debug)]
+pub struct Heartbeat {
+    /// Unix milliseconds of the last beat; `i64::MIN` before the first.
+    last_ms: std::sync::atomic::AtomicI64,
+}
+
+impl Default for Heartbeat {
+    fn default() -> Self {
+        Self {
+            last_ms: std::sync::atomic::AtomicI64::new(i64::MIN),
+        }
+    }
+}
+
+impl Heartbeat {
+    pub fn beat(&self, now: time::OffsetDateTime) {
+        let ms = i64::try_from(now.unix_timestamp_nanos() / 1_000_000).unwrap_or(i64::MAX);
+        self.last_ms.store(ms, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Alive when it beat within three heartbeat intervals (a missed beat is
+    /// tolerated). Never beaten counts as not alive.
+    #[must_use]
+    pub fn is_alive(&self, now: time::OffsetDateTime) -> bool {
+        let last = self.last_ms.load(std::sync::atomic::Ordering::Relaxed);
+        if last == i64::MIN {
+            return false;
+        }
+        let now_ms = i64::try_from(now.unix_timestamp_nanos() / 1_000_000).unwrap_or(i64::MAX);
+        let max = i64::try_from(RUNNER_HEARTBEAT.as_millis() * 3).unwrap_or(i64::MAX);
+        now_ms.saturating_sub(last) <= max
+    }
+}
+
 pub struct JobService {
     jobs: Arc<dyn JobRepository>,
     topics: Arc<dyn TopicRepository>,
@@ -380,6 +420,7 @@ pub struct JobRunner {
     /// still `running` in the database although no task owns them. Stored
     /// again by [`JobRunner::settle_unsettled`].
     unsettled: std::sync::Mutex<Vec<Job>>,
+    heartbeat: Option<Arc<Heartbeat>>,
 }
 
 impl JobRunner {
@@ -390,6 +431,20 @@ impl JobRunner {
             handlers: HashMap::new(),
             settings,
             unsettled: std::sync::Mutex::new(Vec::new()),
+            heartbeat: None,
+        }
+    }
+
+    /// Makes the loop beat into `heartbeat` (see [`Heartbeat`]).
+    #[must_use]
+    pub fn with_heartbeat(mut self, heartbeat: Arc<Heartbeat>) -> Self {
+        self.heartbeat = Some(heartbeat);
+        self
+    }
+
+    fn beat(&self) {
+        if let Some(heartbeat) = &self.heartbeat {
+            heartbeat.beat(self.service.clock.now());
         }
     }
 
@@ -410,9 +465,16 @@ impl JobRunner {
     pub async fn run(self: Arc<Self>) {
         let permits = Arc::new(Semaphore::new(self.settings.max_concurrent.max(1)));
         loop {
+            self.beat();
             self.settle_unsettled().await;
-            let Ok(permit) = permits.clone().acquire_owned().await else {
-                return;
+            // Saturated by long jobs the wait for a slot can be long: keep beating.
+            let permit = loop {
+                match tokio::time::timeout(RUNNER_HEARTBEAT, permits.clone().acquire_owned()).await
+                {
+                    Ok(Ok(permit)) => break permit,
+                    Ok(Err(_)) => return,
+                    Err(_) => self.beat(),
+                }
             };
             match self.claim().await {
                 Ok(Some(job)) => {
@@ -430,7 +492,10 @@ impl JobRunner {
                             () = tokio::time::sleep(Duration::from_secs(5)) => {},
                         }
                     } else {
-                        self.service.wake.notified().await;
+                        tokio::select! {
+                            () = self.service.wake.notified() => {},
+                            () = tokio::time::sleep(RUNNER_HEARTBEAT) => {},
+                        }
                     }
                 }
                 Err(e) => {
@@ -520,11 +585,21 @@ impl JobRunner {
                     }
                 };
                 match keys.for_user(owner).await {
+                    // The budget gates starts (contract jobs.md section 2): a job
+                    // queued before the budget ran out fails here, once.
+                    Ok(_)
+                        if matches!(
+                            keys.check_budget(owner).await,
+                            Err(AppError::LlmBudgetExceeded { .. })
+                        ) =>
+                    {
+                        Err(JobFailure(JobErrorCode::LlmBudgetExceeded))
+                    }
                     // The span carries the owner, so the token counts logged by the
                     // calls inside the job say whose they are.
                     Ok(key) => {
                         let span = tracing::info_span!("job", job = %job_id, user_id = %owner, topic_id = %topic_id);
-                        with_key(key, handler.run(&ctx).instrument(span)).await
+                        with_key(owner, key, handler.run(&ctx).instrument(span)).await
                     }
                     Err(KeyError::Missing | KeyError::Unreadable) => {
                         Err(JobFailure(JobErrorCode::LlmKeyMissing))

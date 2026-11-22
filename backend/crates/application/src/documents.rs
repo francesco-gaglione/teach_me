@@ -38,6 +38,8 @@ pub struct DocumentService {
     jobs: Arc<JobService>,
     ids: Arc<dyn IdGenerator>,
     clock: Arc<dyn Clock>,
+    /// Bytes of documents a user may keep; 0 = unlimited.
+    storage_quota_bytes: u64,
 }
 
 impl DocumentService {
@@ -57,7 +59,28 @@ impl DocumentService {
             jobs,
             ids,
             clock,
+            storage_quota_bytes: 0,
         }
+    }
+
+    /// Caps the bytes of documents each user may keep (0 = unlimited).
+    #[must_use]
+    pub fn with_storage_quota(mut self, bytes: u64) -> Self {
+        self.storage_quota_bytes = bytes;
+        self
+    }
+
+    /// `StorageQuotaExceeded` when `extra` more bytes would take the user's
+    /// documents over the quota.
+    async fn check_quota(&self, user: UserId, extra: u64) -> Result<(), AppError> {
+        if self.storage_quota_bytes == 0 {
+            return Ok(());
+        }
+        let stored = self.documents.total_bytes_for_user(user).await?;
+        if stored.saturating_add(extra) > self.storage_quota_bytes {
+            return Err(AppError::StorageQuotaExceeded);
+        }
+        Ok(())
     }
 
     /// A fresh id for an upload, to name its file before the document exists.
@@ -79,7 +102,15 @@ impl DocumentService {
 
     /// Checked before the first byte is read, so a refusal does not cost a
     /// 50 MB transfer: the topic exists, has room, and no import is active.
-    pub async fn check_upload(&self, user: UserId, topic_id: TopicId) -> Result<(), AppError> {
+    /// `declared_bytes` is the size the client announced (`Content-Length`),
+    /// when it did: it only makes the refusal earlier, `create` checks the
+    /// real size.
+    pub async fn check_upload(
+        &self,
+        user: UserId,
+        topic_id: TopicId,
+        declared_bytes: Option<u64>,
+    ) -> Result<(), AppError> {
         self.require_topic(user, topic_id).await?;
         if self.documents.list(topic_id).await?.len() >= MAX_DOCUMENTS_PER_TOPIC {
             return Err(AppError::Conflict(ConflictReason::DocumentLimit));
@@ -92,6 +123,7 @@ impl DocumentService {
         {
             return Err(AppError::Conflict(ConflictReason::JobActive));
         }
+        self.check_quota(user, declared_bytes.unwrap_or(0)).await?;
         Ok(())
     }
 
@@ -106,6 +138,7 @@ impl DocumentService {
         // Checked again here: the upload took a while, and the topic must
         // still be the user's.
         self.require_topic(user, topic_id).await?;
+        self.check_quota(user, upload.size_bytes).await?;
         let filename = clean_filename(&upload.filename).ok_or_else(|| {
             AppError::validation(ValidationIssue::new("filename", IssueKind::Invalid))
         })?;

@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -42,9 +43,13 @@ import com.teachme.core.model.KeyNotice
 import com.teachme.core.model.LoadError
 import com.teachme.core.model.Resource
 import com.teachme.core.model.ResourcesView
+import com.teachme.core.model.budgetResetInstant
+import com.teachme.core.model.isLlmBudgetCode
 import com.teachme.core.model.llmKeyVariantOfCode
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
+import java.time.Instant
 
 private val BULLET_COLUMN = 20.dp
 
@@ -228,7 +233,31 @@ internal fun FailedPanel(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     keyNotice: KeyNotice? = null,
+    /** When the job failed: the budget wait of a job that stopped for it is counted from here (it carries no Retry-After). */
+    failedAt: Instant? = null,
+    /** A "Riprova" refused for the daily LLM budget: when it comes back; the later reset wins (llm-key.md 10.1). */
+    budgetRetryResetAt: Instant? = null,
 ) {
+    if (error?.code.isLlmBudgetCode() || budgetRetryResetAt != null) {
+        // Saved (epoch millis) so a rotation does not restart the wait.
+        val fallbackMillis = rememberSaveable { System.currentTimeMillis() }
+        val own =
+            remember(failedAt, fallbackMillis) {
+                budgetResetInstant(
+                    failedAt ?: Instant.ofEpochMilli(fallbackMillis),
+                )
+            }
+        val resetAt = if (budgetRetryResetAt != null && budgetRetryResetAt.isAfter(own)) budgetRetryResetAt else own
+        LlmBudgetPanel(
+            resetAt,
+            modifier,
+            retryText = stringResource(if (acting) R.string.res_retrying else R.string.res_retry),
+            onRetry = onRetry,
+            retrying = acting,
+            retryIcon = TeachIcons.RotateCcw,
+        )
+        return
+    }
     val keyVariant = error?.code.llmKeyVariantOfCode()
     if (keyVariant != null) {
         // The key, not the research, is the problem: "Riprova" only once a key has been saved (llm-key.md section 6).

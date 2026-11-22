@@ -505,6 +505,8 @@ private fun ChatRowView(
                     canRetry = row.isLast && state.retryableMessageId == message.id,
                     retrying = state.retrying,
                     creditAgain = state.creditRepeats,
+                    budgetRetryResetAt = state.budgetRetryResetAt,
+                    announceBudgetRenewal = state.sendError !is SendError.BudgetExceeded,
                     copy = copy,
                     onRetry = { onRetryMessage(message.id) },
                     onReconnectNow = onReconnectNow,

@@ -9,13 +9,13 @@ object Fixtures {
             .map { File(it, "docs/contracts/fixtures") }
             .first { it.isDirectory }
 
-    val validLessons =
-        listOf(
-            "lesson-rust-ownership.json",
-            "lesson-photo-exposure.json",
-            "lesson-git-staging.json",
-            "lesson-scientific-method.json",
-        )
+    /** Every lesson-*.json in the directory, discovered like the Rust side (sdui_fixtures.rs). */
+    val validLessons: List<String> =
+        dir
+            .listFiles { f -> f.isFile && f.name.startsWith("lesson-") && f.name.endsWith(".json") }!!
+            .map { it.name }
+            .sorted()
+            .also { check(it.isNotEmpty()) { "no lesson-*.json fixtures found in $dir" } }
 
     fun text(name: String): String = File(dir, name).readText()
 

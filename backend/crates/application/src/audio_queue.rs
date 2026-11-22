@@ -263,7 +263,7 @@ impl AudioWorker {
                     .record_failure(next.entry, self.settings.max_attempts)
                     .await?;
                 tracing::warn!(
-                    lesson = %lesson_id, block = %block_id, voice = %voice, error = %e,
+                    lesson = %lesson_id, block = %block_id, voice = %voice, error = %e.log_kind(),
                     state = ?state, "audio of a block failed"
                 );
                 Ok(Step::Failed(state))
@@ -310,7 +310,7 @@ impl AudioWorker {
     /// retried at the end of the line until `max_attempts`; one that did not
     /// (engine down) goes first again and the worker backs off.
     fn sample_back(&self, task: SampleTask, cause: &AudioError, used_attempt: bool) -> Step {
-        tracing::warn!(voice = %task.voice, error = %cause, "voice sample not made");
+        tracing::warn!(voice = %task.voice, error = %cause.log_kind(), "voice sample not made");
         if !used_attempt {
             self.samples
                 .lock()
@@ -330,7 +330,7 @@ impl AudioWorker {
     }
 
     async fn give_back(&self, entry: i64, cause: &AudioError) -> Result<Step, AudioError> {
-        tracing::warn!(error = %cause, "audio worker backs off");
+        tracing::warn!(error = %cause.log_kind(), "audio worker backs off");
         self.queue.release(entry).await?;
         Ok(Step::Unavailable)
     }
@@ -345,7 +345,7 @@ impl AudioWorker {
                     break;
                 }
                 Err(e) => {
-                    tracing::error!(error = %e, "audio queue recovery failed");
+                    tracing::error!(error = %e.log_kind(), "audio queue recovery failed");
                     tokio::time::sleep(self.settings.unavailable_backoff).await;
                 }
             }
@@ -362,7 +362,7 @@ impl AudioWorker {
                 }
                 Ok(_) => {}
                 Err(e) => {
-                    tracing::error!(error = %e, "audio worker error");
+                    tracing::error!(error = %e.log_kind(), "audio worker error");
                     tokio::time::sleep(self.settings.unavailable_backoff).await;
                 }
             }

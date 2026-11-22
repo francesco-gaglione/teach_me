@@ -86,9 +86,14 @@ import com.teachme.core.model.LessonStatus
 import com.teachme.core.model.LoadError
 import com.teachme.core.model.TopicJob
 import com.teachme.core.model.TopicState
+import com.teachme.core.model.isLlmBudgetCode
+import com.teachme.core.model.jobBudgetReset
 import com.teachme.core.model.llmKeyVariantOfCode
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
+import com.teachme.core.ui.llmBudgetAvailability
+import com.teachme.core.ui.rememberBudgetRenewed
 import com.teachme.sdui.inline.InlineText
 import com.teachme.sdui.render.ProvideStandaloneSdui
 import kotlinx.coroutines.delay
@@ -546,6 +551,11 @@ private fun ReadyCard(
                     again = it.again,
                 )
             }
+            // Refused for today's budget (llm-key.md 10.1): the buttons below wait for the reset, the panel says when.
+            state.budgetResetAt?.let { LlmBudgetPanel(it) }
+            val budgetWait =
+                state.budgetResetAt != null && !rememberBudgetRenewed(state.budgetResetAt, announce = false)
+            val budgetAvailability = state.budgetResetAt?.let { llmBudgetAvailability(it) }
             if (unfinished != null) {
                 TeachButton(
                     stringResource(R.string.lessons_resume),
@@ -558,14 +568,18 @@ private fun ReadyCard(
                     ),
                     actions.onGenerate,
                     variant = ButtonVariant.Text,
+                    enabled = !budgetWait,
                     loading = state.starting,
+                    disabledStateDescription = budgetAvailability,
                 )
             } else {
                 TeachButton(
                     stringResource(if (state.starting) R.string.lessons_starting else R.string.lessons_generate),
                     actions.onGenerate,
                     leadingIcon = TeachIcons.Sparkles,
+                    enabled = !budgetWait,
                     loading = state.starting,
+                    disabledStateDescription = budgetAvailability,
                 )
             }
             if (state.actionError != null) {
@@ -784,12 +798,29 @@ private fun FailedPanel(
         )
         return
     }
+    if (job.error?.code.isLlmBudgetCode() || state.budgetResetAt != null) {
+        // The job stopped for the daily budget, or "Riprova" was just refused for it: wait, do not retry blindly.
+        val resetAt = remember(job.id, job.finishedAt, state.budgetResetAt) { job.jobBudgetReset(state.budgetResetAt) }
+        LlmBudgetPanel(
+            resetAt,
+            retryText = stringResource(if (state.retrying) R.string.lessons_retrying else R.string.lessons_retry),
+            onRetry = actions.onRetryGeneration,
+            retrying = state.retrying,
+            retryIcon = TeachIcons.RotateCcw,
+        )
+        return
+    }
     val (title, body) = generationFailure(job.error?.code)
     var details by rememberSaveable { mutableStateOf(false) }
     TeachStatusPanel(
         StatusVariant.Danger,
         stringResource(title),
-        body = stringResource(if (state.actionError != null) R.string.lessons_start_network_error else body),
+        body =
+            if (state.actionError != null) {
+                stringResource(R.string.lessons_start_network_error)
+            } else {
+                stringResource(body)
+            },
     ) {
         state.keyNotice?.let { LlmKeyNotice(it.variant, LlmKeyContext.GenerateLesson, it.id) }
         TeachButton(

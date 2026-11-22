@@ -1074,3 +1074,257 @@ fn a_fixture_case_on_an_invalid_host_is_not_skipped() {
         None
     );
 }
+
+// ---- baselines (ADR 0021) ----
+
+async fn tutor_report(text: &str) -> evals::report::Report {
+    let suite = Suite::parse("tutor/test", TUTOR_SUITE).unwrap();
+    let provider = fake(text);
+    run_suites(
+        provider.clone(),
+        provider,
+        &models(),
+        &[suite],
+        &options(None),
+        "2026-11-22T10:00:00.000Z",
+    )
+    .await
+}
+
+fn temp_dir(name: &str) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("evals-baseline-{}-{name}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    dir
+}
+
+#[tokio::test]
+async fn a_saved_baseline_is_reduced_and_compares_equal_to_its_own_run() {
+    use evals::baseline::{Baseline, compare, load, save};
+    let report = tutor_report("Cosa vorresti riuscire a fare con Rust?").await;
+    let dir = temp_dir("equal");
+    let file = dir.join("b.json");
+    assert_eq!(save(&report, &file).unwrap(), vec![file.clone()]);
+
+    let text = std::fs::read_to_string(&file).unwrap();
+    assert!(
+        !text.contains("Voglio imparare"),
+        "no transcripts in a baseline"
+    );
+    let saved = load(&file).unwrap();
+    assert_eq!(saved.len(), 1);
+    assert_eq!(saved[0].suite, "tutor/test");
+    assert_eq!(saved[0].date, "2026-11-22");
+    assert_eq!(saved[0].model, "claude-sonnet-5-5");
+    assert_eq!(saved[0].cases["short"].runs, 2);
+    assert!(
+        saved[0].cases["too_long"]
+            .failed_checks
+            .contains(&"max_words".to_owned())
+    );
+
+    let result = compare(&Baseline::from_report(&report), &saved);
+    assert!(!result.has_regression(), "{}", result.render());
+    assert_eq!(result.cases.len(), 2);
+    assert!(result.render().contains("no regression"));
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[tokio::test]
+async fn degraded_checks_or_scores_are_a_regression() {
+    use evals::baseline::{Baseline, compare};
+    let good =
+        Baseline::from_report(&tutor_report("Cosa vorresti riuscire a fare con Rust?").await);
+    // More than twelve words are over the suite's limit: the deterministic check now fails.
+    let bad = Baseline::from_report(
+        &tutor_report(
+            "Una risposta decisamente troppo lunga che supera di molto il limite di parole fissato per questa suite di prova",
+        )
+        .await,
+    );
+    let r = compare(&bad, &good);
+    assert!(r.has_regression());
+    let short = r.cases.iter().find(|c| c.case == "short").unwrap();
+    assert!(
+        short.regressions.iter().any(|m| m.contains("max_words")),
+        "{short:?}"
+    );
+    assert_eq!(
+        r.cases
+            .iter()
+            .find(|c| c.case == "too_long")
+            .unwrap()
+            .regressions,
+        Vec::<String>::new()
+    );
+
+    // Rubric thresholds: a drop of 0.10 passes, more than that does not.
+    let mut base = good.clone();
+    let case = base[0].cases.get_mut("short").unwrap();
+    case.rubric_mean = Some(1.05);
+    case.rubric_min = Some(1.15);
+    assert!(!compare(&good, &base).has_regression());
+    let case = base[0].cases.get_mut("short").unwrap();
+    case.rubric_mean = Some(1.2);
+    case.rubric_min = Some(1.3);
+    let r = compare(&good, &base);
+    let msg = r
+        .cases
+        .iter()
+        .find(|c| c.case == "short")
+        .unwrap()
+        .regressions
+        .join(";");
+    assert!(
+        msg.contains("rubric mean") && msg.contains("rubric min"),
+        "{msg}"
+    );
+}
+
+#[tokio::test]
+async fn a_cost_rise_over_a_quarter_is_a_regression_unless_quality_pays_for_it() {
+    use evals::baseline::{Baseline, compare};
+    let now = Baseline::from_report(&tutor_report("Cosa vorresti riuscire a fare con Rust?").await);
+    let cost = now[0].cases["short"].cost_per_run_usd;
+    assert!(cost > 0.0);
+
+    let mut base = now.clone();
+    base[0].cases.get_mut("short").unwrap().cost_per_run_usd = cost / 1.20;
+    assert!(
+        !compare(&now, &base).has_regression(),
+        "+20% is within the limit"
+    );
+
+    base[0].cases.get_mut("short").unwrap().cost_per_run_usd = cost / 1.40;
+    let r = compare(&now, &base);
+    assert!(r.has_regression());
+    assert!(r.render().contains("cost per run"));
+
+    // The same rise with a rubric mean that gained 0.10 or more is justified.
+    base[0].cases.get_mut("short").unwrap().rubric_mean = Some(0.8);
+    assert!(!compare(&now, &base).has_regression());
+}
+
+#[tokio::test]
+async fn cases_missing_on_either_side_are_reported_and_not_fatal() {
+    use evals::baseline::{Baseline, compare};
+    let now = Baseline::from_report(&tutor_report("Cosa vorresti riuscire a fare con Rust?").await);
+    let mut base = now.clone();
+    let moved = base[0].cases.remove("short").unwrap();
+    base[0].cases.insert("gone".to_owned(), moved);
+    let r = compare(&now, &base);
+    assert!(!r.has_regression());
+    let notes = r.notes.join("\n");
+    assert!(notes.contains("short: not in the baseline"), "{notes}");
+    assert!(
+        notes.contains("gone: in the baseline, not in this run"),
+        "{notes}"
+    );
+
+    let r = compare(&now, &[]);
+    assert!(!r.has_regression());
+    assert!(r.notes[0].contains("no baseline"));
+
+    // Another model: the comparison does not apply.
+    let mut other = now.clone();
+    other[0].model = "other".to_owned();
+    let r = compare(&now, &other);
+    assert!(r.cases.is_empty() && r.not_compared[0].contains("not comparable"));
+}
+
+#[tokio::test]
+async fn several_suites_need_a_directory_and_get_one_file_each() {
+    use evals::baseline::{load, save};
+    let mut report = tutor_report("Cosa vorresti riuscire a fare con Rust?").await;
+    let mut second = report.suites[0].clone();
+    second.id = "tutor/other".to_owned();
+    report.suites.push(second);
+    let dir = temp_dir("many");
+    assert!(save(&report, &dir.join("one.json")).is_err());
+    let written = save(&report, &dir).unwrap();
+    assert_eq!(written.len(), 2);
+    assert!(dir.join("tutor__test__").read_dir().is_err());
+    assert_eq!(load(&dir).unwrap().len(), 2);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[tokio::test]
+async fn a_mismatched_model_is_prominent_and_comparing_nothing_is_not_a_pass() {
+    use evals::baseline::{Baseline, compare};
+    let now = Baseline::from_report(&tutor_report("Cosa vorresti riuscire a fare con Rust?").await);
+    let mut other = now.clone();
+    other[0].judge_model = "another-judge".to_owned();
+    let r = compare(&now, &other);
+    assert_eq!(r.compared(), 0);
+    assert_eq!(r.not_compared.len(), 1);
+    let text = r.render();
+    assert!(
+        text.contains("NOT COMPARED") && text.contains("NOTHING COMPARED"),
+        "{text}"
+    );
+    // A baseline for another suite compares nothing either.
+    assert_eq!(compare(&now, &[]).compared(), 0);
+    assert_eq!(compare(&now, &now).compared(), 2);
+}
+
+#[tokio::test]
+async fn a_rubric_score_that_disappears_is_a_regression() {
+    use evals::baseline::{Baseline, compare};
+    let base =
+        Baseline::from_report(&tutor_report("Cosa vorresti riuscire a fare con Rust?").await);
+    let mut now = base.clone();
+    let case = now[0].cases.get_mut("short").unwrap();
+    case.rubric_mean = None;
+    case.rubric_min = None;
+    let r = compare(&now, &base);
+    let short = r.cases.iter().find(|c| c.case == "short").unwrap();
+    assert!(
+        short
+            .regressions
+            .iter()
+            .any(|m| m.contains("no rubric score")),
+        "{short:?}"
+    );
+}
+
+#[tokio::test]
+async fn two_baseline_files_for_one_suite_are_a_warning() {
+    use evals::baseline::{Baseline, compare, load};
+    let report = tutor_report("Cosa vorresti riuscire a fare con Rust?").await;
+    let dir = temp_dir("dup");
+    let one = Baseline::from_report(&report).remove(0);
+    let mut two = one.clone();
+    two.prompt_version = "other".to_owned();
+    for (name, b) in [("a.json", &one), ("b.json", &two)] {
+        std::fs::write(dir.join(name), serde_json::to_string(b).unwrap()).unwrap();
+    }
+    let saved = load(&dir).unwrap();
+    assert_eq!(saved.len(), 2);
+    let r = compare(&Baseline::from_report(&report), &saved);
+    assert!(
+        r.notes
+            .iter()
+            .any(|n| n.contains("WARNING: several baseline files")),
+        "{:?}",
+        r.notes
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn the_save_destination_is_checked_before_the_run() {
+    use evals::baseline::check_destination;
+    let dir = temp_dir("dest");
+    assert!(check_destination(&dir.join("x.json"), 1).is_ok());
+    assert!(
+        check_destination(&dir, 3).is_ok(),
+        "a directory takes any number"
+    );
+    assert!(
+        check_destination(&dir.join("x.json"), 2).is_err(),
+        "several suites need a directory"
+    );
+    assert!(check_destination(&dir.join("missing").join("x.json"), 1).is_err());
+    assert!(check_destination(&dir, 0).is_err(), "nothing would run");
+    std::fs::remove_dir_all(dir).unwrap();
+}

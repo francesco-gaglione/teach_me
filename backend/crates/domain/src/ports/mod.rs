@@ -18,8 +18,9 @@ pub use id_generator::IdGenerator;
 pub use parameter_optimizer::{OptimizerError, ParameterOptimizer};
 pub use repository::{
     AttemptRepository, ChatRepository, DocumentRepository, FolderRepository, HighlightRepository,
-    JobRepository, LearningRepository, LessonRepository, MissionRepository, PreferenceRepository,
-    RepositoryError, ResourceRepository, ReviewMigrationRepository, ReviewOptimizationRepository,
-    ReviewRepository, SessionRepository, StrokeRepository, TopicRepository, UserRepository,
+    JobRepository, LearningRepository, LessonRepository, LlmUsageRepository, MissionRepository,
+    PreferenceRepository, RepositoryError, ResourceRepository, ReviewMigrationRepository,
+    ReviewOptimizationRepository, ReviewRepository, SessionRepository, StrokeRepository,
+    TopicRepository, UserRepository,
 };
 pub use review_scheduler::{ReviewScheduler, SchedulerError};

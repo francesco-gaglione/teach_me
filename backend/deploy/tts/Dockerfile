@@ -28,9 +28,9 @@ COPY entrypoint.sh /opt/qwen3-tts/entrypoint.sh
 # The model is pinned too: download_model.sh fetches `resolve/main`, a moving branch, so the
 # build rewrites that to the revision below (and fails if the script no longer has that URL,
 # e.g. after bumping ENGINE_COMMIT). entrypoint.sh checks the download against the same revision
-# and records it in /models/<dir>/.revision. A model already in the volume is never downloaded
-# again: if its .revision differs from this one the entrypoint only warns (delete the volume to
-# fetch the pinned one); one without .revision predates the pin and is accepted.
+# and records it in /models/<revision>/.revision: the cache is one directory per revision. The
+# old unversioned /models/qwen3-tts-1.7b is moved there if its .revision matches, otherwise it is
+# reported as stale and never loaded.
 # Bump it on purpose, after listening to the voices again: the clip cache is keyed by model name,
 # not by revision, so old clips would keep sounding like the old weights.
 ARG MODEL_REVISION=0c0e3051f131929182e2c023b9537f8b1c68adfe

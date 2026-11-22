@@ -153,7 +153,16 @@ async fn upload(
     // of the body is read and thrown away first: a server that answers and
     // closes while the client is still sending can make the client see a reset
     // instead of the response.
-    if let Err(e) = state.documents.check_upload(user, topic_id).await {
+    // The multipart framing adds a few hundred bytes to the file's own size,
+    // so this over-counts a little: it is a hint for refusing early, the real
+    // size is checked when the file has been received.
+    let declared = request
+        .headers()
+        .get(axum::http::header::CONTENT_LENGTH)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.parse::<u64>().ok())
+        .map(|n| n.saturating_sub(1024));
+    if let Err(e) = state.documents.check_upload(user, topic_id, declared).await {
         drain_body(request.into_body()).await;
         return Err(e.into());
     }

@@ -145,6 +145,8 @@ class ReviewSyncer(
                                 ApiFailure.LlmKeyMissing,
                                 ApiFailure.LlmKeyRejected,
                                 ApiFailure.LlmCreditExhausted,
+                                is ApiFailure.LlmBudgetExceeded,
+                                ApiFailure.StorageQuotaExceeded,
                                 -> status = ReviewFlushStatus.Offline
                             }
                     }

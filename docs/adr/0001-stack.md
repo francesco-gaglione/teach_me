@@ -64,3 +64,12 @@ Decisione del proprietario: il backend si può pubblicare anche sull'indirizzo L
 - **Sulla LAN non c'è cifratura**: password, token di sessione e contenuti viaggiano in HTTP in chiaro e sono leggibili da chi è su quella rete. Rischio accettato per una rete domestica fidata. Le chiavi LLM non escono mai dal backend, quindi non passano sulla LAN se non quando un utente le salva dalle Impostazioni.
 - L'app ha un solo indirizzo del server: con quello della LAN funziona solo a casa, con quello Tailscale ovunque ma solo con Tailscale attivo.
 - Resta valido il resto: il backend non va esposto a Internet. Se servisse, prima TLS e revisione del token in DataStore.
+
+## Aggiornamento 2026-11-22 — esposizione LAN in chiaro come scelta esplicita
+
+Restano validi l'accesso dalla LAN e l'assenza di TLS nella rete di casa (sezione 2026-11-11). Cambia come si attiva:
+
+- L'esposizione sulla LAN in HTTP in chiaro è un'opzione esplicita, non un default: se `LAN_BIND_IP` è un indirizzo diverso dal loopback, `deploy.sh` rifiuta il deploy a meno che `ALLOW_PLAIN_LAN=1` sia impostato in `.env`.
+- TLS nativo sul backend e CA locale sono stati scartati: il tablet dovrebbe fidarsi di una CA locale, con troppo attrito per una LAN domestica.
+- Contesto: audit esterno del 22/11/2026, punti C1 e C2.
+

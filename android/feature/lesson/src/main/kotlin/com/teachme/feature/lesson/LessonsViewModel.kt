@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teachme.core.model.ApiFailure
 import com.teachme.core.model.ApiResult
+import com.teachme.core.model.AppClock
 import com.teachme.core.model.ChatEvent
 import com.teachme.core.model.JobStatus
 import com.teachme.core.model.KeyNotice
@@ -19,6 +20,7 @@ import com.teachme.core.model.LlmKeyVariant
 import com.teachme.core.model.LoadError
 import com.teachme.core.model.NoLlmKeyMonitor
 import com.teachme.core.model.TopicJob
+import com.teachme.core.model.budgetResetAt
 import com.teachme.core.model.toLoadError
 import com.teachme.sdui.logic.LessonSavedState
 import dagger.assisted.Assisted
@@ -37,6 +39,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 sealed interface LessonsLoad {
     data object Loading : LessonsLoad
@@ -79,6 +82,8 @@ data class LessonsUiState(
     val actionError: LoadError? = null,
     /** The last start or retry was refused because of the LLM key (llm-key.md section 5): nothing was created. */
     val keyNotice: KeyNotice? = null,
+    /** The last start or retry was refused because the daily LLM budget is used up: when it comes back (llm-key.md 10.1). */
+    val budgetResetAt: Instant? = null,
     /** The lesson that has just been generated, marked "Nuova" until the tab is left. */
     val newLessonId: String? = null,
     val announcement: GenerationAnnouncement? = null,
@@ -127,6 +132,7 @@ class LessonsViewModel
         private val store: LessonStateStore,
         /** Told when a request meets an exhausted credit (the key notice is born here, not in the panel). */
         private val llmKey: LlmKeyMonitor = NoLlmKeyMonitor,
+        private val clock: AppClock = AppClock { System.currentTimeMillis() },
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -397,15 +403,26 @@ class LessonsViewModel
                                 starting = false,
                                 retrying = false,
                                 keyNotice = null,
+                                budgetResetAt = null,
                             )
                         }
                     }
                     is ApiResult.Failure -> {
                         val keyNotice = notices.of(result)
-                        _state.update { it.copy(starting = false, retrying = false, keyNotice = keyNotice) }
-                        // With a key notice the panel says it.
+                        val budgetReset = result.failure.budgetResetAt(clock.nowMs())
+                        _state.update {
+                            it.copy(
+                                starting = false,
+                                retrying = false,
+                                keyNotice = keyNotice,
+                                budgetResetAt = budgetReset,
+                            )
+                        }
+                        // With a key notice or the budget panel, that says it.
                         val moved = result.failure == ApiFailure.Conflict || result.failure == ApiFailure.NotFound
-                        if (keyNotice == null && moved) {
+                        if (budgetReset != null) {
+                            // The budget panel says it: no generic error.
+                        } else if (keyNotice == null && moved) {
                             // Another client already started it (or the state moved): look at the truth, in silence.
                             load()
                         } else if (keyNotice == null) {

@@ -26,6 +26,8 @@ sealed interface ConfirmState {
     data class Failed(
         val version: Int,
         val keyNotice: KeyNotice? = null,
+        /** The refusal was `llm_budget_exceeded`: when the budget comes back (llm-key.md section 10.1). */
+        val budgetResetAt: Instant? = null,
     ) : ConfirmState
 }
 

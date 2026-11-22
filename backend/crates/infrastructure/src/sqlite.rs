@@ -40,6 +40,11 @@ pub async fn connect(url: &str) -> Result<SqlitePool, DatabaseError> {
         .map_err(DatabaseError::Connect)
 }
 
+/// Whether the database answers a trivial query (readiness check).
+pub async fn ping(pool: &SqlitePool) -> bool {
+    sqlx::query("SELECT 1").execute(pool).await.is_ok()
+}
+
 /// Applies the migrations embedded from `backend/migrations/`.
 pub async fn migrate(pool: &SqlitePool) -> Result<(), DatabaseError> {
     sqlx::migrate!("../../migrations")

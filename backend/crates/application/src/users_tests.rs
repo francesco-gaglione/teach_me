@@ -438,7 +438,7 @@ async fn requests_carry_the_scoped_key_and_never_one_by_default() {
         .complete(LlmRequest::new(LlmRole::Tutor, "t"))
         .await
         .ok();
-    with_key(Secret::new("sk-a").unwrap(), async {
+    with_key(UserId::OWNER, Secret::new("sk-a").unwrap(), async {
         scoped
             .complete(LlmRequest::new(LlmRole::Tutor, "t"))
             .await

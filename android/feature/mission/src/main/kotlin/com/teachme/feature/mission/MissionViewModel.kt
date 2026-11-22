@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teachme.core.model.ApiFailure
 import com.teachme.core.model.ApiResult
+import com.teachme.core.model.AppClock
 import com.teachme.core.model.ChatEvent
 import com.teachme.core.model.KeyNoticeSource
 import com.teachme.core.model.LlmKeyMonitor
@@ -16,6 +17,7 @@ import com.teachme.core.model.NoLlmKeyMonitor
 import com.teachme.core.model.Preference
 import com.teachme.core.model.PreferenceScope
 import com.teachme.core.model.TopicMission
+import com.teachme.core.model.budgetResetAt
 import com.teachme.core.model.toLoadError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -125,6 +127,7 @@ class MissionViewModel
         private val missions: MissionRepository,
         /** Told when a request meets an exhausted credit (the key notice is born here, not in the panel). */
         private val llmKey: LlmKeyMonitor = NoLlmKeyMonitor,
+        private val clock: AppClock = AppClock { System.currentTimeMillis() },
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -346,7 +349,12 @@ class MissionViewModel
                         } else {
                             _state.update {
                                 it.copy(
-                                    confirm = ConfirmState.Failed(version, notices.of(result)),
+                                    confirm =
+                                        ConfirmState.Failed(
+                                            version,
+                                            notices.of(result),
+                                            result.failure.budgetResetAt(clock.nowMs()),
+                                        ),
                                 )
                             }
                         }

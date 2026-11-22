@@ -1,5 +1,7 @@
 package com.teachme.core.model
 
+import kotlinx.coroutines.flow.Flow
+
 enum class FlashKind { FolderGone, FolderDeleted, TopicGone, TopicDeleted, SignedOut, PasswordChanged }
 
 /**
@@ -20,6 +22,41 @@ interface FlashInbox {
 
     /** Returns and clears the pending flash if its kind is one of [kinds]; otherwise leaves it. */
     fun take(vararg kinds: FlashKind): Flash?
+
+    /** Drops whatever is pending. */
+    fun clear()
+}
+
+/**
+ * Drops what could carry the data of another user (names of folders and topics) when the session ends or another one
+ * starts. The two messages that belong to the sign-in screen, "signed out" and "password changed", carry no data and
+ * are posted just before the session ends: they stay.
+ */
+fun FlashInbox.clearUserFlashes() {
+    val keep = take(FlashKind.SignedOut, FlashKind.PasswordChanged)
+    clear()
+    keep?.let(::post)
+}
+
+/**
+ * Keeps [inbox] free of other users' messages: it is emptied (see [clearUserFlashes]) whenever the session ends and
+ * whenever a session with another token starts, including a forced sign-out (`401`) that no screen announced.
+ */
+suspend fun Flow<AuthState>.clearFlashesOnSessionChange(inbox: FlashInbox) {
+    var token: String? = null
+    collect { state ->
+        when (state) {
+            is AuthState.SignedIn -> {
+                if (state.session.token != token) inbox.clearUserFlashes()
+                token = state.session.token
+            }
+            is AuthState.SignedOut -> {
+                inbox.clearUserFlashes()
+                token = null
+            }
+            AuthState.Loading -> Unit
+        }
+    }
 }
 
 /** Flashes older than [maxAgeMs] are dropped: a toast must belong to the pop that just happened. */
@@ -34,6 +71,11 @@ class InMemoryFlashInbox(
     override fun post(flash: Flash) {
         pending = flash
         postedAt = now()
+    }
+
+    @Synchronized
+    override fun clear() {
+        pending = null
     }
 
     @Synchronized

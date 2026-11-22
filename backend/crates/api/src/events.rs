@@ -118,6 +118,12 @@ async fn stream(
 ) -> Result<impl IntoResponse, ApiError> {
     let topic_id = TopicId::new(path_id(&topic_id)?);
     state.topics.get(user, topic_id).await?;
+    // The slot lives in the stream's state: it is freed when the response
+    // body is dropped, however the stream ends.
+    let slot = state
+        .streams
+        .acquire(user)
+        .ok_or(ApiError::TooManyStreams)?;
 
     // Subscribing after the existence check can race with a deletion; the
     // stream then simply never receives anything and ends with the topic.
@@ -157,18 +163,18 @@ async fn stream(
     let recheck =
         tokio::time::interval_at(tokio::time::Instant::now() + state.sse_ping, state.sse_ping);
     let events = futures_util::stream::unfold(
-        (first, subscription.live, recheck),
-        move |(mut first, mut live, mut recheck)| {
+        (first, subscription.live, recheck, slot),
+        move |(mut first, mut live, mut recheck, slot)| {
             let (auth, token) = (auth.clone(), token.clone());
             async move {
                 if let Some(event) = first.pop_front() {
-                    return Some((Ok::<_, Infallible>(event), (first, live, recheck)));
+                    return Some((Ok::<_, Infallible>(event), (first, live, recheck, slot)));
                 }
                 loop {
                     tokio::select! {
                         received = live.recv() => return match received {
                             Ok(stored) => {
-                                Some((Ok(frame(Some(stored.id), &stored.event)), (first, live, recheck)))
+                                Some((Ok(frame(Some(stored.id), &stored.event)), (first, live, recheck, slot)))
                             }
                             // Fell too far behind: end the stream; the client reconnects
                             // with its last id and replays from the buffer (or resyncs).

@@ -7,6 +7,14 @@
     <string name="ui_error_open_settings">Impostazioni</string>
     <string name="ui_too_long_server" tools:ignore="PluralsCandidate">Al massimo %1$d caratteri.</string>
     <string name="ui_too_long_live" tools:ignore="PluralsCandidate">Al massimo %1$d caratteri: ora sono %2$d.</string>
+    <string name="ui_budget_title">Budget di oggi esaurito</string>
+    <string name="ui_budget_retry_available">Disponibile %1$s alle %2$s</string>
+    <string name="ui_budget_day_today">oggi</string>
+    <string name="ui_budget_day_tomorrow">domani</string>
+    <string name="ui_budget_renewed_title">Budget rinnovato</string>
+    <string name="ui_budget_renewed">Il budget è stato rinnovato. Puoi riprovare.</string>
+    <string name="ui_budget_body_today">Hai usato tutto il budget giornaliero del modello. Si rinnova oggi alle %1$s: riprova dopo.</string>
+    <string name="ui_budget_body_tomorrow">Hai usato tutto il budget giornaliero del modello. Si rinnova domani alle %1$s: riprova dopo.</string>
     <string name="ui_cancel">Annulla</string>
 
     <string name="ui_load_network_title">Non riesco a raggiungere il backend</string>

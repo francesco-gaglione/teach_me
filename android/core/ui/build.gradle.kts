@@ -11,4 +11,5 @@ dependencies {
     api(project(":core:designsystem"))
     api(project(":core:model"))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 }

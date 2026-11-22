@@ -1,5 +1,6 @@
 package com.teachme.feature.resources
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.teachme.core.model.ApiFailure
@@ -20,6 +21,7 @@ import com.teachme.core.model.TopicDocument
 import com.teachme.core.model.TopicJob
 import com.teachme.core.model.UnreachableReason
 import com.teachme.core.model.UploadSource
+import com.teachme.core.model.UploadSourceRestorer
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -97,14 +99,38 @@ class DocumentsViewModelTest {
     private class Source(
         override val displayName: String = "libro.pdf",
         override val sizeBytes: Long? = 100,
+        override val reference: String? = "content://docs/libro",
+        private val failOpening: Boolean = false,
     ) : UploadSource {
-        override fun open(): InputStream = ByteArrayInputStream(ByteArray(0))
+        override fun open(): InputStream =
+            if (failOpening) throw SecurityException("permission denied") else ByteArrayInputStream(ByteArray(0))
+    }
+
+    /** The restorer of the app builds a source from the saved reference; here it records what it was asked for. */
+    private class FakeRestorer(
+        var result: ((String, String) -> UploadSource?) = { ref, name -> Source(name, null, ref) },
+    ) : UploadSourceRestorer {
+        val asked = mutableListOf<Pair<String, String>>()
+        val released = mutableListOf<String>()
+
+        override fun release(reference: String) {
+            released += reference
+        }
+
+        override fun restore(
+            reference: String,
+            displayName: String,
+        ): UploadSource? {
+            asked += reference to displayName
+            return result(reference, displayName)
+        }
     }
 
     private class FakeDocuments : DocumentRepository {
         var documents: ApiResult<List<TopicDocument>> = ApiResult.Success(emptyList())
         var uploadResult: ApiResult<DocumentUpload>? = null
         var uploadGate: CompletableDeferred<Unit>? = null
+        var throwOnUpload: Throwable? = null
         var latestJob: ApiResult<TopicJob?> = ApiResult.Success(null)
         var jobsList: ApiResult<List<TopicJob>>? = null
         var deleteResult: ApiResult<Unit> = ApiResult.Success(Unit)
@@ -126,6 +152,7 @@ class DocumentsViewModelTest {
         ): ApiResult<DocumentUpload> {
             uploaded += source
             uploadGate?.await()
+            throwOnUpload?.let { throw it }
             return uploadResult!!
         }
 
@@ -187,8 +214,10 @@ class DocumentsViewModelTest {
     private fun TestScope.started(
         repo: FakeDocuments,
         store: FakeStore = FakeStore(),
+        handle: SavedStateHandle = SavedStateHandle(),
+        restorer: FakeRestorer = FakeRestorer(),
     ): DocumentsViewModel {
-        val vm = DocumentsViewModel("t1", repo, store)
+        val vm = DocumentsViewModel("t1", repo, store, restorer, handle)
         vm.clock = { dispatcher.scheduler.currentTime }
         vm.pollIntervalMs = Long.MAX_VALUE
         vm.onEvent(ChatEvent.ResyncRequired)
@@ -656,6 +685,57 @@ class DocumentsViewModelTest {
         }
 
     @Test
+    fun `the quota panel has no retry, closes on dismiss, and goes away when a document is deleted`() =
+        runTest(dispatcher) {
+            val repo =
+                FakeDocuments().apply {
+                    documents = ApiResult.Success(listOf(doc("a")))
+                    uploadResult = ApiResult.Failure(ApiFailure.StorageQuotaExceeded)
+                }
+            val vm = started(repo)
+            vm.upload(Source())
+            advanceUntilIdle()
+            assertEquals(UploadUi.Failed(UploadError.QuotaExceeded), vm.state.value.upload)
+
+            // Dismiss with the X: back to idle, nothing sent again.
+            vm.cancelUpload()
+            assertEquals(UploadUi.Idle, vm.state.value.upload)
+            assertEquals(1, repo.uploaded.size)
+
+            // Shown again; deleting a document makes it disappear by itself.
+            vm.upload(Source())
+            advanceUntilIdle()
+            assertEquals(UploadUi.Failed(UploadError.QuotaExceeded), vm.state.value.upload)
+            vm.delete("a")
+            advanceUntilIdle()
+            assertEquals(UploadUi.Idle, vm.state.value.upload)
+        }
+
+    @Test
+    fun `choosing a new file replaces the quota panel, and other upload errors survive a deletion`() =
+        runTest(dispatcher) {
+            val repo =
+                FakeDocuments().apply {
+                    documents = ApiResult.Success(listOf(doc("a")))
+                    uploadResult = ApiResult.Failure(ApiFailure.StorageQuotaExceeded)
+                }
+            val vm = started(repo)
+            vm.upload(Source())
+            advanceUntilIdle()
+            assertEquals(UploadUi.Failed(UploadError.QuotaExceeded), vm.state.value.upload)
+
+            repo.uploadResult = ApiResult.Failure(ApiFailure.Unexpected(415))
+            vm.upload(Source())
+            advanceUntilIdle()
+            assertEquals(UploadUi.Failed(UploadError.NotPdf), vm.state.value.upload)
+
+            // Only the quota panel is tied to the free space: a wrong file type stays until closed.
+            vm.delete("a")
+            advanceUntilIdle()
+            assertEquals(UploadUi.Failed(UploadError.NotPdf), vm.state.value.upload)
+        }
+
+    @Test
     fun `delete errors keep the row and say what happened`() =
         runTest(dispatcher) {
             val repo = FakeDocuments().apply { documents = ApiResult.Success(listOf(doc("a"))) }
@@ -708,7 +788,7 @@ class DocumentsViewModelTest {
                             listOf(doc("a", DocumentStatus.Importing)),
                         )
                 }
-            val vm = DocumentsViewModel("t1", repo, FakeStore())
+            val vm = DocumentsViewModel("t1", repo, FakeStore(), FakeRestorer(), SavedStateHandle())
             vm.pollIntervalMs = 15_000
             vm.onEvent(ChatEvent.ResyncRequired)
             advanceTimeBy(1)
@@ -775,7 +855,7 @@ class DocumentsViewModelTest {
                                 ),
                             )
                     }
-                val vm = DocumentsViewModel("t1", repo, FakeStore())
+                val vm = DocumentsViewModel("t1", repo, FakeStore(), FakeRestorer(), SavedStateHandle())
                 vm.clock = { dispatcher.scheduler.currentTime }
                 vm.pollIntervalMs = Long.MAX_VALUE
                 vm.onEvent(ChatEvent.ResyncRequired)
@@ -788,5 +868,212 @@ class DocumentsViewModelTest {
                     vm.viewModelScope.cancel()
                 }
             }
+        }
+
+    @Test
+    fun `after process death a failed upload is shown with retry and retry sends the same source again`() =
+        runTest(dispatcher) {
+            val handle = SavedStateHandle()
+            val repo = FakeDocuments().apply { uploadResult = ApiResult.Failure(network) }
+            val first = started(repo, handle = handle)
+            first.upload(Source("tesi.pdf", reference = "content://docs/tesi"))
+            advanceUntilIdle()
+            assertEquals(UploadUi.Failed(UploadError.Network), first.state.value.upload)
+            first.viewModelScope.cancel()
+
+            // New ViewModel, same handle: the failed state comes back, no file bytes were kept.
+            val restorer = FakeRestorer()
+            val restored = started(repo, handle = handle, restorer = restorer)
+            assertEquals(UploadUi.Failed(UploadError.Network), restored.state.value.upload)
+
+            repo.uploadResult = created()
+            restored.retryUpload()
+            advanceUntilIdle()
+            assertEquals(listOf("content://docs/tesi" to "tesi.pdf"), restorer.asked)
+            assertEquals("tesi.pdf", repo.uploaded.last().displayName)
+            assertEquals("content://docs/tesi", repo.uploaded.last().reference)
+            assertEquals(UploadUi.Idle, restored.state.value.upload)
+            assertNull(handle.get<String>("upload_reference"))
+        }
+
+    @Test
+    fun `an upload interrupted by process death comes back as a failed upload`() =
+        runTest(dispatcher) {
+            val handle = SavedStateHandle()
+            val repo = FakeDocuments().apply { uploadGate = CompletableDeferred() }
+            val first = started(repo, handle = handle)
+            first.upload(Source("tesi.pdf"))
+            advanceUntilIdle()
+            assertTrue(first.state.value.upload is UploadUi.Sending)
+            first.viewModelScope.cancel()
+
+            val restored = started(FakeDocuments(), handle = handle)
+            assertEquals(UploadUi.Failed(UploadError.Network), restored.state.value.upload)
+        }
+
+    @Test
+    fun `a restored source whose uri grant was not persisted fails with a SecurityException as a normal failure`() =
+        runTest(dispatcher) {
+            // Limit: a content:// URI without a persisted permission is unreadable after a restart.
+            val handle = SavedStateHandle(mapOf("upload_reference" to "content://docs/x", "upload_name" to "x.pdf"))
+            val repo = FakeDocuments()
+            val restored =
+                started(
+                    repo,
+                    handle = handle,
+                    restorer = FakeRestorer { ref, name -> Source(name, null, ref, failOpening = true) },
+                )
+            repo.throwOnUpload = SecurityException("permission denied")
+
+            restored.retryUpload()
+            advanceUntilIdle()
+
+            assertEquals(UploadUi.Failed(UploadError.Network), restored.state.value.upload)
+            assertTrue(
+                restored.state.value.documents
+                    .isEmpty(),
+            )
+            // "Chiudi" ends it and nothing stays saved.
+            restored.cancelUpload()
+            assertEquals(UploadUi.Idle, restored.state.value.upload)
+            assertNull(handle.get<String>("upload_reference"))
+        }
+
+    @Test
+    fun `retry after process death with a source that cannot be rebuilt goes back to idle`() =
+        runTest(dispatcher) {
+            val handle = SavedStateHandle(mapOf("upload_reference" to "content://docs/x", "upload_name" to "x.pdf"))
+            val repo = FakeDocuments()
+            val restored = started(repo, handle = handle, restorer = FakeRestorer { _, _ -> null })
+            restored.retryUpload()
+            advanceUntilIdle()
+            assertEquals(UploadUi.Idle, restored.state.value.upload)
+            assertTrue(repo.uploaded.isEmpty())
+            assertNull(handle.get<String>("upload_reference"))
+        }
+
+    @Test
+    fun `a source without a reference or a refused file is not saved`() =
+        runTest(dispatcher) {
+            val handle = SavedStateHandle()
+            val vm = started(FakeDocuments().apply { uploadResult = ApiResult.Failure(network) }, handle = handle)
+            vm.upload(Source("a.pdf", reference = null))
+            advanceUntilIdle()
+            assertNull(handle.get<String>("upload_reference"))
+            vm.cancelUpload()
+            vm.upload(Source("big.pdf", sizeBytes = MAX_DOCUMENT_BYTES + 1))
+            assertEquals(UploadUi.Failed(UploadError.TooLarge), vm.state.value.upload)
+            assertNull(handle.get<String>("upload_reference"))
+        }
+
+    @Test
+    fun `a cleared ViewModel stops talking to the backend and the next one starts empty`() =
+        runTest(dispatcher) {
+            val repoA =
+                FakeDocuments().apply {
+                    documents = ApiResult.Success(listOf(doc("a-doc")))
+                    uploadResult = ApiResult.Failure(network)
+                }
+            val storeA = FakeStore(setOf("a-doc"))
+            val handleA = SavedStateHandle()
+            val a = started(repoA, storeA, handleA)
+            a.upload(Source("segreto-di-A.pdf"))
+            advanceUntilIdle()
+            assertEquals(1, a.state.value.documents.size)
+            assertEquals(setOf("a-doc"), a.state.value.dismissedBanner)
+            assertTrue(a.state.value.upload is UploadUi.Failed)
+
+            // Sign-out pops the stack: A's ViewModel goes, B's starts with its own handle, repository and store.
+            a.viewModelScope.cancel()
+            val repoB = FakeDocuments().apply { documents = ApiResult.Success(listOf(doc("b-doc"))) }
+            val callsOfA = repoA.listCalls
+            val b = started(repoB, FakeStore(), SavedStateHandle())
+            advanceTimeBy(60_000)
+            assertEquals(callsOfA, repoA.listCalls)
+
+            assertEquals(
+                listOf("b-doc"),
+                b.state.value.documents
+                    .map { it.id },
+            )
+            assertTrue(
+                b.state.value.dismissedBanner
+                    .isEmpty(),
+            )
+            assertEquals(UploadUi.Idle, b.state.value.upload)
+            assertNull(b.state.value.importJob)
+            b.retryUpload()
+            advanceUntilIdle()
+            assertTrue(repoB.uploaded.isEmpty())
+        }
+
+    @Test
+    fun `after process death a document with the same name created after the upload started means it is done`() =
+        runTest(dispatcher) {
+            val started = at.toEpochMilli()
+            val handle =
+                SavedStateHandle(
+                    mapOf(
+                        "upload_reference" to "content://docs/t",
+                        "upload_name" to "tesi.pdf",
+                        "upload_started_at" to started,
+                    ),
+                )
+            val repo =
+                FakeDocuments().apply {
+                    documents =
+                        ApiResult.Success(listOf(doc("tesi", DocumentStatus.Importing, created = at.plusSeconds(5))))
+                }
+            val restorer = FakeRestorer()
+            val vm = started(repo, handle = handle, restorer = restorer)
+
+            assertEquals(UploadUi.Idle, vm.state.value.upload)
+            assertNull(handle.get<String>("upload_reference"))
+            assertEquals(listOf("content://docs/t"), restorer.released)
+            vm.retryUpload()
+            advanceUntilIdle()
+            assertTrue(repo.uploaded.isEmpty())
+        }
+
+    @Test
+    fun `after process death an older document with the same name does not hide the retry`() =
+        runTest(dispatcher) {
+            val handle =
+                SavedStateHandle(
+                    mapOf(
+                        "upload_reference" to "content://docs/t",
+                        "upload_name" to "tesi.pdf",
+                        "upload_started_at" to at.toEpochMilli(),
+                    ),
+                )
+            val repo =
+                FakeDocuments().apply {
+                    documents = ApiResult.Success(listOf(doc("tesi", created = at.minusSeconds(3_600))))
+                }
+            val vm = started(repo, handle = handle)
+            assertEquals(UploadUi.Failed(UploadError.Network), vm.state.value.upload)
+            assertEquals("content://docs/t", handle.get<String>("upload_reference"))
+        }
+
+    @Test
+    fun `after process death a list that cannot be read still offers the retry`() =
+        runTest(dispatcher) {
+            val handle =
+                SavedStateHandle(mapOf("upload_reference" to "content://docs/t", "upload_name" to "tesi.pdf"))
+            val repo = FakeDocuments().apply { documents = ApiResult.Failure(network) }
+            val vm = started(repo, handle = handle)
+            assertEquals(UploadUi.Failed(UploadError.Network), vm.state.value.upload)
+        }
+
+    @Test
+    fun `forgetting the saved source releases its persisted permission`() =
+        runTest(dispatcher) {
+            val restorer = FakeRestorer()
+            val repo = FakeDocuments().apply { uploadResult = ApiResult.Failure(network) }
+            val vm = started(repo, restorer = restorer)
+            vm.upload(Source("a.pdf", reference = "content://docs/a"))
+            advanceUntilIdle()
+            vm.cancelUpload()
+            assertEquals(listOf("content://docs/a"), restorer.released)
         }
 }

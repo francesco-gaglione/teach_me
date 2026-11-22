@@ -79,8 +79,8 @@ pub use ports::llm;
 pub use ports::{
     AttemptRepository, AudioQueue, ChatRepository, ClipRepository, ClipStore, Clock, CryptoError,
     DocumentRepository, FolderRepository, HighlightRepository, IdGenerator, JobRepository,
-    LearningRepository, LessonRepository, MissionRepository, OptimizerError, ParameterOptimizer,
-    PasswordHasher, PreferenceRepository, RepositoryError, ResourceRepository,
+    LearningRepository, LessonRepository, LlmUsageRepository, MissionRepository, OptimizerError,
+    ParameterOptimizer, PasswordHasher, PreferenceRepository, RepositoryError, ResourceRepository,
     ReviewMigrationRepository, ReviewOptimizationRepository, ReviewRepository, ReviewScheduler,
     SchedulerError, SecretCipher, SessionRepository, SpeechSynthesizer, StoredFile,
     StrokeRepository, TokenIssuer, TopicEventPublisher, TopicRepository, UserRepository,

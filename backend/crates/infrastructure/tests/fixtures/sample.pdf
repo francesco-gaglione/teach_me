@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /Outlines 11 0 R /PageMode /UseOutlines >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+6 0 obj
+<< /Length 208 >>
+stream
+BT /F2 24 Tf 72 740 Td (Capitolo 1: Introduzione) Tj ET
+BT /F1 12 Tf 72 690 Td (Questo e' un libro di prova.) Tj ET
+BT /F1 12 Tf 72 670 Td (Perché testare con un PDF vero? Per vedere PDFium all'opera.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 185 >>
+stream
+BT /F2 24 Tf 72 740 Td (Capitolo 2: Ownership) Tj ET
+BT /F1 12 Tf 72 690 Td (Ogni valore ha un solo proprietario.) Tj ET
+BT /F1 12 Tf 72 670 Td (La città è più grande del paese.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 10 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+10 0 obj
+<< /Length 111 >>
+stream
+BT /F2 24 Tf 72 740 Td (Capitolo 3: Conclusione) Tj ET
+BT /F1 12 Tf 72 690 Td (Fine del libro di prova.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Outlines /First 12 0 R /Last 14 0 R /Count 3 >>
+endobj
+12 0 obj
+<< /Title (Capitolo 1: Introduzione) /Parent 11 0 R /Dest [5 0 R /Fit] /Next 13 0 R >>
+endobj
+13 0 obj
+<< /Title (Capitolo 2: Ownership) /Parent 11 0 R /Dest [7 0 R /Fit] /Prev 12 0 R /Next 14 0 R >>
+endobj
+14 0 obj
+<< /Title (Capitolo 3: Conclusione) /Parent 11 0 R /Dest [9 0 R /Fit] /Prev 13 0 R >>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000009 00000 n 
+0000000098 00000 n 
+0000000167 00000 n 
+0000000264 00000 n 
+0000000366 00000 n 
+0000000502 00000 n 
+0000000760 00000 n 
+0000000896 00000 n 
+0000001131 00000 n 
+0000001268 00000 n 
+0000001430 00000 n 
+0000001504 00000 n 
+0000001607 00000 n 
+0000001720 00000 n 
+trailer
+<< /Size 15 /Root 1 0 R >>
+startxref
+1822
+%%EOF

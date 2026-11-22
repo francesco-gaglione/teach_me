@@ -442,7 +442,7 @@ async fn at_most_five_documents_and_one_active_import() {
     ));
     assert!(matches!(
         env.service()
-            .check_upload(domain::UserId::OWNER, env.f.topic)
+            .check_upload(domain::UserId::OWNER, env.f.topic, None)
             .await,
         Err(AppError::Conflict(ConflictReason::JobActive))
     ));
@@ -456,7 +456,7 @@ async fn at_most_five_documents_and_one_active_import() {
     // The sixth is refused, before and after the file is received.
     assert!(matches!(
         env.service()
-            .check_upload(domain::UserId::OWNER, env.f.topic)
+            .check_upload(domain::UserId::OWNER, env.f.topic, None)
             .await,
         Err(AppError::Conflict(ConflictReason::DocumentLimit))
     ));
@@ -480,7 +480,7 @@ async fn unknown_topics_and_unusable_names_are_refused() {
     let svc = env.service();
     let ghost = TopicId::new(Uuid::from_u128(0xdead));
     assert!(matches!(
-        svc.check_upload(domain::UserId::OWNER, ghost).await,
+        svc.check_upload(domain::UserId::OWNER, ghost, None).await,
         Err(AppError::NotFound)
     ));
     assert!(matches!(
@@ -675,4 +675,67 @@ pub(crate) fn section(id: &str, title: &str, level: u8, a: u32, b: u32) -> domai
         page_start: a,
         page_end: b,
     }
+}
+
+#[tokio::test]
+async fn an_upload_over_the_storage_quota_is_refused_before_it_is_stored() {
+    let env = Env::new().await;
+    let svc = || env.service().with_storage_quota(2000);
+    // 1234 bytes fit.
+    let id = svc().new_document_id();
+    env.files.0.lock().unwrap().insert(id);
+    let upload = |id| NewUpload {
+        id,
+        filename: "a.pdf".into(),
+        size_bytes: 1234,
+    };
+    svc()
+        .create(domain::UserId::OWNER, env.f.topic, upload(id))
+        .await
+        .unwrap();
+    env.runner(pdf(text_pages(12), vec![]))
+        .run_next()
+        .await
+        .unwrap();
+
+    // 1234 + 1234 > 2000: nothing is stored, no job is queued.
+    let second = svc().new_document_id();
+    assert!(matches!(
+        svc()
+            .create(domain::UserId::OWNER, env.f.topic, upload(second))
+            .await,
+        Err(AppError::StorageQuotaExceeded)
+    ));
+    assert_eq!(
+        env.service()
+            .list(domain::UserId::OWNER, env.f.topic)
+            .await
+            .unwrap()
+            .len(),
+        1
+    );
+    // The announced size refuses earlier, before the body is read.
+    assert!(matches!(
+        svc()
+            .check_upload(domain::UserId::OWNER, env.f.topic, Some(800))
+            .await,
+        Err(AppError::StorageQuotaExceeded)
+    ));
+    assert!(
+        svc()
+            .check_upload(domain::UserId::OWNER, env.f.topic, Some(700))
+            .await
+            .is_ok()
+    );
+}
+
+#[tokio::test]
+async fn a_zero_quota_means_unlimited() {
+    let env = Env::new().await;
+    let svc = env.service().with_storage_quota(0);
+    assert!(
+        svc.check_upload(domain::UserId::OWNER, env.f.topic, Some(u64::MAX))
+            .await
+            .is_ok()
+    );
 }

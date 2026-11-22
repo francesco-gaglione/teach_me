@@ -18,6 +18,7 @@
 //! cargo run -p evals --bin run-evals -- [--suite <role/suite>]... [--case <id|suite:id>]...
 //!     [--runs N] [--judge-model <model>] [--max-cost-usd X | --no-budget] [--dry-run]
 //!     [--evals-dir DIR] [--out-dir DIR]
+//!     [--save-baseline FILE|DIR] [--baseline FILE|DIR]
 //! ```
 
 use std::path::{Path, PathBuf};
@@ -38,7 +39,7 @@ use infrastructure::{AnthropicProvider, RoleModel, SystemClock};
 const DEFAULT_MAX_COST_USD: f64 = 2.0;
 
 const USAGE: &str = "usage: run-evals [--suite <role/suite>]... [--case <id|suite:id>]... [--runs N] \
-[--judge-model <model>] [--max-cost-usd X | --no-budget] [--dry-run] [--evals-dir DIR] [--out-dir DIR]";
+[--judge-model <model>] [--max-cost-usd X | --no-budget] [--dry-run] [--evals-dir DIR] [--out-dir DIR] [--save-baseline FILE|DIR] [--baseline FILE|DIR]";
 
 struct Args {
     suites: Vec<String>,
@@ -49,6 +50,8 @@ struct Args {
     dry_run: bool,
     evals_dir: Option<PathBuf>,
     out_dir: Option<PathBuf>,
+    save_baseline: Option<PathBuf>,
+    baseline: Option<PathBuf>,
 }
 
 fn parse_args(mut args: impl Iterator<Item = String>) -> anyhow::Result<Args> {
@@ -61,6 +64,8 @@ fn parse_args(mut args: impl Iterator<Item = String>) -> anyhow::Result<Args> {
         dry_run: false,
         evals_dir: None,
         out_dir: None,
+        save_baseline: None,
+        baseline: None,
     };
     while let Some(arg) = args.next() {
         let mut value = |name: &str| args.next().with_context(|| format!("{name} needs a value"));
@@ -88,6 +93,8 @@ fn parse_args(mut args: impl Iterator<Item = String>) -> anyhow::Result<Args> {
             "--dry-run" => out.dry_run = true,
             "--evals-dir" => out.evals_dir = Some(value("--evals-dir")?.into()),
             "--out-dir" => out.out_dir = Some(value("--out-dir")?.into()),
+            "--save-baseline" => out.save_baseline = Some(value("--save-baseline")?.into()),
+            "--baseline" => out.baseline = Some(value("--baseline")?.into()),
             "--help" | "-h" => {
                 println!("{USAGE}");
                 std::process::exit(0);
@@ -125,6 +132,12 @@ async fn main() -> anyhow::Result<()> {
         Some(d) => d.clone(),
         None => find_evals_dir()?,
     };
+    // Read the baseline before spending anything: a bad path must fail early.
+    let saved_baselines = args
+        .baseline
+        .as_deref()
+        .map(evals::baseline::load)
+        .transpose()?;
     let suites = suite::load(&evals_dir, &args.suites)?;
 
     // The server's own configuration. A token is required by it and useless here.
@@ -183,6 +196,13 @@ async fn main() -> anyhow::Result<()> {
         },
     };
 
+    if let Some(dest) = args.save_baseline.as_ref().filter(|_| !args.dry_run) {
+        let runnable = suites
+            .iter()
+            .filter(|s| evals::runner::suite_skip_reason(s, &opts.tuning).is_none())
+            .count();
+        evals::baseline::check_destination(dest, runnable)?;
+    }
     // A suite named with `--suite` that needs the web fetch tool is an error
     // when the tool is off; the others are skipped in the report.
     check_explicit_suites(&suites, &args.suites, &opts.tuning)?;
@@ -234,5 +254,22 @@ async fn main() -> anyhow::Result<()> {
     std::fs::write(out_dir.join("summary.md"), markdown(&report))?;
     println!("{}", markdown(&report));
     println!("report: {}", out_dir.join("report.json").display());
+    if let Some(dest) = &args.save_baseline {
+        for p in evals::baseline::save(&report, dest)? {
+            println!("baseline saved: {}", p.display());
+        }
+    }
+    if let Some(saved) = &saved_baselines {
+        let comparison =
+            evals::baseline::compare(&evals::baseline::Baseline::from_report(&report), saved);
+        println!("{}", comparison.render());
+        if comparison.has_regression() {
+            std::process::exit(evals::baseline::REGRESSION_EXIT_CODE);
+        }
+        if comparison.compared() == 0 {
+            eprintln!("--baseline given but no case was compared");
+            std::process::exit(evals::baseline::NOTHING_COMPARED_EXIT_CODE);
+        }
+    }
     Ok(())
 }

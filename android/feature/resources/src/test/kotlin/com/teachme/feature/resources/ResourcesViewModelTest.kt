@@ -472,6 +472,39 @@ class ResourcesViewModelTest {
         }
 
     @Test
+    fun `a retry or a new research refused for the daily budget carries the reset, not an error`() =
+        runTest(dispatcher) {
+            val repo = FakeResources()
+            val vm = started(repo, view(job = job(JobStatus.Failed)))
+            val before =
+                java.time.Instant
+                    .now()
+                    .truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+
+            repo.retry = ApiResult.Failure(ApiFailure.LlmBudgetExceeded(900))
+            vm.retry()
+            advanceUntilIdle()
+            val s = vm.state.value
+            val resetAt = s.budgetResetAt!!
+            assertFalse(resetAt.isBefore(before.plusSeconds(900)))
+            assertFalse(
+                resetAt.isAfter(
+                    java.time.Instant
+                        .now()
+                        .plusSeconds(900),
+                ),
+            )
+            assertNull(s.actionError)
+            assertNull(s.keyNotice)
+            assertFalse(s.acting)
+
+            repo.retry = ApiResult.Success(job(JobStatus.Queued))
+            vm.retry()
+            advanceUntilIdle()
+            assertNull(vm.state.value.budgetResetAt)
+        }
+
+    @Test
     fun `a research refused for the key is a notice and is told to the monitor`() =
         runTest(dispatcher) {
             val keys = CreditTrackingMonitor()

@@ -367,9 +367,24 @@ private fun UploadErrorPanel(
     val (title, body) =
         when (error) {
             UploadError.TooLarge -> R.string.doc_upload_too_large_title to R.string.doc_upload_too_large_body
+            UploadError.QuotaExceeded -> R.string.documents_quota_title to R.string.documents_quota_body
             UploadError.NotPdf -> R.string.doc_upload_not_pdf_title to R.string.doc_upload_not_pdf_body
             UploadError.Network -> R.string.doc_upload_network_title to R.string.doc_upload_network_body
         }
+    if (error == UploadError.QuotaExceeded) {
+        // Warning, not an error: the learner can fix it by deleting documents (resources.md 13, llm-key.md 10.3). No
+        // "Riprova" (the same file would fail again) and no figures; it closes with the X and goes away by itself
+        // when a document is deleted or another file is chosen.
+        TeachStatusPanel(
+            StatusVariant.Warning,
+            stringResource(title),
+            body = stringResource(body),
+            trailing = {
+                TeachIconButton(TeachIcons.X, stringResource(R.string.doc_close), actions.onCancelUpload)
+            },
+        )
+        return
+    }
     // Live region: the panel appears after a tap on the picker's result, and its text is what the learner needs.
     TeachStatusPanel(StatusVariant.Danger, stringResource(title), body = stringResource(body)) {
         Row(horizontalArrangement = Arrangement.spacedBy(TeachTheme.spacing.xs)) {

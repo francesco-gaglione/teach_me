@@ -33,20 +33,37 @@ android {
 
     testOptions.unitTests.isIncludeAndroidResources = true
 
-    // Release signing reads android/keystore.properties (git-ignored). Without it the release APK stays unsigned.
+    // Release signing. Two sources, in this order; with neither, the release APK stays unsigned:
+    //  1. android/keystore.properties (git-ignored): storeFile, storePassword, keyAlias, keyPassword (local builds);
+    //  2. environment variables (CI, .github/workflows/android-release.yml): TEACHME_KEYSTORE_FILE (path of the
+    //     decoded keystore), TEACHME_KEYSTORE_PASSWORD, TEACHME_KEY_ALIAS, TEACHME_KEY_PASSWORD.
+    // The GitHub secrets that feed those variables are listed in android/README.md ("Release signing in CI").
     val keystoreProps =
         Properties().apply {
             val f = rootProject.file("keystore.properties")
             if (f.isFile) f.inputStream().use { load(it) }
         }
-    val hasKeystore = keystoreProps.containsKey("storeFile")
+    val keystoreFromFile = keystoreProps.containsKey("storeFile")
+    val keystoreFromEnv = !keystoreFromFile && !System.getenv("TEACHME_KEYSTORE_FILE").isNullOrBlank()
+    val hasKeystore = keystoreFromFile || keystoreFromEnv
+
+    fun envOrFail(name: String): String =
+        System.getenv(name)?.takeIf { it.isNotEmpty() }
+            ?: throw GradleException("TEACHME_KEYSTORE_FILE is set but $name is not.")
     signingConfigs {
-        if (hasKeystore) {
+        if (keystoreFromFile) {
             create("release") {
                 storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
                 storePassword = keystoreProps.getProperty("storePassword")
                 keyAlias = keystoreProps.getProperty("keyAlias")
                 keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        } else if (keystoreFromEnv) {
+            create("release") {
+                storeFile = file(envOrFail("TEACHME_KEYSTORE_FILE"))
+                storePassword = envOrFail("TEACHME_KEYSTORE_PASSWORD")
+                keyAlias = envOrFail("TEACHME_KEY_ALIAS")
+                keyPassword = envOrFail("TEACHME_KEY_PASSWORD")
             }
         }
     }
@@ -56,7 +73,9 @@ android {
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
-                logger.warn("WARNING: android/keystore.properties not found: the release APK will be UNSIGNED.")
+                logger.warn(
+                    "WARNING: no keystore (android/keystore.properties or TEACHME_KEYSTORE_FILE): the release APK will be UNSIGNED.",
+                )
             }
             isMinifyEnabled = true
             isShrinkResources = true

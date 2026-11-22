@@ -7,6 +7,7 @@ use axum::response::IntoResponse;
 use axum::routing::get;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::limit::RequestBodyLimitLayer;
+use tower_http::sensitive_headers::SetSensitiveHeadersLayer;
 use tower_http::timeout::TimeoutLayer;
 use tower_http::trace::TraceLayer;
 
@@ -106,6 +107,7 @@ pub fn assemble(state: AppState, limits: Limits, api_routes: Router<AppState>) -
 
     Router::new()
         .route("/health", get(health::liveness))
+        .route("/ready", get(crate::ready::ready))
         .nest("/api/v1", api)
         .fallback(not_found)
         .with_state(state.clone())
@@ -141,8 +143,19 @@ pub fn assemble(state: AppState, limits: Limits, api_routes: Router<AppState>) -
                 tracing::info_span!("http", method = %req.method(), path = %req.uri().path(), route, %request_id, status = tracing::field::Empty, user_id = tracing::field::Empty)
             }),
         )
+        // Marks these headers sensitive for every layer inside it (TraceLayer
+        // and any future debug logging): their values print as `Sensitive`.
+        .layer(SetSensitiveHeadersLayer::new(SENSITIVE_HEADERS))
         .layer(from_fn_with_state(state, request_context))
 }
+
+/// Headers that carry credentials. Never logged, never in a span.
+const SENSITIVE_HEADERS: [axum::http::HeaderName; 4] = [
+    axum::http::header::AUTHORIZATION,
+    axum::http::header::PROXY_AUTHORIZATION,
+    axum::http::header::COOKIE,
+    axum::http::header::SET_COOKIE,
+];
 
 async fn not_found() -> ApiError {
     ApiError::NotFound

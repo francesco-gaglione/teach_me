@@ -103,7 +103,7 @@ pub async fn call(
                     trace_label = label,
                     "LLM credit exhausted: the provider account has no credit left"
                 );
-            } else if let (LlmError::InvalidRequest(message), true) = (
+            } else if let (LlmError::InvalidRequest(_), true) = (
                 &error,
                 request.tools.iter().any(ToolDef::is_server_web_fetch),
             ) {
@@ -112,14 +112,14 @@ pub async fn call(
                 // silent fallback: the job fails here, the operator decides
                 // (`max_fetches = 0` switches the tool off).
                 tracing::error!(
-                    %message,
+                    message = %error.log_summary(),
                     trace_label = label,
                     tool = "web_fetch",
                     "the provider rejected a request that carries the web fetch tool; \
                      no automatic fallback: set [llm.roles.generator] max_fetches = 0 to run without it"
                 );
             } else {
-                tracing::warn!(%error, trace_label = label, "LLM call failed");
+                tracing::warn!(error = %error.log_summary(), trace_label = label, "LLM call failed");
             }
             return Err(job_error_code(&error));
         }

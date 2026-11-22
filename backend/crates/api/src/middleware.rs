@@ -15,6 +15,11 @@ pub const REQUEST_ID_HEADER: &str = "x-request-id";
 #[derive(Debug, Clone, Copy)]
 pub struct RequestId(pub Uuid);
 
+/// Response extension: the body is already in its contract shape, do not
+/// replace it with the section 7 error body (`GET /ready`'s 503).
+#[derive(Debug, Clone, Copy)]
+pub struct KeepBody;
+
 /// Outermost layer: assigns the request id, then guarantees every error
 /// response is in the contract format and every response carries the id.
 pub async fn request_context(
@@ -37,7 +42,8 @@ pub async fn request_context(
 
     let mut response = next.run(req).await;
 
-    if response.status().is_client_error() || response.status().is_server_error() {
+    let keeps_body = response.extensions().get::<KeepBody>().is_some();
+    if !keeps_body && (response.status().is_client_error() || response.status().is_server_error()) {
         let status = response.status();
         let error = response
             .extensions_mut()

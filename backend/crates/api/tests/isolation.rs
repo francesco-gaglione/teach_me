@@ -401,8 +401,9 @@ fn cases(ids: &Ids) -> Vec<(String, Probe)> {
 }
 
 /// Routes that are not about anybody's data.
-const EXEMPT: [&str; 3] = [
+const EXEMPT: [&str; 4] = [
     "GET /health",
+    "GET /ready",
     "GET /api/v1/health",
     "POST /api/v1/auth/login",
 ];

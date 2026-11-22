@@ -58,6 +58,15 @@ pub enum ApiError {
     LlmKeyRejected,
     #[error("llm credit exhausted")]
     LlmCreditExhausted,
+    /// The user's daily LLM token budget is spent; seconds until 00:00 UTC.
+    #[error("llm budget exceeded")]
+    LlmBudgetExceeded(u64),
+    /// 409 `storage_quota_exceeded`.
+    #[error("storage quota exceeded")]
+    StorageQuotaExceeded,
+    /// Too many concurrent SSE streams for the user (`rate_limited`).
+    #[error("too many streams")]
+    TooManyStreams,
     /// A `Range` that starts past the end of the file; its size, for
     /// `Content-Range: bytes */size`.
     #[error("range not satisfiable")]
@@ -252,11 +261,16 @@ impl ApiError {
             Self::Unauthorized | Self::InvalidCredentials => StatusCode::UNAUTHORIZED,
             Self::NotFound => StatusCode::NOT_FOUND,
             Self::MethodNotAllowed => StatusCode::METHOD_NOT_ALLOWED,
-            Self::Conflict(..) | Self::LlmKeyMissing => StatusCode::CONFLICT,
+            Self::Conflict(..) | Self::LlmKeyMissing | Self::StorageQuotaExceeded => {
+                StatusCode::CONFLICT
+            }
             Self::PayloadTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
             Self::UnsupportedMediaType => StatusCode::UNSUPPORTED_MEDIA_TYPE,
             Self::Validation(_) => StatusCode::UNPROCESSABLE_ENTITY,
-            Self::RateLimited | Self::LoginBlocked(_) => StatusCode::TOO_MANY_REQUESTS,
+            Self::RateLimited
+            | Self::LoginBlocked(_)
+            | Self::LlmBudgetExceeded(_)
+            | Self::TooManyStreams => StatusCode::TOO_MANY_REQUESTS,
             Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
             Self::UpstreamFailed | Self::LlmKeyRejected | Self::LlmCreditExhausted => {
                 StatusCode::BAD_GATEWAY
@@ -278,7 +292,9 @@ impl ApiError {
             Self::PayloadTooLarge => "payload_too_large",
             Self::UnsupportedMediaType => "unsupported_media_type",
             Self::Validation(_) => "validation_failed",
-            Self::RateLimited | Self::LoginBlocked(_) => "rate_limited",
+            Self::RateLimited | Self::LoginBlocked(_) | Self::TooManyStreams => "rate_limited",
+            Self::LlmBudgetExceeded(_) => "llm_budget_exceeded",
+            Self::StorageQuotaExceeded => "storage_quota_exceeded",
             Self::InvalidCredentials => "invalid_credentials",
             Self::LlmKeyMissing => "llm_key_missing",
             Self::LlmKeyRejected => "llm_key_rejected",
@@ -323,6 +339,18 @@ impl ApiError {
             Self::LoginBlocked(_) => (
                 "Troppi tentativi di accesso: riprova più tardi.",
                 "Too many sign-in attempts: try again later.",
+            ),
+            Self::TooManyStreams => (
+                "Troppi flussi di aggiornamento aperti: chiudine qualcuno e riprova.",
+                "Too many update streams are open: close some and try again.",
+            ),
+            Self::LlmBudgetExceeded(_) => (
+                "Hai esaurito il budget giornaliero di token: riprova dopo la mezzanotte UTC.",
+                "You have used up the daily token budget: try again after midnight UTC.",
+            ),
+            Self::StorageQuotaExceeded => (
+                "Hai raggiunto la quota di archiviazione dei documenti: eliminane qualcuno per caricarne altri.",
+                "You have reached your document storage quota: delete some documents to upload more.",
             ),
             Self::InvalidCredentials => (
                 "Nome utente o password non validi.",
@@ -408,8 +436,13 @@ impl ApiError {
         request_id: Uuid,
         lang: ContentLanguage,
     ) -> Response {
+        let quota = [ErrorDetail {
+            field: "quota".to_owned(),
+            issue: "exceeded".to_owned(),
+        }];
         let details = match self {
             Self::Validation(d) if !d.is_empty() => Some(d.as_slice()),
+            Self::StorageQuotaExceeded => Some(quota.as_slice()),
             _ => None,
         };
         let body = Envelope {
@@ -448,10 +481,17 @@ impl IntoResponse for ApiError {
         {
             response.headers_mut().insert(header::CONTENT_RANGE, value);
         }
-        if let Self::LoginBlocked(secs) = &self
+        if let Self::LoginBlocked(secs) | Self::LlmBudgetExceeded(secs) = &self
             && let Ok(value) = HeaderValue::from_str(&secs.to_string())
         {
             response.headers_mut().insert(header::RETRY_AFTER, value);
+        }
+        if matches!(self, Self::TooManyStreams) {
+            // A slot frees when any of the user's streams ends: no way to
+            // know when, so a short fixed hint.
+            response
+                .headers_mut()
+                .insert(header::RETRY_AFTER, HeaderValue::from_static("5"));
         }
         response.extensions_mut().insert(self);
         response
@@ -492,6 +532,10 @@ impl From<AppError> for ApiError {
             AppError::LlmKeyMissing => Self::LlmKeyMissing,
             AppError::LlmKeyRejected => Self::LlmKeyRejected,
             AppError::LlmCreditExhausted => Self::LlmCreditExhausted,
+            AppError::LlmBudgetExceeded { retry_after_secs } => {
+                Self::LlmBudgetExceeded(retry_after_secs)
+            }
+            AppError::StorageQuotaExceeded => Self::StorageQuotaExceeded,
             AppError::InvalidCredentials => Self::InvalidCredentials,
             AppError::Unauthorized => Self::Unauthorized,
             AppError::RateLimited { retry_after_secs } => Self::LoginBlocked(retry_after_secs),

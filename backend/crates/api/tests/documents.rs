@@ -97,6 +97,10 @@ impl App {
     }
 
     async fn with_limits(read: Reader, limits: Limits) -> Self {
+        Self::build(read, limits, AppOptions::default()).await
+    }
+
+    async fn build(read: Reader, limits: Limits, options: AppOptions) -> Self {
         let dir = std::env::temp_dir().join(format!("teach_me_doc_test_{}", Uuid::now_v7()));
         let files = LocalDocumentFiles::new(dir.clone());
         files.prepare().await.unwrap();
@@ -110,7 +114,7 @@ impl App {
             common::auth(),
             &pool,
             ScriptedLlm::with(vec![]),
-            AppOptions::default(),
+            options,
             DocumentSetup {
                 extractor: Arc::new(FakeEngine(read)),
                 files: Arc::new(files),
@@ -290,6 +294,36 @@ async fn a_valid_upload_is_imported_into_a_ready_document_with_sections_and_a_re
     assert_eq!(jobs["items"][0]["result"]["page_count"], 14);
     assert_eq!(jobs["items"][0]["result"]["section_count"], 2);
     assert_eq!(jobs["items"][0]["result"]["document_id"], id.as_str());
+}
+
+#[tokio::test]
+async fn an_upload_over_the_storage_quota_is_refused_with_409_and_leaves_nothing_behind() {
+    let options = AppOptions {
+        storage_quota_bytes: 1000,
+        ..AppOptions::default()
+    };
+    let app = App::build(good_pdf(), Limits::default(), options).await;
+    let topic = app.topic().await;
+
+    let (status, body) = app.upload(&topic, "a.pdf", &pdf_bytes(500)).await;
+    assert_eq!(status, StatusCode::ACCEPTED, "{body}");
+    app.run_import().await;
+
+    // 509 bytes are kept; 509 more would pass 1000.
+    let (status, body) = app.upload(&topic, "b.pdf", &pdf_bytes(500)).await;
+    assert_eq!(status, StatusCode::CONFLICT, "{body}");
+    assert_eq!(body["error"]["code"], "storage_quota_exceeded");
+    assert_eq!(
+        body["error"]["details"],
+        json!([{ "field": "quota", "issue": "exceeded" }])
+    );
+    assert_eq!(app.files_left(), 0, "the refused file is removed");
+    let (_, list) = app.get(&format!("/api/v1/topics/{topic}/documents")).await;
+    assert_eq!(list["documents"].as_array().unwrap().len(), 1);
+
+    // What still fits is accepted.
+    let (status, body) = app.upload(&topic, "c.pdf", &pdf_bytes(100)).await;
+    assert_eq!(status, StatusCode::ACCEPTED, "{body}");
 }
 
 #[tokio::test]
@@ -671,6 +705,55 @@ async fn a_refused_upload_is_answered_after_the_client_has_finished_sending() {
     let (sent, line) = raw_upload(addr, &topic, size, b"%PDF-1.4").await;
     assert_eq!(sent, size);
     assert!(line.unwrap().contains("409"));
+}
+
+#[tokio::test]
+async fn a_declared_size_over_the_quota_is_refused_before_the_body_is_read() {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let options = AppOptions {
+        storage_quota_bytes: 1000,
+        ..AppOptions::default()
+    };
+    let app = App::build(good_pdf(), Limits::default(), options).await;
+    let addr = serve(&app).await;
+    let topic = app.topic().await;
+
+    // The body is not a multipart form at all: were it read, the answer would
+    // be 400. Only the Content-Length check (2 MB against a 1000-byte quota)
+    // can make it a 409. The server drains the body before answering.
+    let size = 2_000_000;
+    let mut s = tokio::net::TcpStream::connect(addr).await.unwrap();
+    let req = format!(
+        "POST /api/v1/topics/{topic}/documents HTTP/1.1\r\nHost: x\r\nAuthorization: Bearer {TOKEN}\r\n\
+         Content-Type: multipart/form-data; boundary={BOUNDARY}\r\nContent-Length: {size}\r\n\r\n"
+    );
+    s.write_all(req.as_bytes()).await.unwrap();
+    s.write_all(&vec![b'x'; size]).await.unwrap();
+    let mut raw = Vec::new();
+    let mut buf = vec![0u8; 4096];
+    let (head, body) = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        loop {
+            let n = s.read(&mut buf).await.unwrap();
+            assert!(n > 0, "closed before a full answer");
+            raw.extend_from_slice(&buf[..n]);
+            let text = String::from_utf8_lossy(&raw).into_owned();
+            if let Some((head, body)) = text.split_once("\r\n\r\n")
+                && body.trim_end().ends_with('}')
+            {
+                return (head.to_owned(), body.to_owned());
+            }
+        }
+    })
+    .await
+    .expect("an answer");
+    assert!(head.starts_with("HTTP/1.1 409"), "{head}");
+    let body: Value = serde_json::from_str(body.trim()).unwrap();
+    assert_eq!(body["error"]["code"], "storage_quota_exceeded");
+    assert_eq!(
+        body["error"]["details"],
+        json!([{ "field": "quota", "issue": "exceeded" }])
+    );
+    assert_eq!(app.files_left(), 0);
 }
 
 #[tokio::test]

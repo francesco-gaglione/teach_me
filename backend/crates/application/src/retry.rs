@@ -160,7 +160,7 @@ impl LlmProvider for RetryingLlm {
                         return Err(error);
                     };
                     tracing::warn!(
-                        %error, attempt, delay_ms = u64::try_from(delay.as_millis()).unwrap_or(u64::MAX),
+                        error = %error.log_summary(), attempt, delay_ms = u64::try_from(delay.as_millis()).unwrap_or(u64::MAX),
                         trace_label = req.trace_label, "LLM call failed before any content; retrying"
                     );
                     self.env.sleep(delay).await;
@@ -188,7 +188,7 @@ impl LlmProvider for RetryingLlm {
                         return Err(error);
                     };
                     tracing::warn!(
-                        %error, attempt, delay_ms = u64::try_from(delay.as_millis()).unwrap_or(u64::MAX),
+                        error = %error.log_summary(), attempt, delay_ms = u64::try_from(delay.as_millis()).unwrap_or(u64::MAX),
                         trace_label = req.trace_label, "LLM call failed; retrying"
                     );
                     self.env.sleep(delay).await;

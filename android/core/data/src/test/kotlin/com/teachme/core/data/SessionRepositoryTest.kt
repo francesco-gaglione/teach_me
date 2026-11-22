@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.teachme.core.data
 
 import androidx.datastore.preferences.core.edit
@@ -5,10 +7,17 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.teachme.core.model.AuthState
 import com.teachme.core.model.AuthUser
 import com.teachme.core.model.BackendSettings
+import com.teachme.core.model.Flash
+import com.teachme.core.model.FlashKind
+import com.teachme.core.model.InMemoryFlashInbox
 import com.teachme.core.model.LlmProvider
 import com.teachme.core.model.SignedOutReason
 import com.teachme.core.model.UserScope
+import com.teachme.core.model.clearFlashesOnSessionChange
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -209,5 +218,28 @@ internal class SessionRepositoryTest : DataStoreTest() {
             val state = DefaultSessionRepository(settings, profile, RecordingClaimer(), newScope()).awaitReady()
 
             assertEquals("u1", (state as AuthState.SignedIn).session.user.id)
+        }
+
+    @Test
+    fun `a forced sign-out of A and the sign-in of B empty the inbox and switch the data scope`() =
+        runTest(UnconfinedTestDispatcher()) {
+            val repo = repo()
+            repo.awaitReady()
+            val inbox = InMemoryFlashInbox()
+            val guard = backgroundScope.launch { repo.state.clearFlashesOnSessionChange(inbox) }
+            repo.signIn("http://teach.test", "t1", user)
+            val scopeOfA = repo.current()
+
+            // A toast of A is pending when the session dies by itself (401): nobody announced the sign-out.
+            inbox.post(Flash(FlashKind.FolderDeleted, "Lavoro di A"))
+            assertTrue(repo.expire("t1"))
+            assertNull(inbox.take(FlashKind.FolderDeleted))
+
+            inbox.post(Flash(FlashKind.TopicGone, "Rust di A"))
+            repo.signIn("http://teach.test", "t2", other)
+            assertNull(inbox.take(FlashKind.TopicGone))
+            assertNotEquals(scopeOfA, repo.current())
+            assertEquals(UserScope("u2", "http://teach.test"), repo.current())
+            guard.cancel()
         }
 }

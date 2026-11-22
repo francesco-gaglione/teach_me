@@ -5,6 +5,7 @@ pub mod audio;
 pub mod audio_cleanup;
 pub mod audio_queue;
 pub mod audio_service;
+pub mod budget;
 pub mod chat;
 pub mod completion;
 pub mod component_requests;
@@ -78,6 +79,7 @@ pub use audio_service::{
     AudioService, ClipAccess, Manifest, ManifestBlock, ManifestClip, ManifestStatus, VoiceEntry,
     VoiceList,
 };
+pub use budget::LlmBudget;
 pub use chat::{ChatService, ChatSettings, MessagePage, SentTurn};
 pub use completion::RunLessonCompletion;
 pub use component_requests::ComponentRequestService;
@@ -88,7 +90,10 @@ pub use folders::FolderService;
 pub use generation::{GenerateLesson, LessonSettings};
 pub use grader::Grader;
 pub use highlights::HighlightService;
-pub use jobs::{JobContext, JobFailure, JobHandler, JobRunner, JobService, JobSettings, Recovery};
+pub use jobs::{
+    Heartbeat, JobContext, JobFailure, JobHandler, JobRunner, JobService, JobSettings,
+    RUNNER_HEARTBEAT, Recovery,
+};
 pub use lesson_plan::{PlanDocument, PlanFacts, ValidPlan, validate_plan};
 pub use lessons::{CompletionView, InProgressItem, LessonItem, LessonService, LessonView};
 pub use llm_keys::{KeyError, KeyScopedLlm, LlmKeys, key_context, with_key};

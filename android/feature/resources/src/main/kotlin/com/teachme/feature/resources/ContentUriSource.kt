@@ -17,9 +17,24 @@ internal class ContentUriSource private constructor(
     override val displayName: String,
     override val sizeBytes: Long?,
 ) : UploadSource {
+    override val reference: String get() = uri.toString()
+
     override fun open(): InputStream = resolver.openInputStream(uri) ?: throw FileNotFoundException(uri.toString())
 
     companion object {
+        /**
+         * Rebuilds the source after process death from the saved URI and name. The size is unknown here (it was
+         * already checked before the first send). Limit: if the picker grant was not persisted (`takePersistableUriPermission`
+         * failed or the provider does not offer it) the grant died with the process and [open] throws a
+         * [SecurityException], which the upload treats as a normal failure.
+         */
+        @Suppress("UseKtx") // core-ktx is not a dependency of this module
+        fun restore(
+            resolver: ContentResolver,
+            reference: String,
+            displayName: String,
+        ): ContentUriSource = ContentUriSource(resolver, Uri.parse(reference), displayName, null)
+
         /** Reads name and size from the provider; blocking, so call it off the main thread. */
         fun resolve(
             resolver: ContentResolver,

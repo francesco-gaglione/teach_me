@@ -24,6 +24,11 @@ pub trait SpeechSynthesizer: Send + Sync {
     fn voices(&self) -> &[Voice];
     /// One of [`Self::voices`].
     fn default_voice(&self) -> &str;
+    /// Whether the engine answers right now (a cheap probe, for readiness).
+    /// Adapters without a way to ask assume it does.
+    async fn is_up(&self) -> bool {
+        true
+    }
     /// Speaks `text` in `language` with `voice`: Ogg Opus mono and its
     /// duration. [`SpeechError::UnknownVoice`] if `voice` is not in the list.
     async fn synthesize(

@@ -95,6 +95,8 @@ class DocumentsLogicTest {
             UploadFailureAction.Show(UploadError.Network),
             action(ApiFailure.Network(UnreachableReason.Timeout)),
         )
+        // The quota 409 gets its own panel (not the silent reload of a plain 409), and no retry: see UploadErrorPanel.
+        assertEquals(UploadFailureAction.Show(UploadError.QuotaExceeded), action(ApiFailure.StorageQuotaExceeded))
         assertEquals(UploadFailureAction.Silent, action(ApiFailure.Unauthorized))
         assertEquals(UploadFailureAction.Reload, action(ApiFailure.Conflict))
         assertEquals(UploadFailureAction.TopicGone, action(ApiFailure.NotFound))

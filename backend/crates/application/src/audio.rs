@@ -49,6 +49,20 @@ pub enum AudioError {
     Files(#[source] std::io::Error),
 }
 
+impl AudioError {
+    /// What may be logged: the engine's own text can quote the lesson text
+    /// it was asked to read, so it is replaced by the failure category.
+    #[must_use]
+    pub fn log_kind(&self) -> String {
+        match self {
+            Self::Speech(SpeechError::UnknownVoice) => "unknown voice".to_owned(),
+            Self::Speech(SpeechError::Unavailable(_)) => "speech engine unavailable".to_owned(),
+            Self::Speech(SpeechError::Failed(_)) => "speech synthesis failed".to_owned(),
+            other => other.to_string(),
+        }
+    }
+}
+
 pub struct ClipCache {
     synthesizer: Arc<dyn SpeechSynthesizer>,
     clips: Arc<dyn ClipRepository>,

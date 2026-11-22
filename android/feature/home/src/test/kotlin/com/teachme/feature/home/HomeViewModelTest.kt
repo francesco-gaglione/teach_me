@@ -1,6 +1,7 @@
 package com.teachme.feature.home
 
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.teachme.core.model.ActionFailure
 import com.teachme.core.model.ApiErrorDetail
@@ -30,6 +31,7 @@ import com.teachme.core.model.UnreachableReason
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -204,6 +206,7 @@ class HomeViewModelTest {
     private fun vm(
         repo: FakeFolders,
         library: FakeLibraryState = FakeLibraryState(),
+        handle: SavedStateHandle = SavedStateHandle(),
     ) = HomeViewModel(
         repo,
         library,
@@ -218,7 +221,7 @@ class HomeViewModelTest {
         inbox,
         permissionAsker,
         gate,
-        SavedStateHandle(),
+        handle,
     )
 
     @Test
@@ -246,6 +249,26 @@ class HomeViewModelTest {
             advanceUntilIdle()
 
             assertEquals("b", vm.state.value.selectedFolderId)
+        }
+
+    @Test
+    fun `the selection survives process death through the saved state`() =
+        runTest {
+            val handle = SavedStateHandle()
+            val folders = FakeFolders(ApiResult.Success(listOf(folder("a"), folder("b"))))
+            val first = vm(folders, handle = handle)
+            first.onStart()
+            advanceUntilIdle()
+            first.select("b")
+            advanceUntilIdle()
+
+            // A new ViewModel built from the same handle starts on the saved selection, before any load.
+            val restored = vm(folders, FakeLibraryState("a"), handle)
+            assertEquals("b", restored.state.value.selectedFolderId)
+            assertTrue(restored.state.value.selectionByUser)
+            restored.onStart()
+            advanceUntilIdle()
+            assertEquals("b", restored.state.value.selectedFolderId)
         }
 
     @Test
@@ -956,5 +979,33 @@ class HomeViewModelTest {
             vm.onStart()
             advanceUntilIdle()
             assertNull(vm.state.value.reviewTopicId)
+        }
+
+    @Test
+    fun `a ViewModel built after another one was cleared starts without its selection`() =
+        runTest {
+            val libraryA = FakeLibraryState()
+            val a = vm(FakeFolders(ApiResult.Success(listOf(folder("a1", "Segreto di A"), folder("a2")))), libraryA)
+            a.onStart()
+            advanceUntilIdle()
+            a.select("a2")
+            advanceUntilIdle()
+            assertEquals("a2", a.state.value.selectedFolderId)
+
+            // Sign-out clears A's navigation entry; B signs in on the same device with its own handle and data.
+            a.viewModelScope.cancel()
+            val b = vm(FakeFolders(ApiResult.Success(listOf(folder("b1", "Cartella di B")))), FakeLibraryState())
+            assertNull(b.state.value.selectedFolderId)
+            assertFalse(b.state.value.selectionByUser)
+            b.onStart()
+            advanceUntilIdle()
+
+            assertEquals(
+                listOf("b1"),
+                b.state.value.folders
+                    ?.map { it.id },
+            )
+            assertEquals("b1", b.state.value.selectedFolderId)
+            assertFalse(b.state.value.selectionByUser)
         }
 }

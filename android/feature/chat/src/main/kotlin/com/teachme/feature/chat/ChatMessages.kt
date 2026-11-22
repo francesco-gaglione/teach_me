@@ -56,14 +56,18 @@ import com.teachme.core.designsystem.components.TeachText
 import com.teachme.core.model.ChatMessage
 import com.teachme.core.model.ChatMessageStatus
 import com.teachme.core.model.MessagePart
+import com.teachme.core.model.budgetResetInstant
 import com.teachme.core.model.dayMonthFormatter
+import com.teachme.core.model.isLlmBudgetCode
 import com.teachme.core.model.llmKeyVariantOfCode
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
 import com.teachme.feature.chat.markdown.MarkdownText
 import com.teachme.feature.mission.MissionChatContext
 import com.teachme.feature.mission.MissionProposalCard
 import kotlinx.coroutines.delay
+import java.time.Instant
 import java.util.Locale
 
 private const val PULSE_CYCLE_MS = 1_600
@@ -265,7 +269,43 @@ internal fun ChatErrorPanel(
     identity: Any,
     modifier: Modifier = Modifier,
     creditAgain: Int = 0,
+    /** When the failure happened: the budget wait is counted from it (a failed message has no Retry-After). */
+    failedAt: Instant? = null,
+    /** The reset instant learned when "Riprova" was refused again (that answer has a Retry-After); the later one wins. */
+    budgetRetryResetAt: Instant? = null,
+    /** False when the composer's budget panel already announces the renewal. */
+    announceBudgetRenewal: Boolean = true,
 ) {
+    if (code.isLlmBudgetCode()) {
+        // Waiting a minute does not help: today's budget is used up (llm-key.md 10.1). "Riprova" is visible but disabled
+        // until the reset; an older message shows the text only.
+        // Saved (epoch millis) so a rotation does not restart the wait.
+        val fallbackMillis = rememberSaveable { System.currentTimeMillis() }
+        val fallbackAnchor = remember(fallbackMillis) { Instant.ofEpochMilli(fallbackMillis) }
+        val resetAt =
+            remember(failedAt, budgetRetryResetAt) {
+                val own = budgetResetInstant(failedAt ?: fallbackAnchor)
+                if (budgetRetryResetAt != null && budgetRetryResetAt.isAfter(own)) budgetRetryResetAt else own
+            }
+        LlmBudgetPanel(
+            resetAt,
+            modifier,
+            bodySuffix = if (hasPartialText) stringResource(R.string.chat_failed_partial) else null,
+            retryText =
+                if (canRetry) {
+                    stringResource(
+                        if (retrying) R.string.chat_retry_loading else R.string.chat_retry,
+                    )
+                } else {
+                    null
+                },
+            onRetry = onRetry.takeIf { canRetry },
+            retrying = retrying,
+            retryIcon = TeachIcons.RotateCcw,
+            announce = canRetry && announceBudgetRenewal,
+        )
+        return
+    }
     val keyVariant = code.llmKeyVariantOfCode()
     if (keyVariant != null) {
         // The key is the problem, not the answer (llm-key.md section 6). An older message cannot be retried: the panel
@@ -319,6 +359,8 @@ internal fun TutorMessage(
     modifier: Modifier = Modifier,
     mission: MissionChatContext? = null,
     creditAgain: Int = 0,
+    budgetRetryResetAt: Instant? = null,
+    announceBudgetRenewal: Boolean = true,
     lessonRequestCard: LessonRequestCardSlot? = null,
     lessonRequestAnnounces: Boolean = false,
 ) {
@@ -369,6 +411,9 @@ internal fun TutorMessage(
                 onRetry,
                 message.id,
                 creditAgain = creditAgain,
+                failedAt = message.updatedAt,
+                budgetRetryResetAt = budgetRetryResetAt,
+                announceBudgetRenewal = announceBudgetRenewal,
             )
         }
         if (message.status == ChatMessageStatus.Complete && message.plainText.isNotBlank()) {

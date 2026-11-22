@@ -55,6 +55,8 @@ fun TeachButton(
     loading: Boolean = false,
     @DrawableRes leadingIcon: Int? = null,
     contentDescription: String? = null,
+    /** Read by screen readers while the button is disabled (not loading), e.g. "Disponibile oggi alle 01:00". */
+    disabledStateDescription: String? = null,
 ) {
     val colors = TeachTheme.colors
     val state = rememberInteractionState()
@@ -112,7 +114,11 @@ fun TeachButton(
                     },
                 ).semantics {
                     if (!enabled) disabled()
-                    if (loading) stateDescription = busyDescription
+                    if (loading) {
+                        stateDescription = busyDescription
+                    } else if (!enabled && disabledStateDescription != null) {
+                        stateDescription = disabledStateDescription
+                    }
                     if (contentDescription != null) this.contentDescription = contentDescription
                 }.clickable(
                     interactionSource = state.source,

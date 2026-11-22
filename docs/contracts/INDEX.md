@@ -4,18 +4,18 @@ Apri il file alla sezione che serve (`grep -n '^#' <file>` per i numeri di riga)
 
 ## Radice di `contracts/`
 
-- [`api-conventions.md`](api-conventions.md) · 9.9 KB — Convenzioni API comuni: trasporto, auth, identificatori, date, errori, paginazione, job, SSE, limiti.
-  - Titoli: §1 Trasporto e versionamento · §2 Autenticazione · §3 Endpoint di servizio · §4 Identificatori · §5 Date e ore · §6 Metodi e codici di stato · §7 Errori · §8 Paginazione · §9 Job (operazioni lunghe) · §10 Eventi SSE · §11 Header · §12 Limiti e timeout
+- [`api-conventions.md`](api-conventions.md) · 14.6 KB — Convenzioni API comuni: trasporto e compatibilità, auth, identificatori, date, errori, paginazione, job, SSE, limiti.
+  - Titoli: §1 Trasporto, versionamento e compatibilità · §2 Autenticazione · §3 Endpoint di servizio · §4 Identificatori · §5 Date e ore · §6 Metodi e codici di stato · §7 Errori · §8 Paginazione · §9 Job (operazioni lunghe) · §10 Eventi SSE · §11 Header · §12 Limiti e timeout
 - [`audio.md`](audio.md) · 8.2 KB — Contratto audio: blocchi leggibili, manifest per lezione, voci, clip, regole per l'app.
   - Titoli: §1 Concetti · §2 Blocchi leggibili e testo parlato · §3 Manifest dell'audio di una lezione · §4 Voci · §5 Clip · §6 Regole per l'app
 - [`chat.md`](chat.md) · 10.5 KB — Contratto chat: risorsa messaggio, endpoint, eventi ed SSE del Tutor.
   - Titoli: §1 Risorsa ChatMessage · §2 Endpoint · §3 Eventi della chat · §4 Stream SSE · §5 Contesto inviato al modello (informa…
 - [`component-requests.md`](component-requests.md) · 2.2 KB — Concetti ed endpoint per le richieste di componenti mancanti.
-- [`documents.md`](documents.md) · 7.4 KB — Documenti caricati dall'utente (PDF): risorsa, endpoint, job di import, eventi.
+- [`documents.md`](documents.md) · 8.1 KB — Documenti caricati dall'utente (PDF): risorsa, endpoint, job di import, eventi.
   - Titoli: §1 Concetti · §2 Risorsa Document · §3 Endpoint · §4 Il job document_import · §5 Eventi · §6 Documenti nelle lezioni · §7 Fuori da questa versione
 - [`folders-topics.md`](folders-topics.md) · 8.1 KB — Cartelle e argomenti: risorse (con la lingua dell'argomento), endpoint, errori di validazione, testi lato app.
   - Titoli: §1 Risorse · §2 Endpoint · §3 Errori di validazione · §4 Testi lato app
-- [`jobs.md`](jobs.md) · 5.1 KB — Job asincroni: risorsa Job, endpoint, eventi SSE.
+- [`jobs.md`](jobs.md) · 6.1 KB — Job asincroni: risorsa Job, endpoint, eventi SSE.
   - Titoli: §1 Concetti · §2 Risorsa Job · §3 Endpoint · §4 Eventi SSE
 - [`lessons.md`](lessons.md) · 36.8 KB — Lezioni (v1.9: `language` in `LessonView`; v1.8: `document_sources`, `GET /lessons?status=in_progress`, fase `reading`): risorse, generazione, tentativi, completamento, evidenziazioni, note a mano, lezioni dalla chat.
   - Titoli: §1 Concetti · §2 Risorse · §3 Endpoint · §4 Job lesson_generation · §5 Tentativi · §6 Chiusura e job lesson_completion · §7 Chat dal bottone ask_agent · §8 Eventi · §9 Fuori da questa versione · §10 Evidenziazioni (v1.2) · §11 Note a mano (v1.4) · §12 Lezione richiesta dalla chat (v1.5,…

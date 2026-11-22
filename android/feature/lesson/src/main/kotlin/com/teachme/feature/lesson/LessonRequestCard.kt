@@ -52,7 +52,10 @@ import com.teachme.core.model.JobProgress
 import com.teachme.core.model.JobResult
 import com.teachme.core.model.JobStatus
 import com.teachme.core.model.TopicJob
+import com.teachme.core.model.isLlmBudgetCode
+import com.teachme.core.model.jobBudgetReset
 import com.teachme.core.model.llmKeyVariantOfCode
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
 import kotlinx.coroutines.delay
@@ -89,6 +92,18 @@ fun LessonRequestCard(
     val retrying by remember { derivedStateOf { stateProvider().retrying } }
     val networkError by remember { derivedStateOf { stateProvider().actionError != null } }
     val keyAgain by remember { derivedStateOf { stateProvider().keyNotice?.again ?: 0 } }
+    // A job that stopped for the daily budget, or a "Riprova" refused for it: when it comes back (llm-key.md 10.1).
+    val budgetResetAt by remember(jobId) {
+        derivedStateOf {
+            val s = stateProvider()
+            val job = s.generationJob(jobId)
+            if (job?.error?.code.isLlmBudgetCode() || s.budgetResetAt != null) {
+                job?.jobBudgetReset(s.budgetResetAt) ?: s.budgetResetAt
+            } else {
+                null
+            }
+        }
+    }
     LessonRequestCardContent(
         cardState,
         jobId,
@@ -99,6 +114,7 @@ fun LessonRequestCard(
         onOpenLesson = onOpenLesson,
         onRetry = onRetry,
         modifier = modifier,
+        budgetResetAt = budgetResetAt,
     )
 }
 
@@ -114,6 +130,7 @@ internal fun LessonRequestCardContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
     forceStacked: Boolean? = null,
+    budgetResetAt: Instant? = null,
 ) {
     val stacked =
         forceStacked ?: (
@@ -135,7 +152,7 @@ internal fun LessonRequestCardContent(
         Crossfade(targetState = KindState(kind, state), animationSpec = fade, label = "lesson-request") { held ->
             val shown = if (held.kind == kind) state else held.state
             Box(Modifier.fillMaxWidth()) {
-                CardBody(shown, jobId, retrying, networkError, keyAgain, stacked, onOpenLesson, onRetry)
+                CardBody(shown, jobId, retrying, networkError, keyAgain, stacked, onOpenLesson, onRetry, budgetResetAt)
             }
         }
         LessonRequestAnnouncer(state, announces)
@@ -170,6 +187,7 @@ private fun CardBody(
     stacked: Boolean,
     onOpenLesson: (String) -> Unit,
     onRetry: () -> Unit,
+    budgetResetAt: Instant? = null,
 ) {
     val colors = TeachTheme.colors
     when (state) {
@@ -253,7 +271,16 @@ private fun CardBody(
                 )
             } else {
                 val keyVariant = state.code.llmKeyVariantOfCode()
-                if (keyVariant != null) {
+                if (budgetResetAt != null) {
+                    // The daily budget is used up: "Riprova" is visible but waits for the reset (llm-key.md 10.1).
+                    LlmBudgetPanel(
+                        budgetResetAt,
+                        retryText = stringResource(if (retrying) R.string.lessons_retrying else R.string.lessons_retry),
+                        onRetry = onRetry,
+                        retrying = retrying,
+                        retryIcon = TeachIcons.RotateCcw,
+                    )
+                } else if (keyVariant != null) {
                     // The key, not the work, is the problem: same rules of "Riprova" as the Lessons tab (llm-key.md).
                     LlmKeyNotice(
                         keyVariant,

@@ -79,10 +79,13 @@ fun TeachMeApp(
     val navController = rememberNavController()
     // The login is the first destination without a session; otherwise the stack the session ended over stays below it.
     val startDestination = remember { if (authState is AuthState.SignedOut) LoginRoute else HomeRoute }
-    SessionNavigation(navController, authState)
-    OpenReviewRequest(navController, authState, openReview, onOpenReviewHandled)
+    val updateRequired by mainViewModel.updateRequired.collectAsStateWithLifecycle()
+    // While the update screen replaces the host there is no graph to navigate: both effects wait for it to come back.
+    SessionNavigation(navController, authState, blocked = updateRequired)
+    OpenReviewRequest(navController, authState, openReview, onOpenReviewHandled, blocked = updateRequired)
 
     val keyStatus by mainViewModel.llmKeyStatus.collectAsStateWithLifecycle()
+    val updateCheck by mainViewModel.updateCheck.collectAsStateWithLifecycle()
     CompositionLocalProvider(
         LocalLlmKeyStatus provides keyStatus,
         LocalOpenLlmKeySettings provides { variant ->
@@ -91,7 +94,13 @@ fun TeachMeApp(
             }
         },
     ) {
-        AppNavHost(navController, startDestination, inbox)
+        // The server speaks a newer API than this build: nothing else is safe to show, so the host (and every data
+        // screen) is not composed at all. The NavController is kept above, so the stack survives a successful re-check.
+        if (updateRequired) {
+            UpdateRequiredScreen(updateCheck, onRecheck = mainViewModel::recheckCompatibility)
+        } else {
+            AppNavHost(navController, startDestination, inbox)
+        }
     }
 }
 
@@ -106,9 +115,10 @@ private fun OpenReviewRequest(
     authState: AuthState,
     requested: Boolean,
     onHandled: () -> Unit,
+    blocked: Boolean,
 ) {
-    LaunchedEffect(requested, authState is AuthState.SignedIn) {
-        if (requested && authState is AuthState.SignedIn) {
+    LaunchedEffect(requested, authState is AuthState.SignedIn, blocked) {
+        if (!blocked && requested && authState is AuthState.SignedIn) {
             navController.navigate(ReviewRoute()) { launchSingleTop = true }
             onHandled()
         }
@@ -124,10 +134,12 @@ private fun OpenReviewRequest(
 private fun SessionNavigation(
     navController: NavHostController,
     authState: AuthState,
+    blocked: Boolean,
 ) {
     // Who owned the stack when the session ended by itself; saved so a rotation does not forget it.
     var returnToUser by rememberSaveable { mutableStateOf<String?>(null) }
-    LaunchedEffect(authState) {
+    LaunchedEffect(authState, blocked) {
+        if (blocked) return@LaunchedEffect
         val onLogin = navController.currentDestination?.hasRoute<LoginRoute>() == true
         when (authState) {
             is AuthState.SignedOut -> {

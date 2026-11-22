@@ -25,7 +25,7 @@ TEACH_ME_LOG_FORMAT=text \
 cargo run --release -p api --bin teach-me
 ```
 
-Configuration comes from an optional TOML file (`TEACH_ME_CONFIG`, or `config/teach_me.toml` if present; see `config/teach_me.example.toml`). `TEACH_ME_*` variables win over the file. Other variables: `TEACH_ME_DATA_DIR`, `TEACH_ME_PDFIUM_DIR` (see PDF documents below), `TEACH_ME_LOG_FORMAT` (`text`|`json`), `TEACH_ME_BODY_LIMIT_BYTES`, `TEACH_ME_REQUEST_TIMEOUT_SECS`. The server refuses to start without a valid `TEACH_ME_SECRET_KEY` (32 bytes in base64) and says why; see Users below. `TEACH_ME_API_TOKEN` is no longer used (ignored, with a warning).
+Configuration comes from an optional TOML file (`TEACH_ME_CONFIG`, or `config/teach_me.toml` if present; see `config/teach_me.example.toml`). `TEACH_ME_*` variables win over the file. Other variables: `TEACH_ME_DATA_DIR`, `TEACH_ME_PDFIUM_DIR` (see PDF documents below), `TEACH_ME_LOG_FORMAT` (`text`|`json`), `TEACH_ME_BODY_LIMIT_BYTES`, `TEACH_ME_REQUEST_TIMEOUT_SECS`. Resource limits (environment only): `TEACH_ME_USER_STORAGE_QUOTA_BYTES` (default 1 GiB of uploaded documents per user, `0` = unlimited, over it `409 storage_quota_exceeded`), `TEACH_ME_USER_DAILY_LLM_TOKENS` (input + output tokens per user per UTC day, default `0` = off, over it `429 llm_budget_exceeded` with `Retry-After` until 00:00 UTC; new requests and new jobs are refused, work already running finishes), `TEACH_ME_MAX_SSE_PER_USER` (default 8 concurrent streams, then `429 rate_limited`), `TEACH_ME_JOB_MAX_CONCURRENT` (default 2, all users together) and `TEACH_ME_JOB_TIMEOUT_SECS` (default 900); the last three must be greater than zero. The server refuses to start without a valid `TEACH_ME_SECRET_KEY` (32 bytes in base64) and says why; see Users below. `TEACH_ME_API_TOKEN` is no longer used (ignored, with a warning).
 
 ```bash
 curl -s localhost:8080/health
@@ -63,14 +63,16 @@ The user can upload up to 5 PDFs per topic (`POST /api/v1/topics/{id}/documents`
 
 - **Limits.** 50 MB per file, on this route only (every other route keeps `TEACH_ME_BODY_LIMIT_BYTES`, and the upload has no request timeout). More than 1,500 pages, password-protected files and scans without selectable text (fewer than 200 characters per page on average, or more than half of the pages empty) are refused by the import job with `too_many_pages`, `encrypted_pdf` and `no_text`. There is no OCR.
 - **The original file is not kept.** The upload is streamed to `<data dir>/uploads/<id>.pdf` (never held in memory), read once by the `document_import` job, and deleted as soon as the import succeeds, or when the document is deleted. A failed import keeps the file so that a retry can run; a partial upload left by a crash is removed at startup. What is stored (and backed up with the database) is the text of each page and the sections built from the PDF's bookmarks (or blocks of 10 pages).
-- **PDF engine.** Text is extracted with PDFium (`pdfium-render`), a shared library loaded at run time: the Docker image contains it (`/usr/local/lib/pdfium`, pinned and checked by hash). In development download `pdfium-linux-x64.tgz` from <https://github.com/bblanchon/pdfium-binaries/releases>, unpack it and set `TEACH_ME_PDFIUM_DIR` to its `lib/` directory (or install `libpdfium.so` in the library path). Without it the backend still starts, with a warning, and imports fail with `internal`; the PDF tests of `infrastructure` are skipped. Why PDFium: `docs/adr/0007-pdf-extraction.md`.
+- **PDF engine.** Text is extracted with PDFium (`pdfium-render`), a shared library loaded at run time: the Docker image contains it (`/usr/local/lib/pdfium`, pinned and checked by hash). In development download `pdfium-linux-x64.tgz` from <https://github.com/bblanchon/pdfium-binaries/releases>, unpack it and set `TEACH_ME_PDFIUM_DIR` to its `lib/` directory (or install `libpdfium.so` in the library path). Without it the backend still starts, with a warning, and imports fail with `internal`; the PDF tests of `infrastructure` are skipped (see Testing PDFs below). Why PDFium: `docs/adr/0007-pdf-extraction.md`.
 - **Settings.** `TEACH_ME_DATA_DIR` (default: the directory of the database file) and `TEACH_ME_PDFIUM_DIR`.
 
 ```bash
 curl -s -H "Authorization: Bearer $TOKEN" -F file=@book.pdf localhost:8080/api/v1/topics/$T/documents
 ```
 
-To try the extractor on a real book: `TEACH_ME_PDFIUM_DIR=… TEACH_ME_TEST_PDF=book.pdf cargo test -p infrastructure --test pdf -- --ignored --nocapture`.
+**Testing PDFs locally.** `scripts/fetch-pdfium.sh /tmp/pdfium` downloads the same pinned, hash-checked build that the Docker image and CI use; then `TEACH_ME_PDFIUM_DIR=/tmp/pdfium/lib TEACH_ME_REQUIRE_PDFIUM=1 cargo test -p infrastructure --test pdf`. Without `TEACH_ME_REQUIRE_PDFIUM` the tests skip (and look green) when PDFium is missing; with it they fail. CI sets it. The committed fixture `crates/infrastructure/tests/fixtures/sample.pdf` is regenerated with `scripts/gen-fixture-pdf.py`.
+
+Before a release, try the extractor on a real book: `TEACH_ME_REQUIRE_PDFIUM=1 TEACH_ME_PDFIUM_DIR=… TEACH_ME_TEST_PDF=book.pdf cargo test -p infrastructure --test pdf -- --ignored --nocapture`.
 
 ### Read aloud
 ADR 0013 / `docs/contracts/audio.md`.
@@ -94,6 +96,15 @@ Off by default. Setting `OTEL_EXPORTER_OTLP_ENDPOINT` (or `[telemetry] otlp_endp
 - **Activate (compose):** `docker compose up -d` already starts `jaeger` (pinned `jaegertracing/jaeger`, in-memory, last 5000 traces, 512 MB) and points `OTEL_EXPORTER_OTLP_ENDPOINT` at `http://jaeger:4318`.
 - **Open the UI:** http://127.0.0.1:16686 on the host (service `teach-me`). Set `JAEGER_UI_BIND_IP` in `.env` to publish it on another address (it has no login: use the Tailscale IP, never a public one).
 - **Deactivate:** `OTEL_EXPORTER_OTLP_ENDPOINT=` (empty) in `.env`, and `docker compose stop jaeger` if you do not want the container.
+
+## Logging e privacy
+
+I log e le span di tracing non contengono mai dati sensibili: password, token di sessione, chiavi API, header `Authorization`/`Cookie`/`Set-Cookie`, testo dei messaggi, risposte dei modelli, contenuto di lezioni e documenti, URL con query string.
+- Si loggano id, conteggi, lunghezze e codici di errore, mai il contenuto. Niente `?valore` (Debug) su stringhe che possono contenere testo dell'utente o del modello.
+- Le credenziali vivono in `domain::Secret` (Debug/Display stampano `[redacted]`); `#[instrument]` va usato con `skip_all` e campi espliciti.
+- Gli errori del provider LLM si loggano con `LlmError::log_summary()`: il testo del provider puo' ripetere il prompt, quindi viene omesso, tranne i primi 200 caratteri di `InvalidRequest` (servono a diagnosticare la configurazione). Rischio residuo: quei 200 caratteri potrebbero citare un frammento della richiesta. Gli errori del motore TTS si loggano solo per categoria (`AudioError::log_kind()`) e gli URL letti dal modello senza query e fragment.
+- Il layer HTTP segna come sensibili gli header di credenziali (`SetSensitiveHeadersLayer`) e la span `http` ha solo metodo, path e rotta, mai query string, header o body.
+- Il test `crates/api/tests/log_privacy.rs` cattura i log a livello TRACE e fallisce se un marcatore segreto compare.
 
 ## Verify
 
@@ -140,7 +151,7 @@ Known limits, accepted: (a) five wrong passwords for a user name block that name
 
 ## Deploy on a home server
 
-Docker Compose on a Linux x86_64 host. The backend is published on the host's Tailscale IP (ADR 0001: no TLS, the tunnel is encrypted) and, only if `.env` sets `LAN_BIND_IP`, also on the home LAN IP, where traffic is plain HTTP (ADR 0001, update of 11 November 2026). Files are in `backend/deploy/`; the image is built from the `Dockerfile` (prompts and migrations are embedded in the binary).
+Docker Compose on a Linux x86_64 host. The backend is published on the host's Tailscale IP (ADR 0001: no TLS, the tunnel is encrypted) and, only if `.env` sets `LAN_BIND_IP` (together with `ALLOW_PLAIN_LAN=1`, which `deploy.sh` requires), also on the home LAN IP, where traffic is plain HTTP (ADR 0001, update of 11 November 2026). Files are in `backend/deploy/`; the image is built from the `Dockerfile` (prompts and migrations are embedded in the binary).
 
 1. The host needs Docker with the Compose plugin and Tailscale running. Copy the `backend/` folder (or clone the repo) into a stable directory, e.g. `~/teach_me/backend`.
 2. Prepare the configuration:
@@ -153,17 +164,22 @@ Docker Compose on a Linux x86_64 host. The backend is published on the host's Ta
    ```
    Models are set in `deploy/teach_me.toml` (embedded in the image: rebuild with `--build` after a change). The default is Anthropic directly: Sonnet 5.5 for every role, Haiku 5.5 for the Grader, at most 4 searches for the Researcher. The provider applies to the whole server: every user needs an Anthropic key saved (app Settings, or `teach-me user set-llm-key`); a leftover OpenRouter key is rejected (`llm_key_rejected`). To switch back to OpenRouter: `default_provider = "openrouter"` and OpenRouter keys again.
 3. Build and start: `docker compose up -d --build` (the first build compiles Rust and takes a few minutes).
-4. Check from the Tailscale IP (the container becomes `healthy` within ~20 s: `docker compose ps`):
+4. Check from the Tailscale IP (the container becomes `healthy` within ~20 s: `docker compose ps`; `/ready` also checks the database and the job runner):
    ```bash
    curl -s http://<tailscale-ip>:8080/health
    ```
-5. Users: set the password of `owner` and create the others (*Users* section above), then enter `http://<tailscale-ip>:8080` in the app and sign in with user name and password. From the LAN, with `LAN_BIND_IP` set, the URL is `http://<lan-ip>:8080`: the app keeps a single address, so the LAN one only works at home.
+5. Users: set the password of `owner` and create the others (*Users* section above), then enter `http://<tailscale-ip>:8080` in the app and sign in with user name and password. From the LAN, with `LAN_BIND_IP` set (and `ALLOW_PLAIN_LAN=1`, exactly 1), the URL is `http://<lan-ip>:8080`: the app keeps a single address, so the LAN one only works at home.
+
+Optional `.env` variables for the exposure and resources:
+- `LAN_BIND_IP`: see above (plain HTTP); a value exported in the shell wins over `.env`, as in compose. If it is not a loopback address, `deploy.sh` refuses to run unless `ALLOW_PLAIN_LAN=1` is in the same `.env`.
+- `ALLOW_PLAIN_LAN=1`: explicit opt-in to plain-HTTP exposure on the LAN (traffic, passwords and session tokens in clear).
+- `TEACH_ME_MEM_LIMIT`: memory limit of the `teach-me` container (default `2g`, also applied as `memswap_limit`: no swap).
 
 The SQLite database lives in the Docker volume `teach_me_data` (`/data/teach_me.db`) and survives rebuilds and restarts.
 
 ### Read aloud (`tts` service, ADR 0013)
 
-`docker compose up` also starts `tts` (container `teach-me-tts`): the Qwen3-TTS 1.7B engine written in C (`deploy/tts/Dockerfile`, engine commit pinned by `ENGINE_COMMIT`), CPU only, with 8 threads, low priority (`nice 19`) and a 5 GB memory limit (measured peak about 2.8 GB). It publishes no ports: only the backend reaches it, as `http://tts:8080` (`TEACH_ME_TTS_URL`, already set by compose; leave it commented in `.env`, or set `TEACH_ME_TTS_URL=` empty to switch the feature off).
+`docker compose up` also starts `tts` (container `teach-me-tts`): the Qwen3-TTS 1.7B engine written in C (`deploy/tts/Dockerfile`, engine commit pinned by `ENGINE_COMMIT`), CPU only, with 8 threads, low priority (`nice 19`) and a 5 GB memory limit (measured peak about 2.8 GB). The model lives in `/models/<revision>` of the volume (one directory per pinned revision). A legacy `qwen3-tts-1.7b` folder is moved there if it records the same revision; otherwise it is stale, never loaded, and the entrypoint warns with its size and the `docker run ... rm -rf` command to delete it. It publishes no ports: only the backend reaches it, as `http://tts:8080` (`TEACH_ME_TTS_URL`, already set by compose; leave it commented in `.env`, or set `TEACH_ME_TTS_URL=` empty to switch the feature off).
 
 - **First start:** `entrypoint.sh` downloads the model (about 4.5 GB) into the volume `teach_me_tts_models`. The download resumes after an interruption and the model folder appears only when it is complete. `deploy.sh` does not wait for it: the backend starts anyway, and listening works once `docker ps` shows `teach-me-tts` as `healthy` (`docker logs -f teach-me-tts` shows the progress).
 - **Long requests:** the engine runs with `--max-request-seconds 300` (the default, 60 s, would silently cut long paragraphs). Container variables, if needed: `TTS_THREADS`, `TTS_MAX_REQUEST_SECONDS`, `TTS_NICE`.
@@ -209,7 +225,7 @@ Then report the problem: the migration must be fixed with a new file, never by r
 
 ### Updating with `deploy.sh`
 
-`deploy/deploy.sh` updates the service on the host in one command: preflight, DB backup, tag `teach-me:prev` on the current image, `docker compose -p teach_me up -d --build`, wait for `teach-me` to become `healthy` (90 s, `HEALTH_TIMEOUT_SECS`; the `tts` service, which downloads its model at first start, is not waited for). If the new version does not become `healthy` it restores the backup and restarts with `teach-me:prev` (variable `TEACH_ME_IMAGE`), still exiting with an error. On the first deploy (no previous image) it only prints the logs. The compose project is always `teach_me` and the volume `teach_me_data` has a fixed name: `deploy.sh` and manual commands use the same container and the same DB.
+`deploy/deploy.sh` updates the service on the host in one command: preflight, DB backup, tag `teach-me:prev` on the current image, `docker compose -p teach_me up -d --build`, wait for `teach-me` to answer `GET /ready` (90 s, `HEALTH_TIMEOUT_SECS`; the `tts` service, which downloads its model at first start, is not waited for). If the new version does not become ready it restores the backup and restarts with `teach-me:prev` (variable `TEACH_ME_IMAGE`), still exiting with an error. Every deploy appends a line (UTC time, commit, outcome `ok` / `rolled-back` / `rollback-failed` / `restore-failed` / `failed-first-deploy`) to `$TEACH_ME_DEPLOY_DIR/deploys.log`. Any other failure (preflight refusal, backup or build failure) is logged as `failed`. If the backup restore itself fails during the rollback, the `teach-me` service is left stopped and `deploy.sh` stops with exit status 2 without waiting for health, prints the backup path and the manual restore command: the database state is uncertain. On the first deploy (no previous image) it only prints the logs. The compose project is always `teach_me` and the volume `teach_me_data` has a fixed name: `deploy.sh` and manual commands use the same container and the same DB.
 
 On the host, after updating the code (`git pull`):
 
@@ -219,7 +235,7 @@ cd ~/teach_me/backend/deploy
 TEACH_ME_DEPLOY_DIR=/srv/teach_me ./deploy.sh     # or .env and backups/ in another folder
 ```
 
-From a development machine, `deploy/push-deploy.sh <ssh-host> [remote-dir]` does both steps: it copies `backend/` (working tree, uncommitted changes included, git-ignored files left out) to `<remote-dir>/src/backend` with `rsync --delete`, then runs `deploy.sh` there with `TEACH_ME_DEPLOY_DIR=<remote-dir>` (default `/srv/teach_me`).
+From a development machine, `deploy/push-deploy.sh [--allow-dirty] <ssh-host> [remote-dir]` does both steps: it refuses if `backend/` has uncommitted changes (`--allow-dirty` deploys them with a warning and a `-dirty` commit suffix), passes the commit to `deploy.sh` as `TEACH_ME_SOURCE_COMMIT`, and copies `backend/` (working tree, git-ignored files left out) to `<remote-dir>/src/backend` with `rsync --delete`, then runs `deploy.sh` there with `TEACH_ME_DEPLOY_DIR=<remote-dir>` (default `/srv/teach_me`).
 
 Changes that belong to one host only (an extra network, a different Jaeger) go in `deploy/docker-compose.override.yml`: git-ignored, loaded automatically by `docker compose` and `deploy.sh`, and left in place by `push-deploy.sh`.
 

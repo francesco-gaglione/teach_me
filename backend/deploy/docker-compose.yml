@@ -33,6 +33,10 @@ services:
       # Traces to Jaeger over OTLP/HTTP. Same rule: set OTEL_EXPORTER_OTLP_ENDPOINT= (empty)
       # in .env to switch the export off.
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT-http://jaeger:4318}
+    # Caps the backend so a leak or a runaway request cannot starve the host (and tts).
+    mem_limit: ${TEACH_ME_MEM_LIMIT:-2g}
+    # Same value: no swap on top, so the cap is real.
+    memswap_limit: ${TEACH_ME_MEM_LIMIT:-2g}
     # No depends_on: the engine needs minutes (first start: the model download) and the
     # backend works without it. The audio worker backs off while the engine is down.
 

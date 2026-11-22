@@ -406,6 +406,55 @@ class LessonsViewModelTest {
         }
 
     @Test
+    fun `a generation or a retry refused for the daily budget carries the reset and shows no generic error`() =
+        runTest {
+            backend.lessonPages = mapOf(null to page())
+            val vm = vm()
+            vm.onEvent(ChatEvent.ResyncRequired)
+            runCurrent()
+            val before =
+                java.time.Instant
+                    .now()
+                    .truncatedTo(java.time.temporal.ChronoUnit.MILLIS)
+            backend.started = ApiResult.Failure(ApiFailure.LlmBudgetExceeded(1800))
+
+            vm.generate()
+            runCurrent()
+
+            val s = vm.state.value
+            val resetAt = s.budgetResetAt!!
+            assertFalse(resetAt.isBefore(before.plusSeconds(1800)))
+            assertFalse(
+                resetAt.isAfter(
+                    java.time.Instant
+                        .now()
+                        .plusSeconds(1800),
+                ),
+            )
+            assertNull(s.actionError)
+            assertNull(s.keyNotice)
+            assertNull(s.job)
+            assertFalse(s.starting)
+
+            // Without Retry-After it is the next midnight UTC; a success forgets the wait.
+            backend.started = ApiResult.Failure(ApiFailure.LlmBudgetExceeded(null))
+            vm.generate()
+            runCurrent()
+            assertEquals(
+                0,
+                vm.state.value.budgetResetAt!!
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .toLocalTime()
+                    .toSecondOfDay(),
+            )
+            backend.started = ApiResult.Success(generation(JobStatus.Queued))
+            vm.generate()
+            runCurrent()
+            assertNull(vm.state.value.budgetResetAt)
+            vm.viewModelScope.cancel()
+        }
+
+    @Test
     fun `a generation refused for the key is a notice and is told to the monitor`() =
         runTest {
             backend.lessonPages = mapOf(null to page())

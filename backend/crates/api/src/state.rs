@@ -1,13 +1,15 @@
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::stream_limit::StreamLimiter;
 use application::{
     AccountService, AttemptService, AudioPreparer, AudioService, AudioSettings, AudioWorker,
     AuthService, ChatService, ChatSettings, ClipCache, ComponentRequestService, DocumentService,
     FolderService, GenerateLesson, Grader, HighlightService, ImportDocument, JobHandler, JobRunner,
-    JobService, JobSettings, KeyScopedLlm, LessonPrompts, LessonService, LessonSettings, LlmKeys,
-    MissionService, PreferenceService, ResearchSettings, ResearcherPrompts, ResourceService,
-    ReviewService, RunLessonCompletion, RunResearch, StrokeService, TopicService, TutorPrompts,
+    JobService, JobSettings, KeyScopedLlm, LessonPrompts, LessonService, LessonSettings, LlmBudget,
+    LlmKeys, MissionService, PreferenceService, ResearchSettings, ResearcherPrompts,
+    ResourceService, ReviewService, RunLessonCompletion, RunResearch, StrokeService, TopicService,
+    TutorPrompts,
 };
 use domain::llm::LlmProvider;
 use domain::{
@@ -20,9 +22,10 @@ use infrastructure::{
     ServerKey, SqliteAttemptRepository, SqliteAudioQueue, SqliteChatRepository,
     SqliteClipRepository, SqliteDocumentRepository, SqliteFolderRepository,
     SqliteHighlightRepository, SqliteJobRepository, SqliteLearningRepository,
-    SqliteLessonRepository, SqliteMissionRepository, SqlitePreferenceRepository,
-    SqliteResourceRepository, SqliteReviewRepository, SqliteSessionRepository,
-    SqliteStrokeRepository, SqliteTopicRepository, SqliteUserRepository, XChaChaSecretCipher,
+    SqliteLessonRepository, SqliteLlmUsageRepository, SqliteMissionRepository,
+    SqlitePreferenceRepository, SqliteResourceRepository, SqliteReviewRepository,
+    SqliteSessionRepository, SqliteStrokeRepository, SqliteTopicRepository, SqliteUserRepository,
+    XChaChaSecretCipher,
 };
 
 /// Knobs that have contract-mandated defaults but that tests need to turn.
@@ -35,7 +38,17 @@ pub struct AppOptions {
     pub event_hub: EventHubConfig,
     /// Interval of the SSE `: ping` comment (contract: 15 s).
     pub sse_ping: Duration,
+    /// Bytes of documents per user (`TEACH_ME_USER_STORAGE_QUOTA_BYTES`); 0 = unlimited.
+    pub storage_quota_bytes: u64,
+    /// Input + output tokens per user per UTC day (`TEACH_ME_USER_DAILY_LLM_TOKENS`); 0 = off.
+    pub daily_llm_tokens: u64,
+    /// Concurrent SSE streams per user (`TEACH_ME_MAX_SSE_PER_USER`).
+    pub max_sse_per_user: usize,
 }
+
+/// Contract defaults of the resource limits (`api-conventions.md` section 12).
+pub const DEFAULT_STORAGE_QUOTA_BYTES: u64 = 1024 * 1024 * 1024;
+pub const DEFAULT_MAX_SSE_PER_USER: usize = 8;
 
 impl Default for AppOptions {
     fn default() -> Self {
@@ -46,6 +59,9 @@ impl Default for AppOptions {
             lessons: LessonSettings::default(),
             event_hub: EventHubConfig::default(),
             sse_ping: Duration::from_secs(15),
+            storage_quota_bytes: DEFAULT_STORAGE_QUOTA_BYTES,
+            daily_llm_tokens: 0,
+            max_sse_per_user: DEFAULT_MAX_SSE_PER_USER,
         }
     }
 }
@@ -150,13 +166,20 @@ pub struct AppState {
     /// The read-aloud endpoints' use cases (answers "off" without an engine).
     pub read_aloud: Arc<AudioService>,
     audio_worker: Option<Arc<AudioWorker>>,
+    /// What `GET /ready` asks; also owns the job runner's heartbeat.
+    pub ready: Arc<crate::ready::Readiness>,
     import: Arc<ImportDocument>,
     research: Arc<RunResearch>,
     generation: Arc<GenerateLesson>,
     completion: Arc<RunLessonCompletion>,
     job_settings: JobSettings,
+    /// The job runner's proof of life (`GET /ready`); the binary's runner
+    /// beats it, tests beat it by hand.
+    pub heartbeat: Arc<application::Heartbeat>,
     pub events: Arc<EventHub>,
     pub sse_ping: Duration,
+    /// Open SSE streams per user.
+    pub streams: StreamLimiter,
 }
 
 impl AppState {
@@ -219,11 +242,20 @@ impl AppState {
         documents_setup: DocumentSetup,
         audio_setup: Option<AudioSetup>,
     ) -> Self {
-        // Every model call carries the key of the owner of its work.
-        let llm: Arc<dyn LlmProvider> = Arc::new(KeyScopedLlm::new(llm));
+        let budget = Arc::new(LlmBudget::new(
+            Arc::new(SqliteLlmUsageRepository::new(pool.clone())),
+            clock.clone(),
+            options.daily_llm_tokens,
+        ));
+        // Every model call carries the key of the owner of its work, and is
+        // counted against that owner's daily token budget.
+        let llm: Arc<dyn LlmProvider> =
+            Arc::new(KeyScopedLlm::new(llm).with_budget(budget.clone()));
         let user_repo = Arc::new(SqliteUserRepository::new(pool.clone()));
         let session_repo = Arc::new(SqliteSessionRepository::new(pool.clone()));
-        let keys = Arc::new(LlmKeys::new(user_repo.clone(), auth_setup.cipher.clone()));
+        let keys = Arc::new(
+            LlmKeys::new(user_repo.clone(), auth_setup.cipher.clone()).with_budget(budget),
+        );
         let auth = Arc::new(AuthService::new(
             user_repo.clone(),
             session_repo,
@@ -251,6 +283,13 @@ impl AppState {
         let review_repo = Arc::new(SqliteReviewRepository::new(pool.clone()));
         let document_repo = Arc::new(SqliteDocumentRepository::new(pool.clone()));
         let events = Arc::new(EventHub::new(clock.clone(), options.event_hub));
+        let heartbeat = Arc::new(application::Heartbeat::default());
+        let ready = Arc::new(crate::ready::Readiness::new(
+            pool.clone(),
+            heartbeat.clone(),
+            audio_setup.as_ref().map(|s| s.synthesizer.clone()),
+            clock.clone(),
+        ));
         let (audio, audio_worker) = match audio_setup {
             Some(setup) => {
                 let cache = Arc::new(ClipCache::new(
@@ -298,14 +337,17 @@ impl AppState {
             ids.clone(),
             keys.clone(),
         ));
-        let documents = Arc::new(DocumentService::new(
-            topic_repo.clone(),
-            document_repo.clone(),
-            documents_setup.files.clone(),
-            jobs.clone(),
-            ids.clone(),
-            clock.clone(),
-        ));
+        let documents = Arc::new(
+            DocumentService::new(
+                topic_repo.clone(),
+                document_repo.clone(),
+                documents_setup.files.clone(),
+                jobs.clone(),
+                ids.clone(),
+                clock.clone(),
+            )
+            .with_storage_quota(options.storage_quota_bytes),
+        );
         let import = Arc::new(ImportDocument::new(
             topic_repo.clone(),
             document_repo.clone(),
@@ -461,6 +503,8 @@ impl AppState {
             read_aloud,
             audio,
             audio_worker,
+            ready,
+            heartbeat,
             import,
             research,
             generation,
@@ -468,6 +512,7 @@ impl AppState {
             job_settings: options.jobs,
             events,
             sse_ping: options.sse_ping,
+            streams: StreamLimiter::new(options.max_sse_per_user),
         }
     }
 
@@ -507,7 +552,8 @@ impl AppState {
     #[must_use]
     pub fn job_runner(&self, handlers: Vec<(JobKind, Arc<dyn JobHandler>)>) -> JobRunner {
         handlers.into_iter().fold(
-            JobRunner::new(self.jobs.clone(), self.job_settings),
+            JobRunner::new(self.jobs.clone(), self.job_settings)
+                .with_heartbeat(self.heartbeat.clone()),
             |runner, (kind, handler)| runner.with_handler(kind, handler),
         )
     }

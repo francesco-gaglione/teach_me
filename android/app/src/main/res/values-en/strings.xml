@@ -3,6 +3,12 @@
 <string name="app_name">teach_me</string>
     <string name="library_pick_folder">Pick a folder to see its topics.</string>
     <string name="home_open_settings">Settings</string>
+    <string name="update_required_title">Update the app</string>
+    <string name="update_required_body">The backend is newer than this version of teach_me and the app can\'t talk to it yet. Install the updated version to continue: your data is safe.</string>
+    <string name="update_required_recheck">Check again</string>
+    <string name="update_required_checking">Checking…</string>
+    <string name="update_required_still">The app still needs to be updated.</string>
+    <string name="update_required_unreachable">I can\'t reach the server.</string>
     <string name="review_channel_name">Reviews</string>
     <string name="review_channel_description">Alerts when review cards are due.</string>
     <plurals name="review_notification_title">

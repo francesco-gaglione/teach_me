@@ -42,6 +42,20 @@ sealed interface ApiFailure {
         val retryAfterSecs: Int?,
     ) : ApiFailure
 
+    /**
+     * HTTP 429 `llm_budget_exceeded`: the user's daily LLM token budget is used up (api-conventions section 7). It is not
+     * a "busy" 429: waiting a minute does not help. [retryAfterSecs] is the time to 00:00 UTC, when present and numeric.
+     */
+    data class LlmBudgetExceeded(
+        val retryAfterSecs: Int?,
+    ) : ApiFailure
+
+    /**
+     * HTTP 409 `storage_quota_exceeded`: the upload would take the user's documents over the storage quota
+     * (documents.md section 3). Nothing was created; deleting documents frees space, a retry of the same file does not help.
+     */
+    data object StorageQuotaExceeded : ApiFailure
+
     /** HTTP 503 `unavailable`: the backend is starting or under maintenance. */
     data object Unavailable : ApiFailure
 

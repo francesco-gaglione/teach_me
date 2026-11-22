@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,7 +47,10 @@ import com.teachme.core.model.JobError
 import com.teachme.core.model.JobProgress
 import com.teachme.core.model.JobStatus
 import com.teachme.core.model.TopicJob
+import com.teachme.core.model.isLlmBudgetCode
+import com.teachme.core.model.jobBudgetReset
 import com.teachme.core.model.llmKeyVariantOfCode
+import com.teachme.core.ui.LlmBudgetPanel
 import com.teachme.core.ui.LlmKeyContext
 import com.teachme.core.ui.LlmKeyNotice
 import kotlinx.coroutines.delay
@@ -232,12 +236,41 @@ private fun Failed(
         )
         return
     }
+    if (failed.job.error
+            ?.code
+            .isLlmBudgetCode() ||
+        failed.budgetResetAt != null
+    ) {
+        // The closing stopped for today's budget, or "Riprova" was just refused for it (llm-key.md 10.1).
+        val resetAt =
+            remember(
+                failed.job.id,
+                failed.job.finishedAt,
+                failed.budgetResetAt,
+            ) { failed.job.jobBudgetReset(failed.budgetResetAt) }
+        LlmBudgetPanel(
+            resetAt,
+            retryText =
+                stringResource(
+                    if (failed.retrying) R.string.completion_retrying else R.string.completion_retry,
+                ),
+            onRetry = onRetry,
+            retrying = failed.retrying,
+            retryIcon = TeachIcons.RotateCcw,
+        )
+        return
+    }
     val (title, body) = completionFailure(failed.job.error?.code)
     var details by rememberSaveable { mutableStateOf(false) }
     TeachStatusPanel(
         StatusVariant.Danger,
         stringResource(title),
-        body = stringResource(if (failed.networkError) R.string.completion_network_error else body),
+        body =
+            if (failed.networkError) {
+                stringResource(R.string.completion_network_error)
+            } else {
+                stringResource(body)
+            },
     )
     TeachButton(
         stringResource(if (failed.retrying) R.string.completion_retrying else R.string.completion_retry),

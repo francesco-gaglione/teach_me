@@ -29,6 +29,9 @@ import com.teachme.core.designsystem.components.ButtonVariant
 import com.teachme.core.designsystem.components.TeachButton
 import com.teachme.core.designsystem.components.TeachIcon
 import com.teachme.core.designsystem.components.TeachText
+import com.teachme.core.ui.llmBudgetAvailability
+import com.teachme.core.ui.rememberBudgetRenewed
+import java.time.Instant
 
 /**
  * "Continua" / "Completa lezione" (docs/design/screens/lesson.md section 5). While a required exercise is
@@ -44,7 +47,11 @@ fun ContinueBar(
     modifier: Modifier = Modifier,
     /** The answers are being sent before the lesson closes (lesson.md section 7.2). */
     busy: Boolean = false,
+    /** "Completa lezione" was refused for the daily LLM budget: it waits for this instant (llm-key.md 10.1). */
+    budgetResetAt: Instant? = null,
 ) {
+    val budgetWait = budgetResetAt != null && !rememberBudgetRenewed(budgetResetAt, announce = false)
+    val budgetAvailability = budgetResetAt?.let { llmBudgetAvailability(it) }
     val label =
         stringResource(
             when {
@@ -65,7 +72,15 @@ fun ContinueBar(
         wasLocked = missing > 0
     }
     if (missing == 0) {
-        TeachButton(label, onContinue, modifier.fillMaxWidth(), size = ButtonSize.Large, loading = busy)
+        TeachButton(
+            label,
+            onContinue,
+            modifier.fillMaxWidth(),
+            size = ButtonSize.Large,
+            enabled = !budgetWait,
+            loading = busy,
+            disabledStateDescription = budgetAvailability,
+        )
         return
     }
     val reason =

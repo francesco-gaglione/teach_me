@@ -198,6 +198,8 @@ pub enum JobErrorCode {
     LlmKeyRejected,
     /// The provider accepts the key but the account has no credit left (402).
     LlmCreditExhausted,
+    /// The owner spent the day's token budget before the job started.
+    LlmBudgetExceeded,
 }
 
 impl JobErrorCode {
@@ -217,6 +219,7 @@ impl JobErrorCode {
             Self::LlmKeyMissing => "llm_key_missing",
             Self::LlmKeyRejected => "llm_key_rejected",
             Self::LlmCreditExhausted => "llm_credit_exhausted",
+            Self::LlmBudgetExceeded => "llm_budget_exceeded",
         }
     }
 }
@@ -239,6 +242,7 @@ impl FromStr for JobErrorCode {
             "llm_key_missing" => Ok(Self::LlmKeyMissing),
             "llm_key_rejected" => Ok(Self::LlmKeyRejected),
             "llm_credit_exhausted" => Ok(Self::LlmCreditExhausted),
+            "llm_budget_exceeded" => Ok(Self::LlmBudgetExceeded),
             other => Err(UnknownJobValue(other.to_owned())),
         }
     }
@@ -305,6 +309,10 @@ impl JobError {
             JobErrorCode::LlmCreditExhausted => (
                 "Il credito del servizio LLM è esaurito: ricaricalo presso il provider e riprova.",
                 "The LLM service credit is exhausted: top it up with the provider and try again.",
+            ),
+            JobErrorCode::LlmBudgetExceeded => (
+                "Hai esaurito il budget giornaliero di token: riprova dopo mezzanotte (UTC).",
+                "You have used up the daily token budget: try again after midnight (UTC).",
             ),
         };
         Self {

@@ -131,6 +131,7 @@ fn validate(config: &Qwen3TtsConfig) -> Result<(), Qwen3TtsBuildError> {
 pub struct Qwen3TtsSynthesizer {
     http: reqwest::Client,
     url: String,
+    health_url: String,
     info: EngineInfo,
     voices: Vec<Voice>,
     default_voice: String,
@@ -159,6 +160,7 @@ impl Qwen3TtsSynthesizer {
         Ok(Self {
             http,
             url: format!("{}/v1/tts", base.as_str().trim_end_matches('/')),
+            health_url: format!("{}/v1/health", base.as_str().trim_end_matches('/')),
             info: EngineInfo {
                 engine: ENGINE.to_owned(),
                 model: config.model,
@@ -203,6 +205,15 @@ impl SpeechSynthesizer for Qwen3TtsSynthesizer {
 
     fn default_voice(&self) -> &str {
         &self.default_voice
+    }
+
+    async fn is_up(&self) -> bool {
+        self.http
+            .get(&self.health_url)
+            .timeout(Duration::from_secs(2))
+            .send()
+            .await
+            .is_ok_and(|r| r.status().is_success())
     }
 
     #[tracing::instrument(name = "tts.synthesize", skip_all, fields(tts.voice = voice, tts.chars = text.chars().count()))]

@@ -287,7 +287,7 @@ impl RunResearch {
         .await;
         let fixed = self.repair(&text, &problems, seen, spent).await?;
         parse_and_validate(&fixed, seen).map_err(|problems| {
-            tracing::warn!(job = %job.id, ?problems, "research: repair did not help");
+            tracing::warn!(job = %job.id, problems = problems.len(), "research: repair did not help");
             JobErrorCode::InvalidOutput
         })
     }

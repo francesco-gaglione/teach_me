@@ -16,10 +16,14 @@ use infrastructure::{
 };
 use serde::Deserialize;
 
+use crate::state::{DEFAULT_MAX_SSE_PER_USER, DEFAULT_STORAGE_QUOTA_BYTES};
+
 const DEFAULT_BIND_ADDR: &str = "127.0.0.1:8080";
 const DEFAULT_DATABASE_URL: &str = "sqlite://teach_me.db";
 const DEFAULT_BODY_LIMIT_BYTES: usize = 1024 * 1024;
 const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 30;
+const DEFAULT_JOB_MAX_CONCURRENT: usize = 2;
+const DEFAULT_JOB_TIMEOUT_SECS: u64 = 900;
 const DEFAULT_AUDIO_DIR: &str = "/audio";
 const DEFAULT_TTS_VOICE: &str = "vivian";
 const DEFAULT_TTS_VOICES: &str =
@@ -76,6 +80,18 @@ pub struct Config {
     pub otlp_endpoint: Option<String>,
     pub body_limit_bytes: usize,
     pub request_timeout_secs: u64,
+    /// Bytes of uploaded documents per user (`TEACH_ME_USER_STORAGE_QUOTA_BYTES`);
+    /// 0 = unlimited.
+    pub user_storage_quota_bytes: u64,
+    /// Input + output tokens per user per UTC day (`TEACH_ME_USER_DAILY_LLM_TOKENS`);
+    /// 0 = no budget.
+    pub user_daily_llm_tokens: u64,
+    /// Concurrent SSE streams per user (`TEACH_ME_MAX_SSE_PER_USER`).
+    pub max_sse_per_user: usize,
+    /// Jobs running at once, all users together (`TEACH_ME_JOB_MAX_CONCURRENT`).
+    pub job_max_concurrent: usize,
+    /// Time budget of one job run (`TEACH_ME_JOB_TIMEOUT_SECS`).
+    pub job_timeout_secs: u64,
     /// Where uploads wait for their import (`<data_dir>/uploads`). By default
     /// the directory of the database file.
     pub data_dir: PathBuf,
@@ -240,6 +256,8 @@ impl Config {
             DEFAULT_REQUEST_TIMEOUT_SECS,
         )?;
 
+        let limits = ResourceLimits::from_env(&var)?;
+
         // Environment only: the key must stay out of the files that get
         // backed up with the database.
         let secret_key = ServerKey::from_base64(
@@ -269,6 +287,11 @@ impl Config {
             otlp_endpoint,
             body_limit_bytes,
             request_timeout_secs,
+            user_storage_quota_bytes: limits.storage_quota_bytes,
+            user_daily_llm_tokens: limits.daily_llm_tokens,
+            max_sse_per_user: limits.max_sse_per_user,
+            job_max_concurrent: limits.job_max_concurrent,
+            job_timeout_secs: limits.job_timeout_secs,
             data_dir,
             pdfium_dir,
             llm,
@@ -542,6 +565,79 @@ fn line_col(text: &str, offset: usize) -> String {
     format!(" (line {line}, column {col})")
 }
 
+/// The resource limits of `api-conventions.md` section 12 (environment only).
+struct ResourceLimits {
+    storage_quota_bytes: u64,
+    daily_llm_tokens: u64,
+    max_sse_per_user: usize,
+    job_max_concurrent: usize,
+    job_timeout_secs: u64,
+}
+
+impl ResourceLimits {
+    fn from_env(var: &impl Fn(&str) -> Option<String>) -> Result<Self, ConfigError> {
+        Ok(Self {
+            storage_quota_bytes: parse_env_num(
+                var("TEACH_ME_USER_STORAGE_QUOTA_BYTES"),
+                "TEACH_ME_USER_STORAGE_QUOTA_BYTES",
+                DEFAULT_STORAGE_QUOTA_BYTES,
+                true,
+            )?,
+            daily_llm_tokens: parse_env_num(
+                var("TEACH_ME_USER_DAILY_LLM_TOKENS"),
+                "TEACH_ME_USER_DAILY_LLM_TOKENS",
+                0,
+                true,
+            )?,
+            max_sse_per_user: parse_env_num(
+                var("TEACH_ME_MAX_SSE_PER_USER"),
+                "TEACH_ME_MAX_SSE_PER_USER",
+                DEFAULT_MAX_SSE_PER_USER,
+                false,
+            )?,
+            job_max_concurrent: parse_env_num(
+                var("TEACH_ME_JOB_MAX_CONCURRENT"),
+                "TEACH_ME_JOB_MAX_CONCURRENT",
+                DEFAULT_JOB_MAX_CONCURRENT,
+                false,
+            )?,
+            job_timeout_secs: parse_env_num(
+                var("TEACH_ME_JOB_TIMEOUT_SECS"),
+                "TEACH_ME_JOB_TIMEOUT_SECS",
+                DEFAULT_JOB_TIMEOUT_SECS,
+                false,
+            )?,
+        })
+    }
+}
+
+/// An environment-only number. Zero is refused unless `allow_zero` (where it
+/// means "off" or "unlimited").
+fn parse_env_num<T: std::str::FromStr + PartialOrd + Default>(
+    env: Option<String>,
+    name: &'static str,
+    default: T,
+    allow_zero: bool,
+) -> Result<T, ConfigError>
+where
+    T::Err: fmt::Display,
+{
+    let value = match env {
+        Some(raw) => raw.trim().parse::<T>().map_err(|e| ConfigError::Invalid {
+            name,
+            reason: format!("`{raw}`: {e}"),
+        })?,
+        None => default,
+    };
+    if !allow_zero && value <= T::default() {
+        return Err(ConfigError::Invalid {
+            name,
+            reason: "must be greater than zero".to_owned(),
+        });
+    }
+    Ok(value)
+}
+
 fn parse_num<T: std::str::FromStr + PartialOrd + Default>(
     env: Option<String>,
     file: Option<T>,
@@ -738,6 +834,54 @@ mod tests {
             assert!(
                 matches!(err, ConfigError::Invalid { .. }),
                 "{extra:?}: {err}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_resource_limits_have_the_contract_defaults_and_can_be_overridden() {
+        let base = [("TEACH_ME_SECRET_KEY", KEY)];
+        let c = Config::load(None, env(&base)).unwrap();
+        assert_eq!(c.user_storage_quota_bytes, 1_073_741_824);
+        assert_eq!(c.user_daily_llm_tokens, 0);
+        assert_eq!(c.max_sse_per_user, 8);
+        assert_eq!(c.job_max_concurrent, 2);
+        assert_eq!(c.job_timeout_secs, 900);
+
+        let c = Config::load(
+            None,
+            env(&[
+                base[0],
+                ("TEACH_ME_USER_STORAGE_QUOTA_BYTES", "0"),
+                ("TEACH_ME_USER_DAILY_LLM_TOKENS", "500000"),
+                ("TEACH_ME_MAX_SSE_PER_USER", "3"),
+                ("TEACH_ME_JOB_MAX_CONCURRENT", "4"),
+                ("TEACH_ME_JOB_TIMEOUT_SECS", "60"),
+            ]),
+        )
+        .unwrap();
+        assert_eq!(c.user_storage_quota_bytes, 0);
+        assert_eq!(c.user_daily_llm_tokens, 500_000);
+        assert_eq!(c.max_sse_per_user, 3);
+        assert_eq!(c.job_max_concurrent, 4);
+        assert_eq!(c.job_timeout_secs, 60);
+    }
+
+    #[test]
+    fn the_job_and_stream_limits_must_be_positive_and_numbers() {
+        for pair in [
+            ("TEACH_ME_JOB_MAX_CONCURRENT", "0"),
+            ("TEACH_ME_JOB_TIMEOUT_SECS", "0"),
+            ("TEACH_ME_MAX_SSE_PER_USER", "0"),
+            ("TEACH_ME_USER_DAILY_LLM_TOKENS", "lots"),
+            ("TEACH_ME_USER_STORAGE_QUOTA_BYTES", "-1"),
+        ] {
+            assert!(
+                matches!(
+                    Config::load(None, env(&[("TEACH_ME_SECRET_KEY", KEY), pair])),
+                    Err(ConfigError::Invalid { .. })
+                ),
+                "{pair:?}"
             );
         }
     }

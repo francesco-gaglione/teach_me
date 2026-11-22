@@ -2,6 +2,7 @@ package com.teachme.feature.resources
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.teachme.core.model.ApiFailure
@@ -15,7 +16,9 @@ import com.teachme.core.model.LoadError
 import com.teachme.core.model.TopicDocument
 import com.teachme.core.model.TopicJob
 import com.teachme.core.model.TopicLanguage
+import com.teachme.core.model.UnreachableReason
 import com.teachme.core.model.UploadSource
+import com.teachme.core.model.UploadSourceRestorer
 import com.teachme.core.model.toLoadError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -126,6 +129,12 @@ private const val RELOAD_BASE_DELAY_MS = 1_000L
 private const val STREAM_GRACE_MS = 3_000L
 private const val POLL_INTERVAL_MS = 15_000L
 private const val NANOS_PER_MS = 1_000_000L
+private const val SAVED_REFERENCE = "upload_reference"
+private const val SAVED_NAME = "upload_name"
+private const val SAVED_STARTED = "upload_started_at"
+
+/** Device and server clocks may differ a little: a document counts as created by the upload within this margin. */
+private const val CLOCK_SKEW_MS = 120_000L
 
 /**
  * The PDFs of one Topic: list, upload, import progress, removal and the banner "Ho letto il tuo PDF". Fed by REST and
@@ -139,13 +148,30 @@ class DocumentsViewModel
         @Assisted private val topicId: String,
         private val documents: DocumentRepository,
         private val bannerStore: DocumentBannerStore,
+        private val sourceRestorer: UploadSourceRestorer,
+        private val savedState: SavedStateHandle,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
             fun create(topicId: String): DocumentsViewModel
         }
 
-        private val _state = MutableStateFlow(DocumentsUiState())
+        // After process death only the reference and the name of the file in flight survive (never its bytes): the
+        // upload is shown as failed, and "Riprova" rebuilds the source from them.
+        private val _state =
+            MutableStateFlow(
+                DocumentsUiState(
+                    upload =
+                        if (savedState.get<String>(SAVED_REFERENCE) != null &&
+                            savedState.get<String>(SAVED_NAME) != null
+                        ) {
+                            // Until the list says whether the file arrived, it is "sending": no duplicate retry is offered.
+                            UploadUi.Sending(savedState.get<String>(SAVED_NAME).orEmpty())
+                        } else {
+                            UploadUi.Idle
+                        },
+                ),
+            )
         val state: StateFlow<DocumentsUiState> = _state.asStateFlow()
 
         private val effectChannel = Channel<DocumentsEffect>(Channel.BUFFERED)
@@ -172,6 +198,7 @@ class DocumentsViewModel
         private val handledTerminalJobs = mutableSetOf<String>()
 
         init {
+            if (_state.value.upload is UploadUi.Sending) checkRestoredUpload()
             viewModelScope.launch {
                 val dismissed = bannerStore.dismissed()
                 _state.update { it.copy(dismissedBanner = it.dismissedBanner + dismissed) }
@@ -372,14 +399,24 @@ class DocumentsViewModel
             if (current.upload is UploadUi.Sending) return
             if (uploadAvailability(current.documents, uploading = false) != UploadAvailability.Available) return
             lastSource = source
+            remember(source)
             if (isOverSizeLimit(source.sizeBytes)) {
+                forgetSource()
                 _state.update { it.copy(upload = UploadUi.Failed(UploadError.TooLarge)) }
                 return
             }
             _state.update { it.copy(upload = UploadUi.Sending(source.displayName)) }
             uploadJob =
                 viewModelScope.launch {
-                    when (val result = documents.upload(topicId, source)) {
+                    // A `content://` grant that was not persisted is gone after a restart: reading fails with a
+                    // SecurityException, which is an ordinary failed upload (the panel offers "Chiudi" as well).
+                    val outcome =
+                        try {
+                            documents.upload(topicId, source)
+                        } catch (e: SecurityException) {
+                            ApiResult.Failure(ApiFailure.Network(UnreachableReason.Other))
+                        }
+                    when (val result = outcome) {
                         is ApiResult.Success -> {
                             val created = result.value
                             _state.update {
@@ -395,6 +432,7 @@ class DocumentsViewModel
                                 )
                             }
                             lastSource = null
+                            forgetSource()
                             schedulePoll(_state.value.documents)
                         }
                         is ApiResult.Failure -> onUploadFailed(result.failure)
@@ -404,26 +442,96 @@ class DocumentsViewModel
 
         private fun onUploadFailed(failure: ApiFailure) {
             when (val action = uploadFailureAction(failure)) {
-                is UploadFailureAction.Show -> _state.update { it.copy(upload = UploadUi.Failed(action.error)) }
+                is UploadFailureAction.Show -> {
+                    // Only a network failure can be retried with the same file: the others need another file.
+                    if (action.error != UploadError.Network) forgetSource()
+                    _state.update { it.copy(upload = UploadUi.Failed(action.error)) }
+                }
                 UploadFailureAction.Reload -> {
                     _state.update { it.copy(upload = UploadUi.Idle) }
                     lastSource = null
+                    forgetSource()
                     load()
                 }
                 UploadFailureAction.TopicGone -> {
+                    forgetSource()
                     _state.update { it.copy(upload = UploadUi.Idle) }
                     effectChannel.trySend(DocumentsEffect.TopicGone)
                 }
-                UploadFailureAction.Silent -> _state.update { it.copy(upload = UploadUi.Idle) }
+                UploadFailureAction.Silent -> {
+                    forgetSource()
+                    _state.update { it.copy(upload = UploadUi.Idle) }
+                }
             }
         }
 
         /** "Riprova" after a network error: the same file, without opening the picker again. */
         fun retryUpload() {
-            val source = lastSource ?: return
             if (_state.value.upload !is UploadUi.Failed) return
+            val source = lastSource ?: restoreSource()
+            if (source == null) {
+                // The file cannot be read any more: back to the picker.
+                forgetSource()
+                _state.update { it.copy(upload = UploadUi.Idle) }
+                return
+            }
             _state.update { it.copy(upload = UploadUi.Idle) }
             upload(source)
+        }
+
+        /**
+         * After process death the upload may have reached the server before the process died: read the list first. A
+         * document with the same file name created after the upload started means it is done (no duplicate retry);
+         * otherwise (or if the list cannot be read) the failed state with "Riprova" is shown.
+         */
+        private fun checkRestoredUpload() {
+            val name = savedState.get<String>(SAVED_NAME) ?: return
+            val startedAt = savedState.get<Long>(SAVED_STARTED)
+            viewModelScope.launch {
+                val result = documents.list(topicId)
+                val arrived =
+                    result is ApiResult.Success &&
+                        startedAt != null &&
+                        result.value.any {
+                            it.filename == name &&
+                                (it.createdAt?.toEpochMilli() ?: Long.MIN_VALUE) >= startedAt - CLOCK_SKEW_MS
+                        }
+                if (result is ApiResult.Success) applyDocuments(result.value)
+                // The user may have closed the panel in the meantime.
+                if (_state.value.upload !is UploadUi.Sending) return@launch
+                if (arrived) {
+                    forgetSource()
+                    _state.update { it.copy(upload = UploadUi.Idle) }
+                } else {
+                    _state.update { it.copy(upload = UploadUi.Failed(UploadError.Network)) }
+                }
+            }
+        }
+
+        private fun restoreSource(): UploadSource? {
+            val reference = savedState.get<String>(SAVED_REFERENCE) ?: return null
+            val name = savedState.get<String>(SAVED_NAME) ?: return null
+            return runCatching { sourceRestorer.restore(reference, name) }.getOrNull()
+        }
+
+        private fun remember(source: UploadSource) {
+            val reference = source.reference
+            if (reference == null) {
+                forgetSource()
+            } else {
+                savedState[SAVED_REFERENCE] = reference
+                savedState[SAVED_NAME] = source.displayName
+                savedState[SAVED_STARTED] = System.currentTimeMillis()
+            }
+        }
+
+        private fun forgetSource() {
+            savedState.get<String>(SAVED_REFERENCE)?.let { reference ->
+                runCatching { sourceRestorer.release(reference) }
+            }
+            savedState.remove<String>(SAVED_REFERENCE)
+            savedState.remove<String>(SAVED_NAME)
+            savedState.remove<Long>(SAVED_STARTED)
         }
 
         /** "Annulla" while sending, or "Chiudi" on the error panel. */
@@ -432,6 +540,7 @@ class DocumentsViewModel
             uploadJob?.cancel()
             uploadJob = null
             lastSource = null
+            forgetSource()
             _state.update { it.copy(upload = UploadUi.Idle) }
             // The server may have received the whole file before the cancel: look at the truth.
             if (sending) load()
@@ -460,7 +569,17 @@ class DocumentsViewModel
 
         private fun removed(documentId: String) {
             _state.update {
-                it.copy(delete = DeleteUi.Idle, documents = it.documents.filterNot { d -> d.id == documentId })
+                it.copy(
+                    delete = DeleteUi.Idle,
+                    documents = it.documents.filterNot { d -> d.id == documentId },
+                    // Space was freed: the "Spazio esaurito" panel has done its job (llm-key.md 10.3).
+                    upload =
+                        if ((it.upload as? UploadUi.Failed)?.error == UploadError.QuotaExceeded) {
+                            UploadUi.Idle
+                        } else {
+                            it.upload
+                        },
+                )
             }
             effectChannel.trySend(DocumentsEffect.Removed)
         }

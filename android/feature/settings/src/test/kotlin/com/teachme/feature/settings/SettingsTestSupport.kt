@@ -195,6 +195,8 @@ internal class FakeInbox : FlashInbox {
 
     override fun take(vararg kinds: FlashKind): Flash? =
         posted.lastOrNull { it.kind in kinds }?.also { posted.remove(it) }
+
+    override fun clear() = posted.clear()
 }
 
 internal class FakeReminderPrefs(
