@@ -149,9 +149,16 @@ Check the signature with `apksigner verify --print-certs app/build/outputs/apk/r
 
 ### Release signing in CI
 
-`.github/workflows/android-release.yml` (manual: *Actions > android-release > Run workflow*; it never runs on pull
-requests) builds `assembleRelease`, checks it with `apksigner verify --print-certs` and uploads `app-release.apk` as the
-artifact `teach_me-release-apk`. Without `keystore.properties`, Gradle reads the signing data from environment
+`.github/workflows/android-release.yml` builds `assembleRelease`, checks it with `apksigner verify --print-certs` and
+uploads `teach_me-<versionName>.apk` with its `.sha256` as the artifact `teach_me-release-apk` (kept 14 days). It never
+runs on pull requests. Two triggers:
+
+- manual (*Actions > android-release > Run workflow*): the artifact only;
+- a pushed tag `v<versionName>`: the same build, then a GitHub Release for that tag with the APK and its checksum
+  attached and notes generated from the commits. The tag must match `versionName` in `app/build.gradle.kts`, or the run
+  fails before building; a tag with a suffix (`v0.2.0-beta.1`) gives a pre-release.
+
+To publish a version: raise `versionCode` and `versionName`, commit, then `git tag v0.2.0 && git push origin v0.2.0`. Without `keystore.properties`, Gradle reads the signing data from environment
 variables instead (`app/build.gradle.kts`): `TEACHME_KEYSTORE_FILE` (path), `TEACHME_KEYSTORE_PASSWORD`,
 `TEACHME_KEY_ALIAS`, `TEACHME_KEY_PASSWORD`. If `keystore.properties` exists it wins.
 

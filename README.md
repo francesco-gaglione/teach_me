@@ -91,7 +91,41 @@ teach_me takes the idea out of the chat and into a full application: specialised
 
 ## Quick start
 
-**Backend** (needs Rust; the toolchain is pinned in `backend/rust-toolchain.toml`):
+You need a Linux x86_64 machine with Docker and the Compose plugin, an Android 10+ phone or tablet, and an [Anthropic API key](https://console.anthropic.com/). [Tailscale](https://tailscale.com/) is recommended to reach the server from outside your home.
+
+**1. Start the server**
+
+```bash
+git clone https://github.com/francesco-gaglione/teach_me.git
+cd teach_me/backend/deploy
+cp .env.example .env && chmod 600 .env
+# In .env set TEACH_ME_SECRET_KEY to the output of `openssl rand -base64 32` (keep a copy: it encrypts the users' API keys)
+# and BIND_IP to the address the app will use: `tailscale ip -4` (recommended), or the machine's LAN IP
+# (traffic, passwords included, then travels as plain HTTP on your network; not 127.0.0.1, which clashes with a second port mapping).
+docker compose up -d --build
+```
+
+The first build compiles the backend and takes a few minutes. Check it with `curl http://<BIND_IP>:8080/health`.
+
+Read-aloud is on by default: on its first start the `tts` service downloads about 4.5 GB in the background, and the rest of the app works in the meantime. To skip it, set `TEACH_ME_TTS_URL=` (empty) in `.env` and start only `docker compose up -d --build teach-me jaeger`.
+
+**2. Set a password for the first user**
+
+A new database already has a user named `owner`, without a password:
+
+```bash
+docker compose exec teach-me teach-me user passwd owner   # prints a generated password once
+```
+
+To add more people: `docker compose exec teach-me teach-me user add <name>`.
+
+**3. Install the app**
+
+Download `teach_me-<version>.apk` from the [latest release](https://github.com/francesco-gaglione/teach_me/releases/latest) and install it. You may need to allow installs from unknown sources. Open the app, enter `http://<BIND_IP>:8080` and sign in as `owner`, then paste your Anthropic API key in Settings, under *LLM key*. Create a folder, add a topic, and the tutor starts the interview.
+
+[`backend/README.md`](backend/README.md) covers configuration, models, backups and updates. [`android/README.md`](android/README.md) explains how to build the app yourself.
+
+### Development
 
 ```bash
 cd backend
@@ -99,9 +133,7 @@ export TEACH_ME_SECRET_KEY="$(openssl rand -base64 32)"
 cargo run -p api --bin teach-me
 ```
 
-Then create a user and save their LLM API key (Anthropic) as described in [`backend/README.md`](backend/README.md), which also covers configuration, Docker deployment and backups.
-
-**Android app** (needs JDK 21 and the Android SDK): see [`android/README.md`](android/README.md).
+The Android app needs JDK 21 and the Android SDK: see [`android/README.md`](android/README.md#build).
 
 ## What is in the repository
 

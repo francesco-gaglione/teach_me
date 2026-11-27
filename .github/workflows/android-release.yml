@@ -1,22 +1,30 @@
-# Builds the signed release APK and checks its signature. Manual only: it never runs on pull requests,
-# so a fork can neither trigger it nor reach the secrets. The secrets it needs are listed in android/README.md
-# ("Release signing in CI"): ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
+# Builds the signed release APK and checks its signature.
+# - Manual run (Actions > android-release > Run workflow): the APK is only uploaded as a workflow artifact.
+# - Pushed tag vX.Y.Z (e.g. `git tag v0.1.0 && git push origin v0.1.0`): the tag must match versionName in
+#   android/app/build.gradle.kts; the APK and its SHA-256 are then attached to a new GitHub Release.
+# It never runs on pull requests, so a fork can neither trigger it nor reach the secrets. The secrets it needs are
+# listed in android/README.md ("Release signing in CI"): ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+# ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
 name: android-release
 
 on:
   workflow_dispatch:
+  push:
+    tags: ['v*']
 
 permissions:
   contents: read
 
 jobs:
-  release:
+  build:
     # A fork has no secrets of the owner; this also stops a copy of the workflow from failing in a confusing way.
     if: github.event.repository.fork == false
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: android
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -27,6 +35,25 @@ jobs:
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v5
       - run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      # versionName is the single source of the version. On a tag it must be the same, without the leading "v":
+      # a release whose APK reports another version would be confusing to whoever installs it.
+      - name: Read and check the version
+        id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          version="$(sed -n 's/^ *versionName = "\(.*\)"$/\1/p' app/build.gradle.kts)"
+          if [ -z "$version" ]; then
+            echo "::error::versionName not found in android/app/build.gradle.kts."
+            exit 1
+          fi
+          if [ "$REF_TYPE" = tag ] && [ "$REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $REF_NAME does not match versionName $version (expected v$version)."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       # The secrets are read only by the steps that need them, through env: never interpolated into a script,
       # never printed. GitHub masks their values in the logs.
@@ -49,21 +76,49 @@ jobs:
           TEACHME_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleRelease
 
-      - name: Verify the signature
+      - name: Verify the signature and name the APK
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           apk=app/build/outputs/apk/release/app-release.apk
           # An unsigned build is named app-release-unsigned.apk: its absence is already a failure.
           test -f "$apk"
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
           "$apksigner" verify --verbose --print-certs "$apk"
+          mkdir -p "$RUNNER_TEMP/dist"
+          cp "$apk" "$RUNNER_TEMP/dist/teach_me-$VERSION.apk"
+          (cd "$RUNNER_TEMP/dist" && sha256sum "teach_me-$VERSION.apk" > "teach_me-$VERSION.apk.sha256")
 
       - uses: actions/upload-artifact@v7
         with:
           name: teach_me-release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: ${{ runner.temp }}/dist/
           if-no-files-found: error
           retention-days: 14
 
       - name: Remove the keystore
         if: always()
         run: rm -f "$RUNNER_TEMP/release.jks"
+
+  # Separate job: the token that can write to the repository never shares a runner with the signing secrets.
+  publish:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: teach_me-release-apk
+          path: dist
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # A tag with a suffix (v0.2.0-beta.1) becomes a pre-release.
+          prerelease=()
+          case "$TAG" in *-*) prerelease=(--prerelease) ;; esac
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "teach_me $TAG" --generate-notes "${prerelease[@]}"
