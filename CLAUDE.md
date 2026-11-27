@@ -48,12 +48,6 @@ A subagent's cost grows with the length of its life: at every step it re-reads e
 6. **Model: the one in the agent file.** All agents stay on Sonnet, except `docs-keeper` on Haiku: do not force a bigger model in the call.
 7. **Web research always on Sonnet**, with a general-purpose subagent: the pages read weigh a lot and do not need the strongest model.
 8. **No delegation for small things.** A read, a search or an edit of a few lines is done by the main session directly, except documents in `docs/`, which go through `docs-keeper`.
-9. **Mechanical work to the local model before a subagent.** Repetitive, verifiable tasks go to `local-agent` (qwen3.6 via Ollama, zero token cost; a local tool, not part of this repository; instructions in the `local-agent` skill): unit tests in the `domain` and `application` crates, renames across several backend files, small well-specified pure functions in the domain, summarising a long section of a document. The Rust workspace is in `backend/`, so the call is: `local-agent -C "$(git rev-parse --show-toplevel)/backend" "<self-contained task in English: files and symbols involved, what not to touch, and at the end run cargo test -p <crate> --lib>"`, with Bash in the background or a 600000 timeout. With `--read-only` it cannot modify files.
-    - Never give it: the `api` crate (authentication, configuration, `users_cli`, isolation between users), `backend/migrations/`, `backend/prompts/` and `backend/evals/` (prompt quality: `llm-engineer` decides), `docs/contracts/` and `docs/adr/` (the tech lead's), nor `android/`, which it cannot build.
-    - It may only run `cargo test` and `cargo check`: clippy, the full build and `code-reviewer` stay with whoever delegates.
-    - It may use graphify read-only (`query`, `explain`, `path`, `section`), not `update`. Working from `backend/`, the prompt tells it to use `graphify query "<question>" --graph ../graphify-out/graph.json` before reading sources, and to read only the lines indicated.
-    - One call at a time, never in parallel. Exit code 3 (not enough video memory) means doing it yourself.
-    - The result is a claim, not a fact: whoever delegates checks `git diff` and re-runs the tests.
 
 ## Project graph (graphify)
 
@@ -81,4 +75,7 @@ feat(backend): add folder and topic use cases
 
 Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `build`. Scopes: `backend`, `android`, `prompts`, `design`, `docs`, `contracts`.
 
-The owner speaks Italian: talk to them in Italian. Project documentation in `docs/` is in Italian.
+## Language
+
+- Everything that stays in the repository is in English: code, identifiers, comments, documentation (`docs/`, READMEs), prompts, agent files, commit messages and pull requests. The only exception is the app's translated texts (localised string resources and the content the app shows to users in other languages).
+- All commit messages are in English, including the ones the tech lead suggests.

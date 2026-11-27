@@ -19,5 +19,6 @@ __pycache__/
 graphify-out/
 .ua/
 
-# impostazioni locali di Claude Code (percorsi della macchina)
+# Local Claude Code settings and notes (machine-specific)
 .claude/settings.local.json
+CLAUDE.local.md

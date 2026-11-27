@@ -26,7 +26,7 @@ You own `android/`. Do not modify `backend/`, `docs/design/` or `docs/contracts/
 - **Faithful to the design system.** Use only the tokens from `core:designsystem` (colours, typography, spacing, shape). No hardcoded values. If the design is missing for a case, ask instead of inventing.
 - **Local grading** of closed quizzes, immediate feedback; attempts are sent to the backend in batches and survive network errors.
 - **Accessibility:** contentDescription, touch targets ≥ 48dp, contrast, font scaling and TalkBack support, light and dark theme.
-- **Simplicity:** single user, backend reachable via Tailscale with a static token configured in the settings.
+- **Simplicity:** backend reached over Tailscale or the LAN, without TLS of its own (ADR 0001).
 
 ## How you work
 
