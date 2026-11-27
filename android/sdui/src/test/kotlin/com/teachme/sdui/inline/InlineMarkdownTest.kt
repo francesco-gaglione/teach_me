@@ -140,18 +140,37 @@ class InlineMarkdownTest {
 }
 
 class InlineMarkdownLinearityTest {
+    private val generators: Map<String, (Int) -> String> =
+        mapOf(
+            "nested links" to { n -> "[[".repeat(n * 2) + "]]" },
+            "link openers" to { n -> "[a](".repeat(n) + ")" },
+            "backticks" to { n -> "`".repeat(n) },
+            "emphasis openers" to { n -> "*a ".repeat(n) },
+            "term openers" to { n -> "[^".repeat(n) + "]" },
+        )
+
+    private fun timeMs(input: String): Double {
+        var best = Long.MAX_VALUE
+        repeat(3) {
+            val start = System.nanoTime()
+            InlineMarkdown.parse(input)
+            best = minOf(best, System.nanoTime() - start)
+        }
+        return best / 1_000_000.0
+    }
+
     @Test
-    fun `pathological inputs finish quickly`() {
-        val inputs =
-            listOf(
-                "[[".repeat(200_000) + "]]",
-                "[a](".repeat(100_000) + ")",
-                "`".repeat(100_000),
-                "*a ".repeat(100_000),
-                "[^".repeat(100_000) + "]",
-            )
-        val start = System.nanoTime()
-        for (input in inputs) InlineMarkdown.parse(input)
-        assertTrue("took ${(System.nanoTime() - start) / 1_000_000} ms", System.nanoTime() - start < 5_000_000_000L)
+    fun `pathological inputs scale linearly`() {
+        val n = 25_000
+        // Warm-up so JIT compilation does not skew the small-size measurement.
+        for (gen in generators.values) InlineMarkdown.parse(gen(n))
+        for ((name, gen) in generators) {
+            val small = maxOf(timeMs(gen(n)), 1.0)
+            val large = timeMs(gen(n * 4))
+            val ratio = large / small
+            // Linear is ~4x, quadratic ~16x; the threshold sits well between them.
+            assertTrue("$name: 4x input took ${ratio}x longer ($small ms -> $large ms)", ratio < 10.0)
+            assertTrue("$name: took $large ms", large < 30_000.0)
+        }
     }
 }
