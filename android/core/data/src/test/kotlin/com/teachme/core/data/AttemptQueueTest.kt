@@ -8,9 +8,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.teachme.core.model.QueuedAttempt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -59,7 +62,8 @@ class AttemptQueueTest {
             first.enqueue(attempt(lesson = "L2", block = "q9"))
 
             // The process dies; a new one opens the same file: what the app finds after being killed.
-            scopes.forEach { it.cancel() }
+            // Joined: a DataStore on the same file must not be opened while the old one is still active.
+            runBlocking { scopes.forEach { it.coroutineContext[Job]?.cancelAndJoin() } }
             scopes.clear()
             val second = DataStoreAttemptQueue(store(), userScopes)
             assertEquals(listOf("q1", "q2"), second.pending("L1").map { it.blockId })

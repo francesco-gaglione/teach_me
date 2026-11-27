@@ -4,8 +4,11 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.teachme.core.model.UserScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -24,7 +27,7 @@ class ReviewAlertReferenceTest {
 
     /** A DataStore over the same file, as a new process would open it (the previous one is closed first). */
     private fun reference(): DataStoreReviewAlertReference {
-        scopes.forEach { it.cancel() }
+        runBlocking { scopes.forEach { it.coroutineContext[Job]?.cancelAndJoin() } }
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO).also { scopes += it }
         return DataStoreReviewAlertReference(
             PreferenceDataStoreFactory.create(scope = scope) { folder.root.resolve("alerts.preferences_pb") },
@@ -67,7 +70,7 @@ class ReviewReminderPrefsTest {
     fun tearDown() = scopes.forEach { it.cancel() }
 
     private fun prefs(): DataStoreReviewReminderPrefs {
-        scopes.forEach { it.cancel() }
+        runBlocking { scopes.forEach { it.coroutineContext[Job]?.cancelAndJoin() } }
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO).also { scopes += it }
         return DataStoreReviewReminderPrefs(
             PreferenceDataStoreFactory.create(scope = scope) { folder.root.resolve("reminders.preferences_pb") },

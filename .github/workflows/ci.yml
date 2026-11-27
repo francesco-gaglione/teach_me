@@ -12,6 +12,12 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    # Without debug info and incremental data the test binaries are much smaller: with them the
+    # runner ran out of space while linking (ld "Bus error") on pull requests.
+    env:
+      CARGO_INCREMENTAL: '0'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
     defaults:
       run:
         working-directory: backend

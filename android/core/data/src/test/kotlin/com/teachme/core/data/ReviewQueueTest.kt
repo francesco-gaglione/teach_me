@@ -8,9 +8,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.teachme.core.model.QueuedReview
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -54,7 +57,8 @@ class ReviewQueueTest {
                 enqueue(review("c3"))
             }
             // The process dies; a new one opens the same file: what the app finds after being killed.
-            scopes.forEach { it.cancel() }
+            // Joined: a DataStore on the same file must not be opened while the old one is still active.
+            runBlocking { scopes.forEach { it.coroutineContext[Job]?.cancelAndJoin() } }
             scopes.clear()
             val second = DataStoreReviewQueue(store(), userScopes)
             assertEquals(listOf("c1", "c2", "c3"), second.pending().map { it.cardId })
