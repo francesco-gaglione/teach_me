@@ -12,16 +12,20 @@ internal fun VersionCatalog.lib(alias: String) = findLibrary(alias).get()
 
 internal fun VersionCatalog.plugin(alias: String) = findPlugin(alias).get().get().pluginId
 
-// ADR 0001 says compileSdk 35, but the current stable AndroidX/OkHttp releases require compileSdk 37.
+// ADR 0001 says compileSdk 35, but the current stable AndroidX/OkHttp releases require compileSdk 37
+// (Compose 1.13 needs the 37.1 minor release).
 // compileSdk only affects which APIs can be compiled against; runtime behavior is set by TARGET_SDK.
 internal const val COMPILE_SDK = 37
+internal const val COMPILE_SDK_MINOR = 1
 internal const val TARGET_SDK = 35
 internal const val MIN_SDK = 29
 
 /** Settings shared by application and library modules. */
 internal fun Project.configureAndroidCommon(extension: CommonExtension) {
     extension.apply {
-        compileSdk = COMPILE_SDK
+        compileSdk {
+            version = release(COMPILE_SDK) { minorApiLevel = COMPILE_SDK_MINOR }
+        }
         defaultConfig.minSdk = MIN_SDK
         compileOptions.sourceCompatibility = JavaVersion.VERSION_21
         compileOptions.targetCompatibility = JavaVersion.VERSION_21

@@ -7,7 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import com.teachme.core.designsystem.TeachHighlight
@@ -63,10 +65,16 @@ class HighlightPaletteState {
 internal fun Modifier.penWatcher(onPen: (down: Boolean) -> Unit): Modifier =
     pointerInput(Unit) {
         awaitPointerEventScope {
+            var lastHover: Offset? = null
             while (true) {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
                 val pen = event.changes.filter { it.type == PointerType.Stylus || it.type == PointerType.Eraser }
-                if (pen.isNotEmpty()) onPen(pen.any { it.pressed })
+                // Compose re-sends the last hover as a Move at the same place after layout and frame changes
+                // (synthetic, since Compose 1.13): it is not the pen moving, and must not keep the palette up.
+                val hover = pen.singleOrNull()?.takeIf { !it.pressed }?.position
+                val synthetic = event.type == PointerEventType.Move && hover != null && hover == lastHover
+                lastHover = hover
+                if (pen.isNotEmpty() && !synthetic) onPen(pen.any { it.pressed })
             }
         }
     }

@@ -15,6 +15,11 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
+    ignore:
+      # From v6 the caching part of gradle/actions is proprietary and needs accepting
+      # Gradle's Terms of Use; v5 is MIT and already runs on Node 24.
+      - dependency-name: gradle/actions
+        versions: [">=6"]
   - package-ecosystem: docker
     directories: [/backend, /backend/deploy/tts]
     schedule: { interval: weekly }
